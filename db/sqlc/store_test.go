@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+// check for transfer (single direction)
 func TestTransferTx(t *testing.T) {
 	var wg sync.WaitGroup
 	store := NewStore(testDB)
@@ -27,6 +28,8 @@ func TestTransferTx(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
+			fmt.Println("from", a1.ID, "to", a2.ID)
+
 			result, err := store.TransferTx(ctx, TransferTxParams{
 				FromAccountID: a1.ID,
 				ToAccountID:   a2.ID,
@@ -88,8 +91,6 @@ func TestTransferTx(t *testing.T) {
 
 		k := int(diff1 / amount)
 
-		fmt.Println("k is", k)
-
 		require.True(t, k >= 1 && k <= n)
 		// check k is unique across transactions and can be only picked from 1, ..., n
 		require.NotContains(t, existed, k)
@@ -104,4 +105,58 @@ func TestTransferTx(t *testing.T) {
 	updatedToAccount, err := testQueries.GetAccount(ctx, a2.ID)
 	require.NoError(t, err)
 	require.Equal(t, a2.Balance+int64(n)*amount, updatedToAccount.Balance)
+}
+
+// check for transfer (bi-direction)
+func TestTransferTxDeadlock(t *testing.T) {
+	store := NewStore(testDB)
+
+	a1 := createRandomAccount()
+	a2 := createRandomAccount()
+
+	n := 4
+	amount := int64(10)
+	ctx := context.Background()
+
+	errs := make(chan error)
+
+	for i := 0; i < n; i++ {
+		go func(i int) {
+			var err error
+
+			if i%2 == 1 {
+				// transfer from a1 to a2
+				_, err = store.TransferTx(ctx, TransferTxParams{
+					FromAccountID: a1.ID,
+					ToAccountID:   a2.ID,
+					Amount:        amount,
+				})
+
+			} else {
+				// transfer from a2 to a1
+
+				_, err = store.TransferTx(ctx, TransferTxParams{
+					FromAccountID: a2.ID,
+					ToAccountID:   a1.ID,
+					Amount:        amount,
+				})
+			}
+
+			errs <- err
+		}(i)
+	}
+
+	for i := 0; i < n; i++ {
+		require.NoError(t, <-errs)
+	}
+
+	// check the final balance, should be the same
+	updatedFromAccount, err := testQueries.GetAccount(ctx, a1.ID)
+	require.NoError(t, err)
+
+	updatedToAccount, err := testQueries.GetAccount(ctx, a2.ID)
+	require.NoError(t, err)
+
+	require.Equal(t, a1.Balance, updatedFromAccount.Balance)
+	require.Equal(t, a2.Balance, updatedToAccount.Balance)
 }

@@ -86,33 +86,54 @@ func (s *Store) TransferTx(ctx context.Context, args TransferTxParams) (Transfer
 		}
 
 		// update two account balance
-		result.FromAccount, err = q.GetAccountForUpdate(ctx, args.FromAccountID)
+		var fromAccount, toAccount Account
+		fromAccount, err = q.GetAccountForUpdate(ctx, args.FromAccountID)
 		if err != nil {
 			return err
 		}
 
-		result.ToAccount, err = q.GetAccountForUpdate(ctx, args.ToAccountID)
+		toAccount, err = q.GetAccountForUpdate(ctx, args.ToAccountID)
 		if err != nil {
 			return err
 		}
 
-		result.FromAccount.Balance -= args.Amount
-		result.ToAccount.Balance += args.Amount
+		// make sure we always update the lower account id first to avoid deadlocks
+		// e.g., when two concurrent transaction go as a1 -> a2 and a2 -> a1
+		// we always update a1 first before a2
+		if fromAccount.ID < toAccount.ID {
 
-		_, err = q.UpdateAccount(
-			ctx,
-			UpdateAccountParams{Balance: result.FromAccount.Balance, ID: result.FromAccount.ID},
-		)
-		if err != nil {
-			return err
-		}
+			result.FromAccount, err = q.AddAccountBalance(ctx, AddAccountBalanceParams{
+				ID:     fromAccount.ID,
+				Amount: -args.Amount,
+			})
+			if err != nil {
+				return err
+			}
 
-		_, err = q.UpdateAccount(
-			ctx,
-			UpdateAccountParams{Balance: result.ToAccount.Balance, ID: result.ToAccount.ID},
-		)
-		if err != nil {
-			return err
+			result.ToAccount, err = q.AddAccountBalance(
+				ctx,
+				AddAccountBalanceParams{ID: toAccount.ID, Amount: args.Amount},
+			)
+			if err != nil {
+				return err
+			}
+		} else {
+
+			result.ToAccount, err = q.AddAccountBalance(
+				ctx,
+				AddAccountBalanceParams{ID: toAccount.ID, Amount: args.Amount},
+			)
+			if err != nil {
+				return err
+			}
+
+			result.FromAccount, err = q.AddAccountBalance(
+				ctx,
+				AddAccountBalanceParams{ID: fromAccount.ID, Amount: -args.Amount},
+			)
+			if err != nil {
+				return err
+			}
 		}
 
 		return nil
