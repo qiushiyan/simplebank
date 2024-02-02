@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"testing"
 
@@ -45,35 +46,62 @@ func TestTransferTx(t *testing.T) {
 		require.NoError(t, err)
 	}
 
+	var existed = make(map[int]bool)
 	for r := range results {
 		require.NotEmpty(t, r)
 
 		// check transfer
-		require.Equal(t, a1.ID, r.Transfer.FromAccountID)
-		require.Equal(t, a2.ID, r.Transfer.ToAccountID)
-		require.Equal(t, amount, r.Transfer.Amount)
-
-		_, err := testQueries.GetTransfer(ctx, r.Transfer.ID)
-		require.NoError(t, err)
+		transfer := r.Transfer
+		require.NotEmpty(t, transfer)
+		require.Equal(t, a1.ID, transfer.FromAccountID)
+		require.Equal(t, a2.ID, transfer.ToAccountID)
+		require.Equal(t, amount, transfer.Amount)
 		require.Equal(t, a1.ID, r.Transfer.FromAccountID)
 		require.Equal(t, a2.ID, r.Transfer.ToAccountID)
 
 		// check entries
-		fromEntry, err := testQueries.GetEntry(ctx, r.FromEntry.ID)
-		require.NoError(t, err)
+		fromEntry := r.FromEntry
+		require.NotEmpty(t, fromEntry)
 		require.Equal(t, a1.ID, fromEntry.AccountID)
 		require.Equal(t, -amount, fromEntry.Amount)
 
-		toEntry, err := testQueries.GetEntry(ctx, r.ToEntry.ID)
-		require.NoError(t, err)
+		toEntry := r.ToEntry
+		require.NotEmpty(t, toEntry)
 		require.Equal(t, a2.ID, toEntry.AccountID)
 		require.Equal(t, amount, toEntry.Amount)
 
-		// TODO: check account balances
+		// check accounts
+		fromAccount := r.FromAccount
+		require.NotEmpty(t, fromAccount)
+		require.Equal(t, a1.ID, fromAccount.ID)
+
+		toAccount := r.ToAccount
+		require.NotEmpty(t, toAccount)
+		require.Equal(t, a2.ID, toAccount.ID)
+
+		// check balances
+		diff1 := a1.Balance - fromAccount.Balance
+		diff2 := toAccount.Balance - a2.Balance
+		require.Equal(t, diff1, diff2)
+		require.True(t, diff1 > 0)
+		require.True(t, diff1%amount == 0)
+
+		k := int(diff1 / amount)
+
+		fmt.Println("k is", k)
+
+		require.True(t, k >= 1 && k <= n)
+		// check k is unique across transactions and can be only picked from 1, ..., n
+		require.NotContains(t, existed, k)
+		existed[k] = true
 	}
 
-	// Check the initial account balances
-	// Transfer some money between the accounts
-	// Check the new account balances
-	// Check the transfer record in the database
+	// check the final updated balances
+	updatedFromAccount, err := testQueries.GetAccount(ctx, a1.ID)
+	require.NoError(t, err)
+	require.Equal(t, a1.Balance-int64(n)*amount, updatedFromAccount.Balance)
+
+	updatedToAccount, err := testQueries.GetAccount(ctx, a2.ID)
+	require.NoError(t, err)
+	require.Equal(t, a2.Balance+int64(n)*amount, updatedToAccount.Balance)
 }
