@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"fmt"
 	"sync"
 	"testing"
 
@@ -28,7 +27,6 @@ func TestTransferTx(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			fmt.Println("from", a1.ID, "to", a2.ID)
 
 			result, err := store.TransferTx(ctx, TransferTxParams{
 				FromAccountID: a1.ID,
