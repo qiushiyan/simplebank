@@ -1,0 +1,15 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bank-api
+  namespace: simplebank
+spec:
+  replicas: 1
+
+  strategy:
+    type: Recreate
+
+  template:
+    spec:
+      dnsPolicy: ClusterFirstWithHostNet
+      hostNetwork: true

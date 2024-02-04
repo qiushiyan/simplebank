@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bank-api
+  namespace: simplebank
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bank-api
+
+  template:
+    metadata:
+      labels:
+        app: bank-api
+    spec:
+      terminationGracePeriodSeconds: 60
+
+      containers:
+        - name: bank-api
+          image: bank-api-image

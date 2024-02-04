@@ -1,10 +1,13 @@
 .PHONY: createdb dropdb
 
 KIND_CLUSTER    := qs-starter-cluster
+NAMESPACE       := simplebank
 KIND            := kindest/node:v1.29.0@sha256:eaa1450915475849a73a9227b8f201df25e55e268e5d619312131292e324d570
+BASE_IMAGE_NAME := qiushiyan/simplebank
 SERVICE_NAME    := bank-api
+APP             := bank-api
 VERSION         := 0.0.1
-SERVICE_IMAGE   := $(SERVICE_NAME):$(VERSION)
+SERVICE_IMAGE   := $(BASE_IMAGE_NAME)/$(SERVICE_NAME):$(VERSION)
 
 pg:
 	docker run --name postgres -e POSTGRES_PASSWORD=postgres -p 5433:5432 -d bank-api-postgres
@@ -36,14 +39,20 @@ dev-up:
 
 	kubectl wait --timeout=120s --namespace=local-path-storage --for=condition=Available deployment/local-path-provisioner
 
+dev-load:
+	kind load docker-image $(SERVICE_IMAGE) --name $(KIND_CLUSTER)
+
+dev-apply:
+	kustomize build zarf/k8s/dev/bank-api | kubectl apply -f -
+	kubectl wait pods --namespace=$(NAMESPACE) --selector app=$(APP) --timeout=120s --for=condition=Ready
+
+dev-down:
+	kind delete cluster --name $(KIND_CLUSTER)
 
 dev-status:
 	kubectl get nodes -o wide
 	kubectl get svc -o wide
 	kubectl get pods -o wide --watch --all-namespaces
-
-dev-down:
-	kind delete cluster --name $(KIND_CLUSTER)
 
 bank-api:
 	docker build \
@@ -60,4 +69,4 @@ test:
 	go test -v -cover ./...
 
 check:
-	nilaway app/*
+	nilaway ./app/*/**
