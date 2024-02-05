@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+
+	. "github.com/qiushiyan/bank-api/business/db/generated"
 )
 
 type Store struct {

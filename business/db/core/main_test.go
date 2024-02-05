@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	_ "github.com/lib/pq"
+	. "github.com/qiushiyan/bank-api/business/db/generated"
 )
 
 const (
