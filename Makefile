@@ -38,7 +38,7 @@ generate:
 # ==============================================================================
 # Running locally
 run-local:
-	go run app/services/bank-api/main.go
+	go run app/services/bank-api/main.go | go run app/tooling/logfmt/main.go --service=$(SERVICE_NAME)
 
 run-local-help:
 	go run app/services/bank-api/main.go -h
