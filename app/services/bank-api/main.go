@@ -3,12 +3,16 @@ package main
 import (
 	"errors"
 	"fmt"
+	"net/http"
 	"os"
+	"os/signal"
 	"runtime"
+	"syscall"
 	"time"
 
 	"github.com/ardanlabs/conf/v3"
 	"github.com/qiushiyan/bank-api/foundation/logger"
+	"github.com/qiushiyan/bank-api/foundation/web/debug"
 	"go.uber.org/zap"
 )
 
@@ -71,15 +75,48 @@ func run(log *zap.SugaredLogger) error {
 		return fmt.Errorf("parsing config: %w", err)
 	}
 
-	defer log.Infow("Shutdown complete")
-
 	// show the current config
 	out, err := conf.String(&cfg)
 	if err != nil {
 		return fmt.Errorf("generating config string: %w", err)
 	}
 
-	log.Infow("startup", "config", out)
+	log.Infow("startup", "with config", out)
+
+	// -------------------------------------------------------------------------
+	// Start Debug Service
+
+	log.Infow("startup", "status", "debug v1 router started", "host", cfg.Web.DebugHost)
+
+	go func() {
+		if err := http.ListenAndServe(cfg.Web.DebugHost, debug.StandardLibraryMux()); err != nil {
+			log.Errorw(
+				"shutdown",
+				"status",
+				"debug router closed",
+				"host",
+				cfg.Web.DebugHost,
+				"ERROR",
+				err,
+			)
+		}
+	}()
+
+	shutdown := make(chan os.Signal, 1)
+	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
+
+	// -------------------------------------------------------------------------
+	// Start API service
+	go func() {
+		http.ListenAndServe(":3000", nil)
+	}()
+
+	// -------------------------------------------------------------------------
+	// Shutdown
+
+	<-shutdown
+
+	defer log.Infow("Shutdown complete")
 
 	return nil
 
