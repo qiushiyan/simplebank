@@ -20,3 +20,8 @@ spec:
       containers:
         - name: bank-api
           image: bank-api-image
+          env:
+            - name: GOMAXPROCS
+              valueFrom:
+                resourceFieldRef:
+                  resource: limits.cpu

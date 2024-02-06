@@ -1,4 +1,6 @@
-KIND_CLUSTER    := qs-starter-cluster
+# ==============================================================================
+# Dependencies
+KIND_CLUSTER    := bank-system-cluster
 NAMESPACE       := simplebank
 KIND            := kindest/node:v1.29.0@sha256:eaa1450915475849a73a9227b8f201df25e55e268e5d619312131292e324d570
 BASE_IMAGE_NAME := qiushiyan/simplebank
@@ -7,7 +9,8 @@ APP             := bank-api
 VERSION         := 0.0.1
 SERVICE_IMAGE   := $(BASE_IMAGE_NAME)/$(SERVICE_NAME):$(VERSION)
 
-
+# ==============================================================================
+# Database
 pg:
 	docker run --name postgres -e POSTGRES_PASSWORD=postgres -p 5433:5432 -d bank-api-postgres
 
@@ -29,25 +32,19 @@ migrate-up:
 migrate-down:
 	migrate -path business/db/migrations -database "postgresql://postgres:postgres@localhost:5433/bank?sslmode=disable" --verbose down
 
-bank-api:
-	docker build \
-		-f zarf/docker/dockerfile.bank-api \
-		-t $(SERVICE_IMAGE) \
-		--build-arg BUILD_REF=$(VERSION) \
-		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
-		.
-
-all: bank-api
-
 generate:
 	sqlc generate
 
-test:
-	go test -v -cover ./...
+# ==============================================================================
+# Running locally
+run-local:
+	go run app/services/bank-api/main.go
 
-check:
-	nilaway ./app/*/**
+run-local-help:
+	go run app/services/bank-api/main.go -h
 
+# ==============================================================================
+# Running from within k8s/kind
 dev-up:
 	kind create cluster \
 		--image $(KIND) \
@@ -71,8 +68,16 @@ dev-status:
 	kubectl get svc -o wide
 	kubectl get pods -o wide --watch --all-namespaces
 
+dev-describe-deployment:
+	kubectl describe deployment $(APP) --namespace=$(NAMESPACE)
+
+dev-describe-bank-api:
+	kubectl describe pod $(APP) --namespace=$(NAMESPACE)
+
 dev-logs:
-	kubectl logs --namespace=$(NAMESPACE) -l app=$(APP) --all-containers=true -f --tail=100
+	kubectl logs --namespace=$(NAMESPACE) -l app=$(APP) --all-containers=true -f --tail=100 | go run app/tooling/logfmt/main.go --service=$(SERVICE_NAME)
+
+dev-start: dev-up dev-load dev-apply
 
 dev-restart:
 	kubectl rollout restart deployment $(APP) --namespace=$(NAMESPACE)
@@ -81,3 +86,26 @@ dev-update: all dev-load dev-restart
 
 dev-update-apply: all dev-load dev-apply
 
+
+# ==============================================================================
+# Building containers
+all: bank-api
+
+bank-api:
+	docker build \
+		-f zarf/docker/dockerfile.bank-api \
+		-t $(SERVICE_IMAGE) \
+		--build-arg BUILD_REF=$(VERSION) \
+		--build-arg BUILD_DATE=`date -u +"%Y-%m-%dT%H:%M:%SZ"` \
+		.
+
+# ==============================================================================
+# Chores
+tidy:
+	go mod tidy
+
+test:
+	go test -v -cover ./...
+
+check:
+	nilaway ./app/*/**
