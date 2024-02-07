@@ -1,8 +1,7 @@
-# ==============================================================================
-# Dependencies
 KIND_CLUSTER    := bank-system-cluster
 NAMESPACE       := simplebank
 KIND            := kindest/node:v1.29.0@sha256:eaa1450915475849a73a9227b8f201df25e55e268e5d619312131292e324d570
+TELEPRESENCE    := datawire/tel2:2.13.1
 BASE_IMAGE_NAME := qiushiyan/simplebank
 SERVICE_NAME    := bank-api
 APP             := bank-api
@@ -11,7 +10,6 @@ SERVICE_IMAGE   := $(BASE_IMAGE_NAME)/$(SERVICE_NAME):$(VERSION)
 
 # ==============================================================================
 # Install dependencies
-
 dev-gotooling:
 	go install github.com/divan/expvarmon@latest
 	go install github.com/rakyll/hey@latest
@@ -25,6 +23,7 @@ dev-brew:
 	brew list kubectl || brew install kubectl
 	brew list kustomize || brew install kustomize
 	brew list pgcli || brew install pgcli
+
 
 # ==============================================================================
 # Database
@@ -62,6 +61,8 @@ run-local-help:
 
 # ==============================================================================
 # Running from within k8s/kind
+dev-start: dev-up dev-load dev-apply
+
 dev-up:
 	kind create cluster \
 		--image $(KIND) \
@@ -77,6 +78,9 @@ dev-apply:
 	kustomize build zarf/k8s/dev/bank-api | kubectl apply -f -
 	kubectl wait pods --namespace=$(NAMESPACE) --selector app=$(APP) --timeout=120s --for=condition=Ready
 
+dev-forward:
+	kubectl port-forward svc/bank-api-svc 3000:3000 4000:4000 -n $(NAMESPACE)
+
 dev-down:
 	kind delete cluster --name $(KIND_CLUSTER)
 
@@ -88,13 +92,18 @@ dev-status:
 dev-describe-deployment:
 	kubectl describe deployment $(APP) --namespace=$(NAMESPACE)
 
-dev-describe-bank-api:
+dev-describe-pod:
 	kubectl describe pod $(APP) --namespace=$(NAMESPACE)
+
+dev-describe-svc:
+	kubectl describe svc $(APP) --namespace=$(NAMESPACE)
+
+dev-describe-gateway:
+	kubectl describe gateway $(APP) --namespace=$(NAMESPACE)
 
 dev-logs:
 	kubectl logs --namespace=$(NAMESPACE) -l app=$(APP) --all-containers=true -f --tail=100 | go run app/tooling/logfmt/main.go --service=$(SERVICE_NAME)
 
-dev-start: dev-up dev-load dev-apply
 
 dev-restart:
 	kubectl rollout restart deployment $(APP) --namespace=$(NAMESPACE)
@@ -128,4 +137,7 @@ check:
 	nilaway ./app/*/**
 
 metrics-view:
+	expvarmon -ports="$(SERVICE_NAME).$(NAMESPACE).svc.cluster.local:4000" -vars="build,requests,goroutines,errors,panics,mem:memstats.Alloc"
+
+metrics-view-local:
 	expvarmon -ports="localhost:4000" -vars="build,requests,goroutines,errors,panics,mem:memstats.Alloc"

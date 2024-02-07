@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: bank-api-svc
+  namespace: simplebank
+
+spec:
+  selector:
+    app: bank-api
+
+  type: ClusterIP
+
+  ports:
+    - name: bank-api
+      port: 3000
+      targetPort: bank-api
+    - name: bank-api-debug
+      port: 4000
+      targetPort: bank-api-debug

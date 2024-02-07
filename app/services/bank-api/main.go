@@ -107,8 +107,12 @@ func run(log *zap.SugaredLogger) error {
 
 	// -------------------------------------------------------------------------
 	// Start API service
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("Hello, World!"))
+	})
 	go func() {
-		http.ListenAndServe(":3000", nil)
+		http.ListenAndServe(":3000", mux)
 	}()
 
 	// -------------------------------------------------------------------------
