@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	. "github.com/qiushiyan/bank-api/business/db/generated"
+	. "github.com/qiushiyan/simplebank/business/db/generated"
 )
 
 type Store struct {

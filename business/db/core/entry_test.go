@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	. "github.com/qiushiyan/bank-api/business/db/generated"
-	"github.com/qiushiyan/bank-api/business/random"
+	. "github.com/qiushiyan/simplebank/business/db/generated"
+	"github.com/qiushiyan/simplebank/business/random"
 	"github.com/stretchr/testify/require"
 )
 

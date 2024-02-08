@@ -1,7 +1,7 @@
 package random
 
 import (
-	rand "github.com/qiushiyan/bank-api/foundation/random"
+	rand "github.com/qiushiyan/simplebank/foundation/random"
 )
 
 func RandomOwner() string {

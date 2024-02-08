@@ -1,3 +1,4 @@
+ALPINE          := alpine:3.18
 KIND_CLUSTER    := bank-system-cluster
 NAMESPACE       := simplebank
 KIND            := kindest/node:v1.29.0@sha256:eaa1450915475849a73a9227b8f201df25e55e268e5d619312131292e324d570
@@ -7,6 +8,7 @@ SERVICE_NAME    := bank-api
 APP             := bank-api
 VERSION         := 0.0.1
 SERVICE_IMAGE   := $(BASE_IMAGE_NAME)/$(SERVICE_NAME):$(VERSION)
+CONTAINER_NAME  := bank-api-postgres
 
 # ==============================================================================
 # Install dependencies
@@ -28,16 +30,16 @@ dev-brew:
 # ==============================================================================
 # Database
 pg:
-	docker run --name postgres -e POSTGRES_PASSWORD=postgres -p 5433:5432 -d bank-api-postgres
+	docker run --name $(CONTAINER_NAME) -e POSTGRES_PASSWORD=postgres -p 5433:5432 -d postgres
 
 pgcli:
-	docker exec -it bank-api-postgres psql -U postgres
+	docker exec -it $(CONTAINER_NAME) psql -U postgres
 
 createdb:
-	docker exec -it bank-api-postgres createdb --username=postgres --owner=postgres bank
+	docker exec -it $(CONTAINER_NAME) createdb --username=postgres --owner=postgres bank
 
 dropdb:
-	docker exec -it bank-api-postgres dropdb bank --username=postgres
+	docker exec -it $(CONTAINER_NAME) dropdb bank --username=postgres
 
 migrate-create:
 	migrate create -ext sql -dir business/db/migrations -seq init_schema
@@ -84,10 +86,13 @@ dev-forward:
 dev-down:
 	kind delete cluster --name $(KIND_CLUSTER)
 
+
 dev-status:
-	kubectl get nodes -o wide
-	kubectl get svc -o wide
-	kubectl get pods -o wide --watch --all-namespaces
+	kubectl get nodes -o wide -n $(NAMESPACE)
+	kubectl get svc -o wide -n $(NAMESPACE)
+	kubectl get pods -o wide -n $(NAMESPACE)
+
+# make dev-status | go run app/tooling/k8sfmt/main.go
 
 dev-describe-deployment:
 	kubectl describe deployment $(APP) --namespace=$(NAMESPACE)

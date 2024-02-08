@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -11,8 +12,9 @@ import (
 	"time"
 
 	"github.com/ardanlabs/conf/v3"
-	"github.com/qiushiyan/bank-api/foundation/logger"
-	"github.com/qiushiyan/bank-api/foundation/web/debug"
+	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers"
+	"github.com/qiushiyan/simplebank/foundation/logger"
+	"github.com/qiushiyan/simplebank/foundation/web/debug"
 	"go.uber.org/zap"
 )
 
@@ -107,20 +109,25 @@ func run(log *zap.SugaredLogger) error {
 
 	// -------------------------------------------------------------------------
 	// Start API service
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello, World!"))
-	})
+
+	serverErrors := make(chan error, 1)
+
 	go func() {
-		http.ListenAndServe(":3000", mux)
+		serverErrors <- http.ListenAndServe(":3000", handlers.APIMux())
 	}()
 
 	// -------------------------------------------------------------------------
 	// Shutdown
 
-	<-shutdown
+	select {
+	case err := <-serverErrors:
+		return fmt.Errorf("server error: %w", err)
+	case <-shutdown:
+		defer log.Infow("Shutdown complete")
 
-	defer log.Infow("Shutdown complete")
+		_, cancel := context.WithTimeout(context.Background(), cfg.Web.ShutdownTimeout)
+		defer cancel()
+	}
 
 	return nil
 
