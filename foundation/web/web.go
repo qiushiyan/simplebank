@@ -2,7 +2,6 @@ package web
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -45,7 +44,6 @@ func (a *App) Handle(method string, path string, handler Handler, mw ...Middlewa
 		ctx := context.WithValue(r.Context(), key, &v)
 
 		if err := handler(ctx, w, r); err != nil {
-			fmt.Println(err)
 			http.Error(w, "internal error", http.StatusInternalServerError)
 			return
 		}

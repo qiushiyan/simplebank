@@ -6,6 +6,7 @@ import (
 
 	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/account"
 	db "github.com/qiushiyan/simplebank/business/db/core"
+	"github.com/qiushiyan/simplebank/business/web/middleware"
 	"github.com/qiushiyan/simplebank/foundation/web"
 	"go.uber.org/zap"
 )
@@ -18,7 +19,11 @@ type APIMuxConfig struct {
 }
 
 func APIMux(cfg APIMuxConfig) *web.App {
-	app := web.NewApp(cfg.Shutdown)
+	mw := []web.Middleware{
+		middleware.Logger(cfg.Log),
+	}
+
+	app := web.NewApp(cfg.Shutdown, mw...)
 
 	app.Handle(http.MethodGet, "/accounts", account.ListAccounts)
 
