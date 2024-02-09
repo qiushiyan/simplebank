@@ -13,8 +13,8 @@ import (
 
 	"github.com/ardanlabs/conf/v3"
 	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers"
+	"github.com/qiushiyan/simplebank/business/web/debug"
 	"github.com/qiushiyan/simplebank/foundation/logger"
-	"github.com/qiushiyan/simplebank/foundation/web/debug"
 	"go.uber.org/zap"
 )
 
@@ -113,7 +113,13 @@ func run(log *zap.SugaredLogger) error {
 	serverErrors := make(chan error, 1)
 
 	go func() {
-		serverErrors <- http.ListenAndServe(":3000", handlers.APIMux())
+		serverErrors <- http.ListenAndServe(":3000", handlers.APIMux(
+			handlers.APIMuxConfig{
+				Shutdown: shutdown,
+				Log:      log,
+				Store:    nil,
+			},
+		))
 	}()
 
 	// -------------------------------------------------------------------------

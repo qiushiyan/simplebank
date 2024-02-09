@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/go-chi/chi/middleware"
-	"github.com/go-chi/chi/v5"
+	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/account"
 	db "github.com/qiushiyan/simplebank/business/db/core"
+	"github.com/qiushiyan/simplebank/foundation/web"
 	"go.uber.org/zap"
 )
 
@@ -14,15 +14,13 @@ import (
 type APIMuxConfig struct {
 	Shutdown chan os.Signal
 	Log      *zap.SugaredLogger
-	store    *db.Store
+	Store    *db.Store
 }
 
-func APIMux() http.Handler {
-	r := chi.NewRouter()
-	r.Use(middleware.Logger)
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("welcome"))
-	})
+func APIMux(cfg APIMuxConfig) *web.App {
+	app := web.NewApp(cfg.Shutdown)
 
-	return r
+	app.Handle(http.MethodGet, "/accounts", account.ListAccounts)
+
+	return app
 }
