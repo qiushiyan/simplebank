@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/account"
 	db "github.com/qiushiyan/simplebank/business/db/core"
 	"github.com/qiushiyan/simplebank/business/web/middleware"
 	"github.com/qiushiyan/simplebank/foundation/web"
@@ -25,7 +24,7 @@ func APIMux(cfg APIMuxConfig) *web.App {
 
 	app := web.NewApp(cfg.Shutdown, mw...)
 
-	app.Handle(http.MethodGet, "/accounts", account.ListAccounts)
+	app.Handle(http.MethodGet, "/accounts", ListAccounts)
 
 	return app
 }

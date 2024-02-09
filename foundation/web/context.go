@@ -9,6 +9,8 @@ type ctxKey int
 
 const key ctxKey = 1
 
+const defaultTraceId = "00000000-0000-0000-0000-000000000000"
+
 // Values represent state for each request.
 type Values struct {
 	TraceID    string
@@ -21,7 +23,7 @@ func GetValues(ctx context.Context) *Values {
 	v, ok := ctx.Value(key).(*Values)
 	if !ok {
 		return &Values{
-			TraceID: "00000000-0000-0000-0000-000000000000",
+			TraceID: defaultTraceId,
 			Now:     time.Now(),
 		}
 	}
@@ -33,7 +35,7 @@ func GetValues(ctx context.Context) *Values {
 func GetTraceID(ctx context.Context) string {
 	v, ok := ctx.Value(key).(*Values)
 	if !ok {
-		return "00000000-0000-0000-0000-000000000000"
+		return defaultTraceId
 	}
 	return v.TraceID
 }

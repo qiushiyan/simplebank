@@ -35,7 +35,7 @@ func (a *App) Handle(method string, path string, handler Handler, mw ...Middlewa
 	handler = wrapMiddleware(a.mw, handler)
 
 	h := func(w http.ResponseWriter, r *http.Request) {
-
+		// inject the values into the context
 		v := Values{
 			TraceID: uuid.NewString(),
 			Now:     time.Now().UTC(),
