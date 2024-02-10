@@ -28,14 +28,14 @@ func main() {
 	}
 	defer log.Sync()
 
-	if err := run(log); err != nil {
+	if err := run(context.Background(), log); err != nil {
 		log.Errorw("startup", "ERROR", err)
 		log.Sync()
 		os.Exit(1)
 	}
 }
 
-func run(log *zap.SugaredLogger) error {
+func run(ctx context.Context, log *zap.SugaredLogger) error {
 
 	log.Infow("startup", "GOMAXPROCS", runtime.GOMAXPROCS(0), "BUILD-", build)
 
@@ -111,15 +111,24 @@ func run(log *zap.SugaredLogger) error {
 	// Start API service
 
 	serverErrors := make(chan error, 1)
+	apiMux := handlers.APIMux(
+		handlers.APIMuxConfig{
+			Shutdown: shutdown,
+			Log:      log,
+			Store:    nil,
+		},
+	)
+	apiServer := http.Server{
+		Addr:         cfg.Web.APIHost,
+		ReadTimeout:  cfg.Web.ReadTimeout,
+		WriteTimeout: cfg.Web.WriteTimeout,
+		IdleTimeout:  cfg.Web.IdleTimeout,
+		Handler:      apiMux,
+	}
 
 	go func() {
-		serverErrors <- http.ListenAndServe(":3000", handlers.APIMux(
-			handlers.APIMuxConfig{
-				Shutdown: shutdown,
-				Log:      log,
-				Store:    nil,
-			},
-		))
+		log.Info(ctx, "startup", "status", "api router started", "host", apiServer.Addr)
+		serverErrors <- apiServer.ListenAndServe()
 	}()
 
 	// -------------------------------------------------------------------------
@@ -128,11 +137,17 @@ func run(log *zap.SugaredLogger) error {
 	select {
 	case err := <-serverErrors:
 		return fmt.Errorf("server error: %w", err)
-	case <-shutdown:
-		defer log.Infow("Shutdown complete")
+	case sig := <-shutdown:
+		log.Info(ctx, "shutdown", "status", "shutdown started", "signal", sig)
+		defer log.Info(ctx, "shutdown", "status", "shutdown complete", "signal", sig)
 
-		_, cancel := context.WithTimeout(context.Background(), cfg.Web.ShutdownTimeout)
+		_, cancel := context.WithTimeout(ctx, cfg.Web.ShutdownTimeout)
 		defer cancel()
+
+		if err := apiServer.Shutdown(ctx); err != nil {
+			apiServer.Close()
+			return fmt.Errorf("could not stop server gracefully: %w", err)
+		}
 	}
 
 	return nil

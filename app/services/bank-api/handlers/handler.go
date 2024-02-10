@@ -20,6 +20,7 @@ type APIMuxConfig struct {
 func APIMux(cfg APIMuxConfig) *web.App {
 	mw := []web.Middleware{
 		middleware.Logger(cfg.Log),
+		middleware.Errors(cfg.Log),
 	}
 
 	app := web.NewApp(cfg.Shutdown, mw...)
