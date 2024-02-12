@@ -57,6 +57,7 @@ func (a *App) handle(method string, path string, handler Handler) {
 			}
 		}
 	}
+
 	a.ContextMux.Handle(method, path, h)
 }
 
