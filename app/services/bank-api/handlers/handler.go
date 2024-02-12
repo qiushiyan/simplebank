@@ -21,6 +21,7 @@ func APIMux(cfg APIMuxConfig) *web.App {
 	mw := []web.Middleware{
 		middleware.Logger(cfg.Log),
 		middleware.Errors(cfg.Log),
+		middleware.Panics(),
 	}
 
 	app := web.NewApp(cfg.Shutdown, mw...)

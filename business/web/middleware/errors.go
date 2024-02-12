@@ -14,6 +14,7 @@ func Errors(log *zap.SugaredLogger) web.Middleware {
 	m := func(handler web.Handler) web.Handler {
 		h := func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 			if err := handler(ctx, w, r); err != nil {
+
 				log.Errorw("ERROR", "trace_id", web.GetTraceID(ctx), "message", err)
 
 				var er response.ErrorDocument
@@ -32,6 +33,11 @@ func Errors(log *zap.SugaredLogger) web.Middleware {
 						break
 					}
 
+					er = response.ErrorDocument{
+						Error: reqErr.Error(),
+					}
+					status = reqErr.Status
+
 				default:
 					er = response.ErrorDocument{
 						Error: http.StatusText(http.StatusInternalServerError),
@@ -39,16 +45,15 @@ func Errors(log *zap.SugaredLogger) web.Middleware {
 					status = http.StatusInternalServerError
 				}
 
+				if err := web.RespondJson(ctx, w, er, status); err != nil {
+					return err
+				}
+
 				// shutdown error is also a kinda trusted error, but we'll leave it to the root handle method
 				if web.IsShutdown(err) {
 					return err
 				}
 
-				if err := web.RespondJson(ctx, w, er, status); err != nil {
-					return err
-				}
-
-				return err
 			}
 
 			return nil
