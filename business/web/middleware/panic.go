@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"runtime/debug"
 
+	"github.com/qiushiyan/simplebank/business/web/metrics"
 	"github.com/qiushiyan/simplebank/foundation/web"
 )
 
@@ -22,6 +23,8 @@ func Panics() web.Middleware {
 					trace := debug.Stack()
 					err = fmt.Errorf("PANIC [%v] TRACE[%s]", rec, string(trace))
 				}
+
+				metrics.AddPanics(ctx)
 			}()
 
 			return handler(ctx, w, r)
