@@ -61,6 +61,10 @@ func (a *App) handle(method string, path string, handler Handler) {
 	a.ContextMux.Handle(method, path, h)
 }
 
+func Params(r *http.Request) map[string]string {
+	return httptreemux.ContextParams(r.Context())
+}
+
 // SignalShutdown is used to gracefully shut down the app when an integrity
 // issue is identified.
 func (a *App) SignalShutdown() {

@@ -1,17 +1,18 @@
-package db
+package tests
 
 import (
 	"context"
 	"sync"
 	"testing"
 
+	db "github.com/qiushiyan/simplebank/business/db/core"
 	"github.com/stretchr/testify/require"
 )
 
 // check for transfer (single direction)
 func TestTransferTx(t *testing.T) {
 	var wg sync.WaitGroup
-	store := NewStore(testDB)
+	store := db.NewStore(testDB)
 
 	a1 := createRandomAccount()
 	a2 := createRandomAccount()
@@ -21,14 +22,14 @@ func TestTransferTx(t *testing.T) {
 	ctx := context.Background()
 
 	errs := make(chan error, n)
-	results := make(chan TransferTxResult, n)
+	results := make(chan db.TransferTxResult, n)
 
 	for i := 0; i < n; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
 
-			result, err := store.TransferTx(ctx, TransferTxParams{
+			result, err := store.TransferTx(ctx, db.TransferTxParams{
 				FromAccountID: a1.ID,
 				ToAccountID:   a2.ID,
 				Amount:        amount,
@@ -107,7 +108,7 @@ func TestTransferTx(t *testing.T) {
 
 // check for transfer (bi-direction)
 func TestTransferTxDeadlock(t *testing.T) {
-	store := NewStore(testDB)
+	store := db.NewStore(testDB)
 
 	a1 := createRandomAccount()
 	a2 := createRandomAccount()
@@ -124,7 +125,7 @@ func TestTransferTxDeadlock(t *testing.T) {
 
 			if i%2 == 1 {
 				// transfer from a1 to a2
-				_, err = store.TransferTx(ctx, TransferTxParams{
+				_, err = store.TransferTx(ctx, db.TransferTxParams{
 					FromAccountID: a1.ID,
 					ToAccountID:   a2.ID,
 					Amount:        amount,
@@ -133,7 +134,7 @@ func TestTransferTxDeadlock(t *testing.T) {
 			} else {
 				// transfer from a2 to a1
 
-				_, err = store.TransferTx(ctx, TransferTxParams{
+				_, err = store.TransferTx(ctx, db.TransferTxParams{
 					FromAccountID: a2.ID,
 					ToAccountID:   a1.ID,
 					Amount:        amount,

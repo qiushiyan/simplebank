@@ -13,6 +13,7 @@ import (
 
 	"github.com/ardanlabs/conf/v3"
 	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers"
+	db "github.com/qiushiyan/simplebank/business/db/core"
 	"github.com/qiushiyan/simplebank/business/web/debug"
 	"github.com/qiushiyan/simplebank/foundation/logger"
 	"go.uber.org/zap"
@@ -54,7 +55,7 @@ func run(ctx context.Context, log *zap.SugaredLogger) error {
 			Password     string `conf:"default:postgres,mask"`
 			Host         string `conf:"default:localhost"`
 			Port         string `conf:"default:5432"`
-			Name         string `conf:"default:postgres"`
+			Name         string `conf:"default:bank"`
 			MaxIdleConns int    `conf:"default:2"`
 			MaxOpenConns int    `conf:"default:0"`
 			DisableTLS   bool   `conf:"default:true"`
@@ -110,12 +111,18 @@ func run(ctx context.Context, log *zap.SugaredLogger) error {
 	// -------------------------------------------------------------------------
 	// Start API service
 
+	DB, err := db.Open(cfg.DB.User, cfg.DB.Password, cfg.DB.Host, cfg.DB.Port, cfg.DB.Name)
+	if err != nil {
+		log.Fatal("cannot connect to db:", err)
+	}
+	store := db.NewStore(DB)
+
 	serverErrors := make(chan error, 1)
-	apiMux := handlers.APIMux(
+	apiMux := handlers.NewMux(
 		handlers.APIMuxConfig{
 			Shutdown: shutdown,
 			Log:      log,
-			Store:    nil,
+			Store:    store,
 		},
 	)
 	apiServer := http.Server{
@@ -127,7 +134,7 @@ func run(ctx context.Context, log *zap.SugaredLogger) error {
 	}
 
 	go func() {
-		log.Info(ctx, "startup", "status", "api router started", "host", apiServer.Addr)
+		log.Infow("startup", "host", apiServer.Addr)
 		serverErrors <- apiServer.ListenAndServe()
 	}()
 

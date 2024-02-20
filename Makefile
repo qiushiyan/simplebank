@@ -18,6 +18,7 @@ dev-gotooling:
 	go install honnef.co/go/tools/cmd/staticcheck@latest
 	go install golang.org/x/vuln/cmd/govulncheck@latest
 	go install golang.org/x/tools/cmd/goimports@latest
+	go install go.uber.org/mock/mockgen@latest
 
 dev-brew:
 	brew update
@@ -25,7 +26,6 @@ dev-brew:
 	brew list kubectl || brew install kubectl
 	brew list kustomize || brew install kustomize
 	brew list pgcli || brew install pgcli
-
 
 # ==============================================================================
 # Database
@@ -56,7 +56,7 @@ generate:
 # ==============================================================================
 # Running locally
 run-local:
-	go run app/services/bank-api/main.go | go run app/tooling/logfmt/main.go --service=$(SERVICE_NAME)
+	go run app/services/bank-api/main.go --db-port=5433 | go run app/tooling/logfmt/main.go --service=$(SERVICE_NAME)
 
 run-local-help:
 	go run app/services/bank-api/main.go -h
@@ -146,3 +146,6 @@ metrics-view:
 
 metrics-view-local:
 	expvarmon -ports="localhost:4000" -vars="build,requests,goroutines,errors,panics,mem:memstats.Alloc"
+
+gen-mock:
+	mockgen -destination=./business/db/mock/mockstore.go -package=mockdb github.com/qiushiyan/simplebank/business/db/core Store
