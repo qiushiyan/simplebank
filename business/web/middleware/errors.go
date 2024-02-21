@@ -30,13 +30,12 @@ func Errors(log *zap.SugaredLogger) web.Middleware {
 							Fields: fieldErrors.Fields(),
 						}
 						status = reqErr.Status
-						break
+					} else {
+						er = response.ErrorDocument{
+							Error: reqErr.Error(),
+						}
+						status = reqErr.Status
 					}
-
-					er = response.ErrorDocument{
-						Error: reqErr.Error(),
-					}
-					status = reqErr.Status
 
 				default:
 					er = response.ErrorDocument{

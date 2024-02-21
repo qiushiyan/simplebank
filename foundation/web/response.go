@@ -6,6 +6,10 @@ import (
 	"net/http"
 )
 
+type ResponseData struct {
+	Data interface{} `json:"data,omitempty"`
+}
+
 func RespondJson(ctx context.Context, w http.ResponseWriter, data any, statusCode int) error {
 	// Set the status code for the request logger middleware.
 	SetStatusCode(ctx, statusCode)
@@ -15,7 +19,13 @@ func RespondJson(ctx context.Context, w http.ResponseWriter, data any, statusCod
 
 	// If the data is not nil, encode it to the response writer.
 	if data != nil {
-		return json.NewEncoder(w).Encode(data)
+		switch statusCode {
+		case http.StatusOK, http.StatusCreated:
+			return json.NewEncoder(w).Encode(ResponseData{Data: data})
+		default:
+			return json.NewEncoder(w).Encode(data)
+		}
+
 	}
 
 	return nil

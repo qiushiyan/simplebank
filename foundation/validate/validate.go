@@ -11,6 +11,12 @@ import (
 	en_translations "github.com/go-playground/validator/v10/translations/en"
 )
 
+const (
+	USD = "USD"
+	EUR = "EUR"
+	CAD = "CAD"
+)
+
 // validate holds the settings and caches for validating request struct values.
 var validate *validator.Validate
 
@@ -21,6 +27,7 @@ func init() {
 
 	// Instantiate a validator.
 	validate = validator.New()
+	validate.RegisterValidation("currency", validCurrency)
 
 	// Create a translator for english so the error messages are
 	// more human-readable than technical.
@@ -37,6 +44,17 @@ func init() {
 		}
 		return name
 	})
+}
+
+var validCurrency validator.Func = func(fieldLevel validator.FieldLevel) bool {
+	if currency, ok := fieldLevel.Field().Interface().(string); ok {
+		switch currency {
+		case USD, EUR, CAD:
+			return true
+		}
+		return false
+	}
+	return false
 }
 
 // Check validates the provided model against it's declared tags.

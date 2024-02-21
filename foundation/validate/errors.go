@@ -37,7 +37,12 @@ func (fe FieldErrors) Error() string {
 func (fe FieldErrors) Fields() map[string]string {
 	m := make(map[string]string)
 	for _, fld := range fe {
-		m[fld.Field] = fld.Err
+		switch fld.Field {
+		case "currency":
+			m[fld.Field] = "currency must be one of USD, EUR, CAD"
+		default:
+			m[fld.Field] = fld.Err
+		}
 	}
 	return m
 }
