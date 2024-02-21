@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/qiushiyan/simplebank/business/auth"
 	. "github.com/qiushiyan/simplebank/business/db/generated"
 	"github.com/qiushiyan/simplebank/business/random"
 	"github.com/stretchr/testify/require"
@@ -38,15 +39,21 @@ func TestGetUser(t *testing.T) {
 
 	require.Equal(t, user.Username, user2.Username)
 	require.Equal(t, user.HashedPassword, user2.HashedPassword)
+	require.True(t, auth.VerifyPassword(user2.HashedPassword, "secret"))
 
 	require.WithinDuration(t, user.CreatedAt, user2.CreatedAt, time.Second)
 	require.WithinDuration(t, user.PasswordChangedAt, user2.PasswordChangedAt, time.Second)
 }
 
 func createRandomUser() User {
+	hashedPassword, err := auth.HashPassword("secret")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	params := CreateUserParams{
 		Username:       random.RandomOwner(),
-		HashedPassword: "secret",
+		HashedPassword: hashedPassword,
 	}
 
 	user, err := testQueries.CreateUser(context.Background(), params)

@@ -28,6 +28,8 @@ func init() {
 	// Instantiate a validator.
 	validate = validator.New()
 	validate.RegisterValidation("currency", validCurrency)
+	validate.RegisterValidation("password", validPassword)
+	validate.RegisterValidation("username", validUsername)
 
 	// Create a translator for english so the error messages are
 	// more human-readable than technical.
@@ -46,6 +48,7 @@ func init() {
 	})
 }
 
+// require currency to be one of: USD, EUR, CAD
 var validCurrency validator.Func = func(fieldLevel validator.FieldLevel) bool {
 	if currency, ok := fieldLevel.Field().Interface().(string); ok {
 		switch currency {
@@ -55,6 +58,29 @@ var validCurrency validator.Func = func(fieldLevel validator.FieldLevel) bool {
 		return false
 	}
 	return false
+}
+
+// require password to be 6 ~ 20 characters long
+var validPassword validator.Func = func(fieldLevel validator.FieldLevel) bool {
+	if password, ok := fieldLevel.Field().Interface().(string); ok {
+		if len(password) < 6 || len(password) > 20 {
+			return false
+		}
+		return true
+	}
+	return false
+}
+
+// require username to be 3 ~ 20 characters long
+var validUsername validator.Func = func(fieldLevel validator.FieldLevel) bool {
+	if username, ok := fieldLevel.Field().Interface().(string); ok {
+		if len(username) < 3 || len(username) > 20 {
+			return false
+		}
+		return true
+	}
+	return false
+
 }
 
 // Check validates the provided model against it's declared tags.

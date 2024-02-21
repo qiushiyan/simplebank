@@ -2,6 +2,7 @@ package web
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"os"
@@ -63,6 +64,10 @@ func (a *App) handle(method string, path string, handler Handler) {
 
 func Params(r *http.Request) map[string]string {
 	return httptreemux.ContextParams(r.Context())
+}
+
+func ParseBody(r *http.Request, dst interface{}) error {
+	return json.NewDecoder(r.Body).Decode(dst)
 }
 
 // SignalShutdown is used to gracefully shut down the app when an integrity

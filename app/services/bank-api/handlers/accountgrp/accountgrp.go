@@ -32,7 +32,7 @@ func (h *Handler) Get(ctx context.Context, w http.ResponseWriter, r *http.Reques
 
 	ret, err := h.store.GetAccount(ctx, int64(aid))
 	if err != nil {
-		return err
+		return db.NewError(err)
 	}
 
 	return web.RespondJson(ctx, w, ret, http.StatusOK)
@@ -80,8 +80,35 @@ func (h *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Reque
 	})
 
 	if err != nil {
-		return response.NewError(err, http.StatusInternalServerError)
+		return db.NewError(err)
 	}
 
 	return web.RespondJson(ctx, w, ret, http.StatusOK)
+}
+
+type CreateAccountRequest struct {
+	Owner    string `json:"owner" validate:"required"`
+	Currency string `json:"currency" validate:"required,currency"`
+}
+
+func (h *Handler) Create(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	var req CreateAccountRequest
+	err := web.ParseBody(r, &req)
+	if err != nil {
+		return response.NewError(err, http.StatusBadRequest)
+	}
+
+	if err := validate.Check(req); err != nil {
+		return response.NewError(err, http.StatusBadRequest)
+	}
+
+	ret, err := h.store.CreateAccount(ctx, db_generated.CreateAccountParams{
+		Owner:    req.Owner,
+		Currency: req.Currency,
+	})
+	if err != nil {
+		return db.NewError(err)
+	}
+
+	return web.RespondJson(ctx, w, ret, http.StatusCreated)
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	db "github.com/qiushiyan/simplebank/business/db/core"
 	"github.com/qiushiyan/simplebank/business/web/response"
 	"github.com/qiushiyan/simplebank/foundation/validate"
 	"github.com/qiushiyan/simplebank/foundation/web"
@@ -30,12 +31,22 @@ func Errors(log *zap.SugaredLogger) web.Middleware {
 							Fields: fieldErrors.Fields(),
 						}
 						status = reqErr.Status
-					} else {
-						er = response.ErrorDocument{
-							Error: reqErr.Error(),
-						}
-						status = reqErr.Status
+						break
 					}
+
+					log.Info("trusted error", reqErr.Err)
+
+					er = response.ErrorDocument{
+						Error: reqErr.Error(),
+					}
+					status = reqErr.Status
+
+				case db.IsError(err):
+					dbErr := db.GetError(err)
+					er = response.ErrorDocument{
+						Error: dbErr.Error(),
+					}
+					status = dbErr.Status
 
 				default:
 					er = response.ErrorDocument{

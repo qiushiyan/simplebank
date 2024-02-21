@@ -40,6 +40,10 @@ func (fe FieldErrors) Fields() map[string]string {
 		switch fld.Field {
 		case "currency":
 			m[fld.Field] = "currency must be one of USD, EUR, CAD"
+		case "password":
+			m[fld.Field] = "password must be 6 ~ 20 characters long"
+		case "username":
+			m[fld.Field] = "username must be 3 ~ 20 characters long"
 		default:
 			m[fld.Field] = fld.Err
 		}

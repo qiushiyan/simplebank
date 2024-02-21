@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/accountgrp"
+	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/authgrp"
 	db "github.com/qiushiyan/simplebank/business/db/core"
 	"github.com/qiushiyan/simplebank/business/web/middleware"
 	"github.com/qiushiyan/simplebank/foundation/web"
@@ -29,9 +30,17 @@ func NewMux(cfg APIMuxConfig) *web.App {
 	app := web.NewApp(cfg.Shutdown, mw...)
 
 	accountHandler := accountgrp.New(cfg.Store)
+	authHandler := authgrp.New(cfg.Store)
 
+	// ==============================================================================
+	// Account route group
 	app.Handle(http.MethodGet, "/accounts", accountHandler.List)
 	app.Handle(http.MethodGet, "/accounts/:id", accountHandler.Get)
+	app.Handle(http.MethodPost, "/accounts", accountHandler.Create)
+
+	// ==============================================================================
+	// Auth route group
+	app.Handle(http.MethodPost, "/signup", authHandler.Signup)
 
 	return app
 }
