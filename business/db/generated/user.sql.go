@@ -11,21 +11,23 @@ import (
 )
 
 const createUser = `-- name: CreateUser :one
-INSERT INTO users (username, hashed_password)
-VALUES ($1, $2)
-RETURNING username, hashed_password, password_changed_at, created_at
+INSERT INTO users (username, hashed_password, email)
+VALUES ($1, $2, $3)
+RETURNING username, email, hashed_password, password_changed_at, created_at
 `
 
 type CreateUserParams struct {
 	Username       string `json:"username"`
 	HashedPassword string `json:"hashed_password"`
+	Email          string `json:"email"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, createUser, arg.Username, arg.HashedPassword)
+	row := q.db.QueryRowContext(ctx, createUser, arg.Username, arg.HashedPassword, arg.Email)
 	var i User
 	err := row.Scan(
 		&i.Username,
+		&i.Email,
 		&i.HashedPassword,
 		&i.PasswordChangedAt,
 		&i.CreatedAt,
@@ -34,7 +36,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 }
 
 const getUser = `-- name: GetUser :one
-SELECT username, hashed_password, password_changed_at, created_at
+SELECT username, email, hashed_password, password_changed_at, created_at
 FROM users
 WHERE username = $1
 LIMIT 1
@@ -45,6 +47,7 @@ func (q *Queries) GetUser(ctx context.Context, username string) (User, error) {
 	var i User
 	err := row.Scan(
 		&i.Username,
+		&i.Email,
 		&i.HashedPassword,
 		&i.PasswordChangedAt,
 		&i.CreatedAt,
@@ -58,22 +61,30 @@ SET hashed_password = COALESCE($1, hashed_password),
     password_changed_at = COALESCE(
         $2,
         password_changed_at
-    )
-WHERE username = $3
-RETURNING username, hashed_password, password_changed_at, created_at
+    ),
+    email = COALESCE($3, email)
+WHERE username = $4
+RETURNING username, email, hashed_password, password_changed_at, created_at
 `
 
 type UpdateUserParams struct {
 	HashedPassword    sql.NullString `json:"hashed_password"`
 	PasswordChangedAt sql.NullTime   `json:"password_changed_at"`
+	Email             sql.NullString `json:"email"`
 	Username          string         `json:"username"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, updateUser, arg.HashedPassword, arg.PasswordChangedAt, arg.Username)
+	row := q.db.QueryRowContext(ctx, updateUser,
+		arg.HashedPassword,
+		arg.PasswordChangedAt,
+		arg.Email,
+		arg.Username,
+	)
 	var i User
 	err := row.Scan(
 		&i.Username,
+		&i.Email,
 		&i.HashedPassword,
 		&i.PasswordChangedAt,
 		&i.CreatedAt,

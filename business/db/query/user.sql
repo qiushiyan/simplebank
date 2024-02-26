@@ -1,6 +1,6 @@
 -- name: CreateUser :one
-INSERT INTO users (username, hashed_password)
-VALUES ($1, $2)
+INSERT INTO users (username, hashed_password, email)
+VALUES ($1, $2, $3)
 RETURNING *;
 -- name: GetUser :one
 SELECT *
@@ -13,6 +13,7 @@ SET hashed_password = COALESCE(sqlc.narg(hashed_password), hashed_password),
     password_changed_at = COALESCE(
         sqlc.narg(password_changed_at),
         password_changed_at
-    )
+    ),
+    email = COALESCE(sqlc.narg(email), email)
 WHERE username = sqlc.arg(username)
 RETURNING *;

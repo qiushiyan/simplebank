@@ -3,9 +3,7 @@ package tests
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -44,18 +42,9 @@ func TestGetAccountApi(t *testing.T) {
 
 }
 
-type Response struct {
-	Data Account `json:"data"`
-}
-
 func requireBodyMatchAccount(t *testing.T, body *bytes.Buffer, expected Account) {
-	data, err := io.ReadAll(body)
-	require.NoError(t, err)
-
-	var got Response
-	err = json.Unmarshal(data, &got)
-	require.NoError(t, err)
-	require.Equal(t, got.Data, expected)
+	got := getResponseData[Account](t, body)
+	require.Equal(t, got, expected)
 }
 
 func randomAccount() db_generated.Account {

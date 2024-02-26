@@ -24,7 +24,13 @@ func New(store db.Store) *Handler {
 
 type SignupRequest struct {
 	Username string `json:"username" validate:"required,alphanum,username"`
+	Email    string `json:"email" validate:"required,email"`
 	Password string `json:"password" validate:"required,password"`
+}
+
+type SignupResponse struct {
+	Username string `json:"username"`
+	Email    string `json:"email"`
 }
 
 func (h *Handler) Signup(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
@@ -46,12 +52,17 @@ func (h *Handler) Signup(ctx context.Context, w http.ResponseWriter, r *http.Req
 	ret, err := h.store.CreateUser(ctx, db_generated.CreateUserParams{
 		Username:       req.Username,
 		HashedPassword: hashedPassword,
+		Email:          req.Email,
 	})
 
 	if err != nil {
 		return db.NewError(err)
 	}
 
-	return web.RespondJson(ctx, w, ret, http.StatusCreated)
+	response := SignupResponse{
+		Username: ret.Username,
+		Email:    ret.Email,
+	}
 
+	return web.RespondJson(ctx, w, response, http.StatusCreated)
 }
