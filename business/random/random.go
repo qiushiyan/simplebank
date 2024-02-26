@@ -9,6 +9,10 @@ func RandomOwner() string {
 	return rand.RandomString(8)
 }
 
+func RandomEmail() string {
+	return rand.RandomString(6) + "@mail.com"
+}
+
 func RandomMoney() int64 {
 	return rand.RandomInt(0, 1000)
 }

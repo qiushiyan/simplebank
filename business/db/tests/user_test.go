@@ -15,6 +15,7 @@ import (
 func TestCreateUser(t *testing.T) {
 	params := CreateUserParams{
 		Username:       random.RandomOwner(),
+		Email:          random.RandomEmail(),
 		HashedPassword: "secret",
 	}
 
@@ -25,6 +26,7 @@ func TestCreateUser(t *testing.T) {
 
 	require.Equal(t, params.Username, user.Username)
 	require.Equal(t, params.HashedPassword, user.HashedPassword)
+	require.Equal(t, params.Email, user.Email)
 
 	require.True(t, user.PasswordChangedAt.IsZero())
 	require.NotZero(t, user.CreatedAt)
@@ -39,6 +41,7 @@ func TestGetUser(t *testing.T) {
 
 	require.Equal(t, user.Username, user2.Username)
 	require.Equal(t, user.HashedPassword, user2.HashedPassword)
+	require.Equal(t, user.Email, user2.Email)
 	require.True(t, auth.VerifyPassword(user2.HashedPassword, "secret"))
 
 	require.WithinDuration(t, user.CreatedAt, user2.CreatedAt, time.Second)
@@ -54,6 +57,7 @@ func createRandomUser() User {
 	params := CreateUserParams{
 		Username:       random.RandomOwner(),
 		HashedPassword: hashedPassword,
+		Email:          random.RandomEmail(),
 	}
 
 	user, err := testQueries.CreateUser(context.Background(), params)
