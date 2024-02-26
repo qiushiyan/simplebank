@@ -90,8 +90,8 @@ func EqCreateUserParams(arg db_generated.CreateUserParams, password string) gomo
 }
 
 func randomUser() (user db_generated.User, password string) {
-	password = "test-test"
-	email := "test@gmail.com"
+	password = random.RandomPassword()
+	email := random.RandomEmail()
 	hashedPassword, err := auth.HashPassword(password)
 	if err != nil {
 		log.Fatal("failed to hash password")

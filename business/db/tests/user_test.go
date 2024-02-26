@@ -33,7 +33,7 @@ func TestCreateUser(t *testing.T) {
 }
 
 func TestGetUser(t *testing.T) {
-	user := createRandomUser()
+	user, password := createRandomUser()
 
 	user2, err := testQueries.GetUser(context.Background(), user.Username)
 	require.NoError(t, err)
@@ -42,14 +42,15 @@ func TestGetUser(t *testing.T) {
 	require.Equal(t, user.Username, user2.Username)
 	require.Equal(t, user.HashedPassword, user2.HashedPassword)
 	require.Equal(t, user.Email, user2.Email)
-	require.True(t, auth.VerifyPassword(user2.HashedPassword, "secret"))
+	require.True(t, auth.VerifyPassword(user2.HashedPassword, password))
 
 	require.WithinDuration(t, user.CreatedAt, user2.CreatedAt, time.Second)
 	require.WithinDuration(t, user.PasswordChangedAt, user2.PasswordChangedAt, time.Second)
 }
 
-func createRandomUser() User {
-	hashedPassword, err := auth.HashPassword("secret")
+func createRandomUser() (User, string) {
+	password := random.RandomPassword()
+	hashedPassword, err := auth.HashPassword(password)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -64,5 +65,5 @@ func createRandomUser() User {
 	if err != nil {
 		log.Fatalf("cannot create user: %v", err)
 	}
-	return user
+	return user, password
 }
