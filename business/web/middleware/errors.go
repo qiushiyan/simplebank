@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/qiushiyan/simplebank/business/auth"
 	db "github.com/qiushiyan/simplebank/business/db/core"
 	"github.com/qiushiyan/simplebank/business/web/response"
 	"github.com/qiushiyan/simplebank/foundation/validate"
@@ -31,15 +32,20 @@ func Errors(log *zap.SugaredLogger) web.Middleware {
 							Fields: fieldErrors.Fields(),
 						}
 						status = reqErr.Status
-						break
+					} else {
+						er = response.ErrorDocument{
+							Error: reqErr.Error(),
+						}
+						status = reqErr.Status
+
 					}
 
-					log.Info("trusted error", reqErr.Err)
-
+				case auth.IsAuthError(err):
+					authErr := auth.GetAuthError(err)
 					er = response.ErrorDocument{
-						Error: reqErr.Error(),
+						Error: authErr.Error(),
 					}
-					status = reqErr.Status
+					status = http.StatusUnauthorized
 
 				case db.IsError(err):
 					dbErr := db.GetError(err)

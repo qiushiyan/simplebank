@@ -218,11 +218,11 @@ func randomUser() (user db_generated.User, password string) {
 }
 
 func requireBodyMatchUser(t *testing.T, body *bytes.Buffer, user db_generated.User) {
-	gotUser := getResponseData[authgrp.SignupResponse](
+	got := getResponseData[authgrp.SignupResponse](
 		t,
 		body,
 	)
 
-	require.Equal(t, user.Username, gotUser.Username)
-	require.Equal(t, user.Email, gotUser.Email)
+	require.Equal(t, user.Username, got.User.Username)
+	require.Equal(t, user.Email, got.User.Email)
 }

@@ -41,6 +41,7 @@ func NewMux(cfg APIMuxConfig) *web.App {
 	// ==============================================================================
 	// Auth route group
 	app.Handle(http.MethodPost, "/signup", authHandler.Signup)
+	app.Handle(http.MethodPost, "/signin", authHandler.Signin)
 
 	return app
 }
