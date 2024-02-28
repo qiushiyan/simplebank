@@ -11,53 +11,165 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/lib/pq"
 	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/authgrp"
 	"github.com/qiushiyan/simplebank/business/auth"
+	db "github.com/qiushiyan/simplebank/business/db/core"
 	db_generated "github.com/qiushiyan/simplebank/business/db/generated"
 	mockdb "github.com/qiushiyan/simplebank/business/db/mock"
 	"github.com/qiushiyan/simplebank/business/random"
+	"github.com/qiushiyan/simplebank/business/web/response"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
 
 func TestSignupAPi(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	ctx := context.Background()
-
-	defer ctrl.Finish()
-
-	store := mockdb.NewMockStore(ctrl)
-
 	user, password := randomUser()
-	args := db_generated.CreateUserParams{
-		Username:       user.Username,
-		HashedPassword: user.HashedPassword,
-		Email:          user.Email,
-	}
-	body, err := json.Marshal(authgrp.SignupRequest{
-		Username: user.Username,
-		Email:    user.Email,
-		Password: password,
-	})
-	require.NoError(t, err)
-
-	store.EXPECT().CreateUser(gomock.Any(), EqCreateUserParams(
-		args,
-		password,
-	)).Times(1).Return(user, nil)
-
-	recorder := httptest.NewRecorder()
 	url := "/signup"
-	request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
-	require.NoError(t, err)
 
-	handler := authgrp.New(store)
-	err = handler.Signup(ctx, recorder, request)
-	require.NoError(t, err)
+	cases := []struct {
+		name       string
+		body       authgrp.SignupRequest
+		buildStubs func(*mockdb.MockStore)
+		checker    func(*httptest.ResponseRecorder, error)
+	}{
+		{
+			name: "OK",
+			body: authgrp.SignupRequest{
+				Username: user.Username,
+				Email:    user.Email,
+				Password: password,
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				arg := db_generated.CreateUserParams{
+					Username:       user.Username,
+					Email:          user.Email,
+					HashedPassword: user.HashedPassword,
+				}
+				store.EXPECT().CreateUser(gomock.Any(), EqCreateUserParams(
+					arg,
+					password,
+				)).Times(1).Return(user, nil)
+			},
+			checker: func(recorder *httptest.ResponseRecorder, err error) {
+				require.Equal(t, http.StatusCreated, recorder.Code)
+				require.NoError(t, err)
+				requireBodyMatchUser(t, recorder.Body, user)
+			},
+		},
+		{
+			name: "DuplicatedEmail",
+			body: authgrp.SignupRequest{
+				Username: user.Username,
+				Email:    user.Email,
+				Password: password,
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				arg := db_generated.CreateUserParams{
+					Username:       user.Username,
+					Email:          user.Email,
+					HashedPassword: user.HashedPassword,
+				}
+				store.EXPECT().CreateUser(gomock.Any(), EqCreateUserParams(
+					arg,
+					password,
+				)).Times(1).Return(user, &pq.Error{
+					// pq errorCodeNames
+					Code: "23505",
+				})
+			},
+			checker: func(recorder *httptest.ResponseRecorder, err error) {
+				require.True(t, db.IsError(err))
+				de := db.GetError(err)
+				require.NotEmpty(t, de)
+				require.Equal(t, http.StatusForbidden, de.Status)
+			},
+		},
+		{
+			name: "InvalidEmail",
+			body: authgrp.SignupRequest{
+				Username: user.Username,
+				Email:    "invalid-email",
+				Password: password,
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					CreateUser(gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			checker: func(recorder *httptest.ResponseRecorder, err error) {
+				require.True(t, response.IsError(err))
+				re := response.GetError(err)
+				require.NotEmpty(t, re)
+				require.Equal(t, http.StatusBadRequest, re.Status)
+			},
+		},
+		{
+			name: "InvalidPassword",
+			body: authgrp.SignupRequest{
+				Username: user.Username,
+				Email:    user.Email,
+				Password: "123",
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					CreateUser(gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			checker: func(recorder *httptest.ResponseRecorder, err error) {
+				require.True(t, response.IsError(err))
+				re := response.GetError(err)
+				require.NotEmpty(t, re)
+				require.Equal(t, http.StatusBadRequest, re.Status)
+			},
+		},
+		{
+			name: "InvalidUsername",
+			body: authgrp.SignupRequest{
+				Username: "aa",
+				Email:    user.Email,
+				Password: password,
+			},
+			buildStubs: func(store *mockdb.MockStore) {
+				store.EXPECT().
+					CreateUser(gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			checker: func(recorder *httptest.ResponseRecorder, err error) {
+				require.True(t, response.IsError(err))
+				re := response.GetError(err)
+				require.NotEmpty(t, re)
+				require.Equal(t, http.StatusBadRequest, re.Status)
+			},
+		},
+	}
 
-	require.Equal(t, http.StatusCreated, recorder.Code)
+	for i := range cases {
+		tc := cases[i]
 
-	requireBodyMatchUser(t, recorder.Body, user)
+		t.Run(tc.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			ctx := context.Background()
+
+			defer ctrl.Finish()
+			store := mockdb.NewMockStore(ctrl)
+
+			tc.buildStubs(store)
+
+			body, err := json.Marshal(tc.body)
+			require.NoError(t, err)
+
+			recorder := httptest.NewRecorder()
+			request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
+			require.NoError(t, err)
+
+			handler := authgrp.New(store)
+			err = handler.Signup(ctx, recorder, request)
+
+			tc.checker(recorder, err)
+		})
+	}
+
 }
 
 type eqCreateUserParamsMatcher struct {
