@@ -14,7 +14,7 @@ import (
 
 type SignupRequest struct {
 	Username string `json:"username" validate:"required,alphanum,username"`
-	Email    string `json:"email" validate:"required,email"`
+	Email    string `json:"email"    validate:"required,email"`
 	Password string `json:"password" validate:"required,password"`
 }
 

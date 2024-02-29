@@ -14,6 +14,11 @@ ADD CONSTRAINT "owner_currency_key" UNIQUE ("owner", "currency");
 INSERT INTO "users" ("username", "email", "hashed_password")
 VALUES (
         'admin',
-        'test@gmail.com',
+        'admin@gmail.com',
         '$2a$10$SZw5eHfb.e94cBVUbrZ0BOTmXOFtINl7ZOv9Ac9WbYJdOnNZ9Gk6a'
-    );
+    ),
+    (
+        'user',
+        'user@gmail.com',
+        '$2a$10$SZw5eHfb.e94cBVUbrZ0BOTmXOFtINl7ZOv9Ac9WbYJdOnNZ9Gk6a'
+    )

@@ -21,7 +21,27 @@ type Token struct {
 	t string
 }
 
-// NewToken creates a new token with a username, a set of roles and a duration
+func Decrypt(t string) (*Payload, error) {
+	var payload Payload
+	err := v2.Decrypt(t, key, &payload, nil)
+	if err != nil {
+		return nil, ErrInvalidToken
+	}
+
+	s := payload.Get("data")
+	c, err := decodeClaims(s)
+
+	if err != nil {
+		return nil, ErrInvalidToken
+	}
+
+	payload.Username = c.Username
+	payload.Roles = c.Roles
+
+	return &payload, nil
+}
+
+// NewToken creates a new paseto token with a username, a set of roles and a duration
 func NewToken(username string, roles []string, duration time.Duration) (*Token, error) {
 	id, err := uuid.NewRandom()
 	if err != nil {
@@ -42,9 +62,11 @@ func NewToken(username string, roles []string, duration time.Duration) (*Token, 
 			IssuedAt:   time.Now(),
 			Expiration: time.Now().Add(d),
 		},
+		Username: username,
+		Roles:    roles,
 	}
 
-	s, err := encodeClaims(NewClaims(roles))
+	s, err := encodeClaims(NewClaims(username, roles))
 	if err != nil {
 		return nil, err
 	}
@@ -56,33 +78,6 @@ func NewToken(username string, roles []string, duration time.Duration) (*Token, 
 	}
 
 	return &Token{t: token}, nil
-}
-
-func (t *Token) decrypt() (*Payload, error) {
-	var payload Payload
-	err := v2.Decrypt(t.t, key, &payload, nil)
-	if err != nil {
-		return nil, ErrInvalidToken
-	}
-
-	return &payload, nil
-}
-
-func (t *Token) IsAdmin() bool {
-	payload, err := t.decrypt()
-	if err != nil {
-		return false
-	}
-	if err := payload.Valid(); err != nil {
-		return false
-	}
-
-	s := payload.Get("data")
-	c, err := decodeClaims(s)
-	if err != nil {
-		return false
-	}
-	return c.isAdmin()
 }
 
 func (t *Token) GetToken() string {

@@ -6,10 +6,12 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/qiushiyan/simplebank/business/auth"
 	db "github.com/qiushiyan/simplebank/business/db/core"
 	"github.com/qiushiyan/simplebank/foundation/web"
 )
 
+// Get retrieves an account by its ID, and checks if the account belongs to the user from token payload
 func (h *Handler) Get(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	id := strings.Split(r.URL.Path, "/")[2]
 	aid, err := strconv.Atoi(id)
@@ -17,11 +19,20 @@ func (h *Handler) Get(ctx context.Context, w http.ResponseWriter, r *http.Reques
 		return err
 	}
 
-	ret, err := h.store.GetAccount(ctx, int64(aid))
+	payload := auth.GetPayload(ctx)
+	if payload == nil {
+		return auth.NewAuthError("missing authentication payload")
+	}
+
+	account, err := h.store.GetAccount(ctx, int64(aid))
 
 	if err != nil {
 		return db.NewError(err)
 	}
 
-	return web.RespondJson(ctx, w, ret, http.StatusOK)
+	if account.Owner != payload.Username {
+		return auth.NewAuthError("account does not belong to user %s", payload.Username)
+	}
+
+	return web.RespondJson(ctx, w, account, http.StatusOK)
 }

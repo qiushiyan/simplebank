@@ -8,6 +8,8 @@ import (
 
 type Payload struct {
 	paseto.JSONToken
+	Username string
+	Roles    []string
 }
 
 // Valid checks if the token payload is valid or not
@@ -16,4 +18,18 @@ func (payload *Payload) Valid() error {
 		return ErrExpiredToken
 	}
 	return nil
+}
+
+func (payload *Payload) HasRole(role string) bool {
+	for _, userRole := range payload.Roles {
+		if role == userRole {
+			return true
+		}
+	}
+	return false
+}
+
+// isAdmin checks if the user is an admin
+func (payload *Payload) IsAdmin() bool {
+	return payload.HasRole("ADMIN")
 }

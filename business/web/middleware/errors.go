@@ -56,7 +56,7 @@ func Errors(log *zap.SugaredLogger) web.Middleware {
 
 				default:
 					er = response.ErrorDocument{
-						Error: http.StatusText(http.StatusInternalServerError),
+						Error: err.Error(),
 					}
 					status = http.StatusInternalServerError
 				}

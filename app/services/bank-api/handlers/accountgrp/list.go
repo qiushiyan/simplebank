@@ -13,7 +13,7 @@ import (
 )
 
 type ListAccountRequest struct {
-	PageID   int32 `json:"page_id" validate:"min=1"`
+	PageID   int32 `json:"page_id"   validate:"min=1"`
 	PageSize int32 `json:"page_size" validate:"min=1,max=50"`
 }
 
@@ -58,9 +58,4 @@ func (h *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Reque
 	}
 
 	return web.RespondJson(ctx, w, ret, http.StatusOK)
-}
-
-type CreateAccountRequest struct {
-	Owner    string `json:"owner" validate:"required"`
-	Currency string `json:"currency" validate:"required,currency"`
 }
