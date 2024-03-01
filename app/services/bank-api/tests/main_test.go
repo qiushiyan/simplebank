@@ -3,6 +3,7 @@ package tests
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -15,11 +16,13 @@ import (
 	"github.com/qiushiyan/simplebank/foundation/logger"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
+	"go.uber.org/zap"
 )
 
 var (
 	adminToken string
 	userToken  string
+	Log        *zap.SugaredLogger
 )
 
 type DataResponse[T any] struct {
@@ -32,6 +35,10 @@ func TestMain(m *testing.M) {
 
 	t, _ = token.NewToken("user", []string{"USER"}, 0)
 	userToken = "Bearer " + t.GetToken()
+
+	logPath := fmt.Sprintf("%s/simplebank-log.txt", os.TempDir())
+	Log, _ = logger.New("bank-api", logPath)
+	fmt.Printf("logs at: %s\n", logPath)
 
 	m.Run()
 }
@@ -47,12 +54,9 @@ func serveRequest(
 
 	buildStubs(store)
 
-	log, err := logger.New("test", "./logs/test.txt")
-	require.NoError(t, err)
-
 	cfg := handlers.APIMuxConfig{
 		Shutdown: make(chan os.Signal, 1),
-		Log:      log,
+		Log:      Log,
 		Store:    store,
 	}
 
