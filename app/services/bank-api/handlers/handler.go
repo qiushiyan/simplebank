@@ -28,7 +28,6 @@ func NewMux(cfg APIMuxConfig) *web.App {
 	}
 
 	app := web.NewApp(cfg.Shutdown, mw...)
-
 	accountHandler := accountgrp.New(cfg.Store)
 	authHandler := authgrp.New(cfg.Store)
 
@@ -36,11 +35,12 @@ func NewMux(cfg APIMuxConfig) *web.App {
 	// Account route group
 	app.Handle(
 		http.MethodGet,
-		"/accounts",
-		accountHandler.List,
+		"/accounts/all",
+		accountHandler.ListAll,
 		middleware.Authenticate(),
 		middleware.Authorize("ADMIN"),
 	)
+	app.Handle(http.MethodGet, "/accounts", accountHandler.List, middleware.Authenticate())
 	app.Handle(http.MethodGet, "/accounts/:id", accountHandler.Get, middleware.Authenticate())
 	app.Handle(http.MethodPost, "/accounts", accountHandler.Create, middleware.Authenticate())
 

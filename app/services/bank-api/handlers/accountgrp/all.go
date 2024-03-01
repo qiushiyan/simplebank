@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/qiushiyan/simplebank/business/auth"
 	db "github.com/qiushiyan/simplebank/business/db/core"
 	db_generated "github.com/qiushiyan/simplebank/business/db/generated"
 	"github.com/qiushiyan/simplebank/business/web/response"
@@ -13,13 +12,14 @@ import (
 	"github.com/qiushiyan/simplebank/foundation/web"
 )
 
-type ListAccountRequest struct {
+type ListAllAccountRequest struct {
 	PageID   int32 `json:"page_id"   validate:"min=1"`
-	PageSize int32 `json:"page_size" validate:"min=1,max=5"`
+	PageSize int32 `json:"page_size" validate:"min=1,max=50"`
 }
 
-// List accounts for a user
-func (h *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+// List all accounts in the database
+// this is protected by the authorize middleware and can only be called by admin
+func (h *Handler) ListAll(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	id := r.FormValue("page_id")
 	size := r.FormValue("page_size")
 
@@ -28,7 +28,7 @@ func (h *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Reque
 	}
 
 	if size == "" {
-		size = "5"
+		size = "10"
 	}
 
 	pageId, err := strconv.Atoi(id)
@@ -41,12 +41,7 @@ func (h *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Reque
 		return response.NewError(err, http.StatusBadRequest)
 	}
 
-	payload := auth.GetPayload(ctx)
-	if payload == nil {
-		return auth.ErrUnauthenticated
-	}
-
-	req := ListAccountRequest{
+	req := ListAllAccountRequest{
 		PageID:   int32(pageId),
 		PageSize: int32(pageSize),
 	}
@@ -55,8 +50,7 @@ func (h *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Reque
 		return response.NewError(err, http.StatusBadRequest)
 	}
 
-	accounts, err := h.store.ListAccounts(ctx, db_generated.ListAccountsParams{
-		Owner:  payload.Username,
+	ret, err := h.store.ListAllAccounts(ctx, db_generated.ListAllAccountsParams{
 		Limit:  req.PageSize,
 		Offset: (req.PageID - 1) * req.PageSize,
 	})
@@ -65,5 +59,5 @@ func (h *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Reque
 		return db.NewError(err)
 	}
 
-	return web.RespondJson(ctx, w, accounts, http.StatusOK)
+	return web.RespondJson(ctx, w, ret, http.StatusOK)
 }

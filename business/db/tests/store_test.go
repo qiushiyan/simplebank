@@ -106,7 +106,7 @@ func TestTransferTx(t *testing.T) {
 	require.Equal(t, a2.Balance+int64(n)*amount, updatedToAccount.Balance)
 }
 
-// check for transfer (bi-direction)
+// simulate two accounts transferring to each other concurrently
 func TestTransferTxDeadlock(t *testing.T) {
 	store := db.NewStore(testDB)
 

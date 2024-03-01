@@ -5,6 +5,10 @@ import (
 	"fmt"
 )
 
+var (
+	ErrUnauthenticated = NewAuthError("missing authentication payload")
+)
+
 // AuthError is used to pass an error during the request through the
 // application with auth specific context.
 type AuthError struct {

@@ -66,6 +66,7 @@ func Params(r *http.Request) map[string]string {
 	return httptreemux.ContextParams(r.Context())
 }
 
+// ParseBody decodes the body of an HTTP request and stores the result in dst.
 func ParseBody(r *http.Request, dst interface{}) error {
 	return json.NewDecoder(r.Body).Decode(dst)
 }

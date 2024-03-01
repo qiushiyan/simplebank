@@ -21,7 +21,7 @@ func (h *Handler) Get(ctx context.Context, w http.ResponseWriter, r *http.Reques
 
 	payload := auth.GetPayload(ctx)
 	if payload == nil {
-		return auth.NewAuthError("missing authentication payload")
+		return auth.ErrUnauthenticated
 	}
 
 	account, err := h.store.GetAccount(ctx, int64(aid))
@@ -29,7 +29,6 @@ func (h *Handler) Get(ctx context.Context, w http.ResponseWriter, r *http.Reques
 	if err != nil {
 		return db.NewError(err)
 	}
-
 	if account.Owner != payload.Username {
 		return auth.NewAuthError("account does not belong to user %s", payload.Username)
 	}

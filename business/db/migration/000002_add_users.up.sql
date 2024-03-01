@@ -10,7 +10,7 @@ ADD FOREIGN KEY ("owner") REFERENCES "users" ("username");
 -- CREATE UNIQUE INDEX ON "accounts" ("owner", "currency");
 ALTER TABLE "accounts"
 ADD CONSTRAINT "owner_currency_key" UNIQUE ("owner", "currency");
--- create admin user
+-- create two users, one admin and one normal user
 INSERT INTO "users" ("username", "email", "hashed_password")
 VALUES (
         'admin',
@@ -21,4 +21,10 @@ VALUES (
         'user',
         'user@gmail.com',
         '$2a$10$SZw5eHfb.e94cBVUbrZ0BOTmXOFtINl7ZOv9Ac9WbYJdOnNZ9Gk6a'
-    )
+    );
+-- create accounts for the two users
+INSERT INTO "accounts" ("owner", "balance", "currency")
+VALUES ('admin', 100, 'USD'),
+    ('admin', 100, 'EUR'),
+    ('user', 100, 'USD'),
+    ('user', 100, 'EUR');

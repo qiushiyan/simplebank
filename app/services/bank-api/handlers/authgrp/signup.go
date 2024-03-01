@@ -38,7 +38,7 @@ func (h *Handler) Signup(ctx context.Context, w http.ResponseWriter, r *http.Req
 		return response.NewError(err, http.StatusInternalServerError)
 	}
 
-	ret, err := h.store.CreateUser(ctx, db_generated.CreateUserParams{
+	user, err := h.store.CreateUser(ctx, db_generated.CreateUserParams{
 		Username:       req.Username,
 		HashedPassword: hashedPassword,
 		Email:          req.Email,
@@ -49,7 +49,7 @@ func (h *Handler) Signup(ctx context.Context, w http.ResponseWriter, r *http.Req
 	}
 
 	response := SignupResponse{
-		User: NewUserResponse(ret),
+		User: NewUserResponse(user),
 	}
 
 	return web.RespondJson(ctx, w, response, http.StatusCreated)
