@@ -56,10 +56,11 @@ func serveRequest(
 
 	buildStubs(store)
 
-	cfg := handlers.APIMuxConfig{
+	cfg := handlers.MuxConfig{
 		Shutdown: make(chan os.Signal, 1),
 		Log:      logger,
 		Store:    store,
+		Build:    "develop",
 	}
 
 	app := handlers.NewMux(cfg)

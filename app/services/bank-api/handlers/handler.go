@@ -6,6 +6,7 @@ import (
 
 	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/accountgrp"
 	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/authgrp"
+	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/checkgrp"
 	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/transfergrp"
 	db "github.com/qiushiyan/simplebank/business/db/core"
 	"github.com/qiushiyan/simplebank/business/web/middleware"
@@ -14,13 +15,14 @@ import (
 )
 
 // APIMuxConfig contains all the mandatory systems required by handlers.
-type APIMuxConfig struct {
+type MuxConfig struct {
 	Shutdown chan os.Signal
 	Log      *zap.SugaredLogger
 	Store    db.Store
+	Build    string
 }
 
-func NewMux(cfg APIMuxConfig) *web.App {
+func NewMux(cfg MuxConfig) *web.App {
 	mw := []web.Middleware{
 		middleware.Logger(cfg.Log),
 		middleware.Errors(cfg.Log),
@@ -32,6 +34,7 @@ func NewMux(cfg APIMuxConfig) *web.App {
 	accountHandler := accountgrp.New(cfg.Store)
 	authHandler := authgrp.New(cfg.Store)
 	transferHandler := transfergrp.New(cfg.Store)
+	checkHandler := checkgrp.New(cfg.Store, cfg.Build)
 
 	// ==============================================================================
 	// Account route group
@@ -54,6 +57,11 @@ func NewMux(cfg APIMuxConfig) *web.App {
 	// ==============================================================================
 	// Transfer route group
 	app.Handle(http.MethodPost, "/transfer", transferHandler.Transfer, middleware.Authenticate())
+
+	// ==============================================================================
+	// Health check route
+	app.Handle(http.MethodGet, "/readiness", checkHandler.Readiness)
+	app.Handle(http.MethodGet, "/liveness", checkHandler.Liveness)
 
 	return app
 }

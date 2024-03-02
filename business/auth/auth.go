@@ -11,7 +11,7 @@ import (
 
 func Authenticate(ctx context.Context, bearerToken string) (*token.Payload, error) {
 	if bearerToken == "" {
-		return nil, errors.New("expected authorization header")
+		return nil, ErrUnauthenticated
 	}
 
 	parts := strings.Fields(bearerToken)

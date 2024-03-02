@@ -119,10 +119,11 @@ func run(ctx context.Context, log *zap.SugaredLogger) error {
 
 	serverErrors := make(chan error, 1)
 	apiMux := handlers.NewMux(
-		handlers.APIMuxConfig{
+		handlers.MuxConfig{
 			Shutdown: shutdown,
 			Log:      log,
 			Store:    store,
+			Build:    build,
 		},
 	)
 	apiServer := http.Server{

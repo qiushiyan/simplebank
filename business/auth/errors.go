@@ -6,8 +6,7 @@ import (
 )
 
 var (
-	ErrUnauthenticated = NewAuthError("missing authentication payload")
-	ErrUnauthorized    = NewAuthError("attempted action is not allowed")
+	ErrUnauthenticated = NewAuthError("missing token in `authorization` header")
 )
 
 // AuthError is used to pass an error during the request through the
@@ -21,6 +20,10 @@ func NewAuthError(format string, args ...any) error {
 	return &AuthError{
 		msg: fmt.Sprintf(format, args...),
 	}
+}
+
+func NewUnauthorizedError(need string, args ...any) error {
+	return NewAuthError("attempted action now allowed, need %s", need)
 }
 
 // Error implements the error interface. It uses the default message of the

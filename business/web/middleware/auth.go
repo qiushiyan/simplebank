@@ -36,12 +36,12 @@ func Authorize(role string) web.Middleware {
 		h := func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 			payload := auth.GetPayload(ctx)
 			if payload == nil {
-				return auth.NewAuthError("authorize: missing payload")
+				return auth.ErrUnauthenticated
 			}
 
 			// check role match, skip if role is empty
 			if role != "" && !payload.HasRole(role) {
-				return auth.NewAuthError("authorize: invalid role, need %s", role)
+				return auth.NewUnauthorizedError(role)
 			}
 
 			return handler(ctx, w, r)
