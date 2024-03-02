@@ -1,4 +1,4 @@
-package transfergrp
+package entrygrp
 
 import db "github.com/qiushiyan/simplebank/business/db/core"
 

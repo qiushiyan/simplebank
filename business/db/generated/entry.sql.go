@@ -7,6 +7,7 @@ package db_generated
 
 import (
 	"context"
+	"database/sql"
 )
 
 const createEntry = `-- name: CreateEntry :one
@@ -54,18 +55,34 @@ const listEntries = `-- name: ListEntries :many
 SELECT id, account_id, amount, created_at
 FROM entries
 WHERE account_id = $1
+    AND (
+        COALESCE($4::timestamp, NULL) IS NULL
+        OR created_at >= $4::timestamp
+    )
+    AND (
+        COALESCE($5::timestamp, NULL) IS NULL
+        OR created_at <= $5::timestamp
+    )
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3
 `
 
 type ListEntriesParams struct {
-	AccountID int64 `json:"account_id"`
-	Limit     int32 `json:"limit"`
-	Offset    int32 `json:"offset"`
+	AccountID int64        `json:"account_id"`
+	Limit     int32        `json:"limit"`
+	Offset    int32        `json:"offset"`
+	StartDate sql.NullTime `json:"start_date"`
+	EndDate   sql.NullTime `json:"end_date"`
 }
 
 func (q *Queries) ListEntries(ctx context.Context, arg ListEntriesParams) ([]Entry, error) {
-	rows, err := q.db.QueryContext(ctx, listEntries, arg.AccountID, arg.Limit, arg.Offset)
+	rows, err := q.db.QueryContext(ctx, listEntries,
+		arg.AccountID,
+		arg.Limit,
+		arg.Offset,
+		arg.StartDate,
+		arg.EndDate,
+	)
 	if err != nil {
 		return nil, err
 	}

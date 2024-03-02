@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/qiushiyan/simplebank/business/auth"
 	db "github.com/qiushiyan/simplebank/business/db/core"
 	db_generated "github.com/qiushiyan/simplebank/business/db/generated"
 	"github.com/qiushiyan/simplebank/business/web/response"
@@ -13,16 +12,15 @@ import (
 	"github.com/qiushiyan/simplebank/foundation/web"
 )
 
-type ListAccountQuery struct {
+type ListAllAccountQuery struct {
 	PageID   int32 `json:"page_id"   validate:"min=1"`
-	PageSize int32 `json:"page_size" validate:"min=1,max=5"`
+	PageSize int32 `json:"page_size" validate:"min=1,max=50"`
 }
 
-// List accounts for a user
-// accepts two query parameters: page_id and page_size
-func (h *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	var q ListAccountQuery
-
+// List all accounts in the database
+// this is protected by the authorize middleware and can only be called by admin
+func (h *Handler) ListAll(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	var q ListAllAccountQuery
 	if r.FormValue("page_id") == "" {
 		q.PageID = 1
 	} else {
@@ -34,7 +32,7 @@ func (h *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Reque
 	}
 
 	if r.FormValue("page_size") == "" {
-		q.PageSize = 5
+		q.PageSize = 50
 	} else {
 		size, err := strconv.Atoi(r.FormValue("page_size"))
 		if err != nil {
@@ -47,13 +45,7 @@ func (h *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Reque
 		return err
 	}
 
-	payload := auth.GetPayload(ctx)
-	if payload == nil {
-		return auth.ErrUnauthenticated
-	}
-
-	accounts, err := h.store.ListAccounts(ctx, db_generated.ListAccountsParams{
-		Owner:  payload.Username,
+	accounts, err := h.store.ListAllAccounts(ctx, db_generated.ListAllAccountsParams{
 		Limit:  q.PageSize,
 		Offset: (q.PageID - 1) * q.PageSize,
 	})

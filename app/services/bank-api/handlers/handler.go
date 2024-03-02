@@ -7,6 +7,7 @@ import (
 	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/accountgrp"
 	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/authgrp"
 	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/checkgrp"
+	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/entrygrp"
 	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/transfergrp"
 	db "github.com/qiushiyan/simplebank/business/db/core"
 	"github.com/qiushiyan/simplebank/business/web/middleware"
@@ -34,6 +35,7 @@ func NewMux(cfg MuxConfig) *web.App {
 	accountHandler := accountgrp.New(cfg.Store)
 	authHandler := authgrp.New(cfg.Store)
 	transferHandler := transfergrp.New(cfg.Store)
+	entryHandler := entrygrp.New(cfg.Store)
 	checkHandler := checkgrp.New(cfg.Store, cfg.Build)
 
 	// ==============================================================================
@@ -57,6 +59,10 @@ func NewMux(cfg MuxConfig) *web.App {
 	// ==============================================================================
 	// Transfer route group
 	app.Handle(http.MethodPost, "/transfer", transferHandler.Transfer, middleware.Authenticate())
+
+	// ==============================================================================
+	// Entires route group
+	app.Handle(http.MethodGet, "/entries", entryHandler.List, middleware.Authenticate())
 
 	// ==============================================================================
 	// Health check route
