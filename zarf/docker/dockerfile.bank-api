@@ -1,5 +1,5 @@
 # stage: build bank-api
-FROM golang:1.21 as build_bank-api
+FROM golang:1.22 as build_bank-api
 ENV CGO_ENABLED=0
 ARG BUILD_REF
 
