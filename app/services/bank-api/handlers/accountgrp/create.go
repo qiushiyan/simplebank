@@ -24,12 +24,12 @@ func (h *Handler) Create(ctx context.Context, w http.ResponseWriter, r *http.Req
 	}
 
 	if err := validate.Check(req); err != nil {
-		return response.NewError(err, http.StatusBadRequest)
+		return err
 	}
 
 	payload := auth.GetPayload(ctx)
 	if payload == nil {
-		return auth.NewAuthError("missing authentication payload")
+		return auth.ErrUnauthenticated
 	}
 
 	ret, err := h.store.CreateAccount(ctx, db_generated.CreateAccountParams{

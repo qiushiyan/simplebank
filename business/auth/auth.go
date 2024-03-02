@@ -9,9 +9,6 @@ import (
 	"github.com/qiushiyan/simplebank/business/auth/token"
 )
 
-// ErrForbidden is returned when a auth issue is identified.
-var ErrForbidden = errors.New("attempted action is not allowed")
-
 func Authenticate(ctx context.Context, bearerToken string) (*token.Payload, error) {
 	if bearerToken == "" {
 		return nil, errors.New("expected authorization header")

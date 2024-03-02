@@ -30,7 +30,7 @@ func (h *Handler) Signup(ctx context.Context, w http.ResponseWriter, r *http.Req
 	}
 
 	if err := validate.Check(req); err != nil {
-		return response.NewError(err, http.StatusBadRequest)
+		return err
 	}
 
 	hashedPassword, err := auth.HashPassword(req.Password)

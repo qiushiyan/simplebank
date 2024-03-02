@@ -7,6 +7,7 @@ import (
 
 var (
 	ErrUnauthenticated = NewAuthError("missing authentication payload")
+	ErrUnauthorized    = NewAuthError("attempted action is not allowed")
 )
 
 // AuthError is used to pass an error during the request through the

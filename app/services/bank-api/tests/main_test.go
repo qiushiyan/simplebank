@@ -13,7 +13,7 @@ import (
 	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers"
 	"github.com/qiushiyan/simplebank/business/auth/token"
 	mockdb "github.com/qiushiyan/simplebank/business/db/mock"
-	"github.com/qiushiyan/simplebank/foundation/logger"
+	loggerlib "github.com/qiushiyan/simplebank/foundation/logger"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	"go.uber.org/zap"
@@ -22,7 +22,7 @@ import (
 var (
 	adminToken string
 	userToken  string
-	Log        *zap.SugaredLogger
+	logger     *zap.SugaredLogger
 )
 
 type DataResponse[T any] struct {
@@ -37,10 +37,12 @@ func TestMain(m *testing.M) {
 	userToken = "Bearer " + t.GetToken()
 
 	logPath := fmt.Sprintf("%s/simplebank-log.txt", os.TempDir())
-	Log, _ = logger.New("bank-api", logPath)
-	fmt.Printf("logs at: %s\n", logPath)
+	logger, _ = loggerlib.New("bank-api", logPath)
+	fmt.Printf("log at %s\n", logPath)
+	defer logger.Sync()
 
 	m.Run()
+
 }
 
 func serveRequest(
@@ -56,7 +58,7 @@ func serveRequest(
 
 	cfg := handlers.APIMuxConfig{
 		Shutdown: make(chan os.Signal, 1),
-		Log:      Log,
+		Log:      logger,
 		Store:    store,
 	}
 

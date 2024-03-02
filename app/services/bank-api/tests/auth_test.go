@@ -2,7 +2,6 @@ package tests
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -14,11 +13,9 @@ import (
 	"github.com/lib/pq"
 	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/authgrp"
 	"github.com/qiushiyan/simplebank/business/auth"
-	db "github.com/qiushiyan/simplebank/business/db/core"
 	db_generated "github.com/qiushiyan/simplebank/business/db/generated"
 	mockdb "github.com/qiushiyan/simplebank/business/db/mock"
 	"github.com/qiushiyan/simplebank/business/random"
-	"github.com/qiushiyan/simplebank/business/web/response"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
@@ -29,13 +26,13 @@ func TestSignupAPi(t *testing.T) {
 
 	cases := []struct {
 		name       string
-		body       authgrp.SignupRequest
+		args       authgrp.SignupRequest
 		buildStubs func(*mockdb.MockStore)
-		checker    func(*httptest.ResponseRecorder, error)
+		checker    func(*httptest.ResponseRecorder)
 	}{
 		{
-			name: "OK",
-			body: authgrp.SignupRequest{
+			name: "ok",
+			args: authgrp.SignupRequest{
 				Username: user.Username,
 				Email:    user.Email,
 				Password: password,
@@ -51,15 +48,14 @@ func TestSignupAPi(t *testing.T) {
 					password,
 				)).Times(1).Return(user, nil)
 			},
-			checker: func(recorder *httptest.ResponseRecorder, err error) {
+			checker: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusCreated, recorder.Code)
-				require.NoError(t, err)
 				requireBodyMatchUser(t, recorder.Body, user)
 			},
 		},
 		{
 			name: "DuplicatedEmail",
-			body: authgrp.SignupRequest{
+			args: authgrp.SignupRequest{
 				Username: user.Username,
 				Email:    user.Email,
 				Password: password,
@@ -78,16 +74,13 @@ func TestSignupAPi(t *testing.T) {
 					Code: "23505",
 				})
 			},
-			checker: func(recorder *httptest.ResponseRecorder, err error) {
-				require.True(t, db.IsError(err))
-				de := db.GetError(err)
-				require.NotEmpty(t, de)
-				require.Equal(t, http.StatusForbidden, de.Status)
+			checker: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusForbidden, recorder.Code)
 			},
 		},
 		{
 			name: "InvalidEmail",
-			body: authgrp.SignupRequest{
+			args: authgrp.SignupRequest{
 				Username: user.Username,
 				Email:    "invalid-email",
 				Password: password,
@@ -97,16 +90,13 @@ func TestSignupAPi(t *testing.T) {
 					CreateUser(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
-			checker: func(recorder *httptest.ResponseRecorder, err error) {
-				require.True(t, response.IsError(err))
-				re := response.GetError(err)
-				require.NotEmpty(t, re)
-				require.Equal(t, http.StatusBadRequest, re.Status)
+			checker: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
 		},
 		{
 			name: "InvalidPassword",
-			body: authgrp.SignupRequest{
+			args: authgrp.SignupRequest{
 				Username: user.Username,
 				Email:    user.Email,
 				Password: "123",
@@ -116,16 +106,13 @@ func TestSignupAPi(t *testing.T) {
 					CreateUser(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
-			checker: func(recorder *httptest.ResponseRecorder, err error) {
-				require.True(t, response.IsError(err))
-				re := response.GetError(err)
-				require.NotEmpty(t, re)
-				require.Equal(t, http.StatusBadRequest, re.Status)
+			checker: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
 		},
 		{
 			name: "InvalidUsername",
-			body: authgrp.SignupRequest{
+			args: authgrp.SignupRequest{
 				Username: "aa",
 				Email:    user.Email,
 				Password: password,
@@ -135,11 +122,8 @@ func TestSignupAPi(t *testing.T) {
 					CreateUser(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
-			checker: func(recorder *httptest.ResponseRecorder, err error) {
-				require.True(t, response.IsError(err))
-				re := response.GetError(err)
-				require.NotEmpty(t, re)
-				require.Equal(t, http.StatusBadRequest, re.Status)
+			checker: func(recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
 		},
 	}
@@ -148,25 +132,17 @@ func TestSignupAPi(t *testing.T) {
 		tc := cases[i]
 
 		t.Run(tc.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			ctx := context.Background()
+			t.Parallel()
 
-			defer ctrl.Finish()
-			store := mockdb.NewMockStore(ctrl)
-
-			tc.buildStubs(store)
-
-			body, err := json.Marshal(tc.body)
+			body, err := json.Marshal(tc.args)
 			require.NoError(t, err)
 
-			recorder := httptest.NewRecorder()
 			request, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(body))
 			require.NoError(t, err)
 
-			handler := authgrp.New(store)
-			err = handler.Signup(ctx, recorder, request)
+			recorder := serveRequest(t, request, tc.buildStubs)
 
-			tc.checker(recorder, err)
+			tc.checker(recorder)
 		})
 	}
 

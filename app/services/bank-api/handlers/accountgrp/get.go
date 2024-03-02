@@ -4,19 +4,19 @@ import (
 	"context"
 	"net/http"
 	"strconv"
-	"strings"
 
 	"github.com/qiushiyan/simplebank/business/auth"
 	db "github.com/qiushiyan/simplebank/business/db/core"
+	"github.com/qiushiyan/simplebank/business/web/response"
 	"github.com/qiushiyan/simplebank/foundation/web"
 )
 
 // Get retrieves an account by its ID, and checks if the account belongs to the user from token payload
 func (h *Handler) Get(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	id := strings.Split(r.URL.Path, "/")[2]
+	id := web.Param(r, "id")
 	aid, err := strconv.Atoi(id)
 	if err != nil {
-		return err
+		return response.NewError(err, http.StatusBadRequest)
 	}
 
 	payload := auth.GetPayload(ctx)

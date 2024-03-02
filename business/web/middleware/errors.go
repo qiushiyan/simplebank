@@ -23,22 +23,13 @@ func Errors(log *zap.SugaredLogger) web.Middleware {
 				var status int
 				// trusted error
 				switch {
-				case response.IsError(err):
-					reqErr := response.GetError(err)
-					if validate.IsFieldErrors(reqErr.Err) {
-						fieldErrors := validate.GetFieldErrors(reqErr.Err)
-						er = response.ErrorDocument{
-							Error:  "data validation error",
-							Fields: fieldErrors.Fields(),
-						}
-						status = reqErr.Status
-					} else {
-						er = response.ErrorDocument{
-							Error: reqErr.Error(),
-						}
-						status = reqErr.Status
-
+				case validate.IsFieldErrors(err):
+					fieldErrors := validate.GetFieldErrors(err)
+					er = response.ErrorDocument{
+						Error:  "malformed request data",
+						Fields: fieldErrors.Fields(),
 					}
+					status = http.StatusBadRequest
 
 				case auth.IsAuthError(err):
 					authErr := auth.GetAuthError(err)
@@ -53,6 +44,13 @@ func Errors(log *zap.SugaredLogger) web.Middleware {
 						Error: dbErr.Error(),
 					}
 					status = dbErr.Status
+
+				case response.IsError(err):
+					reqErr := response.GetError(err)
+					er = response.ErrorDocument{
+						Error: reqErr.Error(),
+					}
+					status = reqErr.Status
 
 				default:
 					er = response.ErrorDocument{

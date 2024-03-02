@@ -8,6 +8,7 @@ import (
 	"github.com/qiushiyan/simplebank/business/auth/token"
 	db "github.com/qiushiyan/simplebank/business/db/core"
 	"github.com/qiushiyan/simplebank/business/web/response"
+	"github.com/qiushiyan/simplebank/foundation/validate"
 	"github.com/qiushiyan/simplebank/foundation/web"
 )
 
@@ -16,8 +17,8 @@ const (
 )
 
 type SigninRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Username string `json:"username" validate:"required,alphanum,username"`
+	Password string `json:"password" validate:"required,password"`
 }
 
 type SigninResponse struct {
@@ -30,6 +31,10 @@ func (h *Handler) Signin(ctx context.Context, w http.ResponseWriter, r *http.Req
 	err := web.ParseBody(r, &req)
 	if err != nil {
 		return response.NewError(err, http.StatusBadRequest)
+	}
+
+	if err = validate.Check(req); err != nil {
+		return err
 	}
 
 	user, err := h.store.GetUser(ctx, req.Username)

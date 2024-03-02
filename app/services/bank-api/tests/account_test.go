@@ -141,14 +141,19 @@ func TestCreateAccountApi(t *testing.T) {
 	for i := range cases {
 		tc := cases[i]
 
-		b, err := json.Marshal(body)
-		require.NoError(t, err)
-		request, err := http.NewRequest(http.MethodPost, "/accounts", bytes.NewReader(b))
-		require.NoError(t, err)
+		t.Run(tc.name, func(t *testing.T) {
 
-		request.Header.Add("authorization", tc.token)
-		recorder := serveRequest(t, request, tc.buildStubs)
-		tc.checker(recorder)
+			t.Parallel()
+			b, err := json.Marshal(body)
+			require.NoError(t, err)
+			request, err := http.NewRequest(http.MethodPost, "/accounts", bytes.NewReader(b))
+			require.NoError(t, err)
+
+			request.Header.Add("authorization", tc.token)
+			recorder := serveRequest(t, request, tc.buildStubs)
+			tc.checker(recorder)
+		})
+
 	}
 }
 
@@ -165,8 +170,8 @@ var userAccount = db_generated.Account{
 }
 
 var adminAccount = db_generated.Account{
-	ID:       2,
+	ID:       1,
 	Owner:    "admin",
-	Currency: "EUR",
+	Currency: "USD",
 	Balance:  100,
 }

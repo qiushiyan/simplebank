@@ -15,8 +15,9 @@ type Error struct {
 	Status int
 }
 
-// NewError wraps a provided error with an HTTP status code. This
-// function should be used when handlers encounter expected errors.
+// NewError wraps a provided error with an HTTP status code.
+// This function should be used as fallback when handlers encounter expected errors
+// i.e., if it was not a validation error, auth error, or db error, etc.
 func NewError(err error, status int) error {
 	return &Error{err, status}
 }

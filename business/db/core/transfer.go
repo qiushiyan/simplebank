@@ -41,7 +41,12 @@ type TransferTxResult struct {
 	ToEntry     Entry    `json:"to_entry"`
 }
 
-func (s *SQLStore) TransferTx(ctx context.Context, args TransferTxParams) (TransferTxResult, error) {
+// TransferTx performs a money transfer from one account to the other
+// It creates a transfer record, create an entry for both accounts, and update accounts' balance within a single database transaction
+func (s *SQLStore) TransferTx(
+	ctx context.Context,
+	args TransferTxParams,
+) (TransferTxResult, error) {
 
 	var result TransferTxResult
 

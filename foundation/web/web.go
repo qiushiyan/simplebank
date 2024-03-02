@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
 	"os"
 	"syscall"
@@ -66,9 +67,20 @@ func Params(r *http.Request) map[string]string {
 	return httptreemux.ContextParams(r.Context())
 }
 
+// Param returns the web call parameters from the request.
+func Param(r *http.Request, key string) string {
+	m := httptreemux.ContextParams(r.Context())
+	return m[key]
+}
+
 // ParseBody decodes the body of an HTTP request and stores the result in dst.
 func ParseBody(r *http.Request, dst interface{}) error {
-	return json.NewDecoder(r.Body).Decode(dst)
+	err := json.NewDecoder(r.Body).Decode(dst)
+	if err == io.EOF {
+		return errors.New("request body cannot be empty")
+	}
+	return err
+
 }
 
 // SignalShutdown is used to gracefully shut down the app when an integrity

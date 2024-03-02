@@ -6,6 +6,7 @@ import (
 
 	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/accountgrp"
 	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/authgrp"
+	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/transfergrp"
 	db "github.com/qiushiyan/simplebank/business/db/core"
 	"github.com/qiushiyan/simplebank/business/web/middleware"
 	"github.com/qiushiyan/simplebank/foundation/web"
@@ -30,6 +31,7 @@ func NewMux(cfg APIMuxConfig) *web.App {
 	app := web.NewApp(cfg.Shutdown, mw...)
 	accountHandler := accountgrp.New(cfg.Store)
 	authHandler := authgrp.New(cfg.Store)
+	transferHandler := transfergrp.New(cfg.Store)
 
 	// ==============================================================================
 	// Account route group
@@ -48,6 +50,10 @@ func NewMux(cfg APIMuxConfig) *web.App {
 	// Auth route group
 	app.Handle(http.MethodPost, "/signup", authHandler.Signup)
 	app.Handle(http.MethodPost, "/signin", authHandler.Signin)
+
+	// ==============================================================================
+	// Transfer route group
+	app.Handle(http.MethodPost, "/transfer", transferHandler.Transfer, middleware.Authenticate())
 
 	return app
 }
