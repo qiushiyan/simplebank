@@ -28,7 +28,7 @@ func (h *Handler) Create(ctx context.Context, w http.ResponseWriter, r *http.Req
 	}
 
 	payload := auth.GetPayload(ctx)
-	if payload == nil {
+	if payload.IsEmpty() {
 		return auth.ErrUnauthenticated
 	}
 

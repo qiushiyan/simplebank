@@ -9,19 +9,19 @@ import (
 	"github.com/qiushiyan/simplebank/business/auth/token"
 )
 
-func Authenticate(ctx context.Context, bearerToken string) (*token.Payload, error) {
+func Authenticate(ctx context.Context, bearerToken string) (token.Payload, error) {
 	if bearerToken == "" {
-		return nil, ErrUnauthenticated
+		return token.Payload{}, ErrUnauthenticated
 	}
 
 	parts := strings.Fields(bearerToken)
 	if len(parts) != 2 || parts[0] != "Bearer" {
-		return nil, errors.New("expected authorization header format: Bearer <token>")
+		return token.Payload{}, errors.New("expected authorization header format: Bearer <token>")
 	}
 
 	payload, err := token.Decrypt(parts[1])
 	if err != nil {
-		return nil, err
+		return token.Payload{}, err
 	}
 
 	return payload, nil
@@ -31,14 +31,14 @@ type ctxKey int
 
 var payloadKey ctxKey = 1
 
-func SetPayload(ctx context.Context, p *token.Payload) context.Context {
+func SetPayload(ctx context.Context, p token.Payload) context.Context {
 	return context.WithValue(ctx, payloadKey, p)
 }
 
-func GetPayload(ctx context.Context) *token.Payload {
+func GetPayload(ctx context.Context) token.Payload {
 	val := ctx.Value(payloadKey)
 	if val == nil {
-		return nil
+		return token.Payload{}
 	}
-	return val.(*token.Payload)
+	return val.(token.Payload)
 }

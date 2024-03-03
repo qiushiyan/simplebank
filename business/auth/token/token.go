@@ -21,31 +21,31 @@ type Token struct {
 	t string
 }
 
-func Decrypt(t string) (*Payload, error) {
+func Decrypt(t string) (Payload, error) {
 	var payload Payload
 	err := v2.Decrypt(t, key, &payload, nil)
 	if err != nil {
-		return nil, ErrInvalidToken
+		return Payload{}, ErrInvalidToken
 	}
 
 	s := payload.Get("data")
 	c, err := decodeClaims(s)
 
 	if err != nil {
-		return nil, ErrInvalidToken
+		return Payload{}, ErrInvalidToken
 	}
 
 	payload.Username = c.Username
 	payload.Roles = c.Roles
 
-	return &payload, nil
+	return payload, nil
 }
 
 // NewToken creates a new paseto token with a username, a set of roles and a duration
-func NewToken(username string, roles []string, duration time.Duration) (*Token, error) {
+func NewToken(username string, roles []string, duration time.Duration) (Token, error) {
 	id, err := uuid.NewRandom()
 	if err != nil {
-		return nil, err
+		return Token{}, err
 	}
 
 	var d time.Duration
@@ -53,7 +53,7 @@ func NewToken(username string, roles []string, duration time.Duration) (*Token, 
 		d = 7 * 24 * time.Hour
 	}
 
-	payload := &Payload{
+	payload := Payload{
 		JSONToken: paseto.JSONToken{
 			Jti:        id.String(),
 			Subject:    username,
@@ -68,18 +68,18 @@ func NewToken(username string, roles []string, duration time.Duration) (*Token, 
 
 	s, err := encodeClaims(NewClaims(username, roles))
 	if err != nil {
-		return nil, err
+		return Token{}, err
 	}
 	payload.Set("data", s)
 
 	token, err := v2.Encrypt(key, payload, nil)
 	if err != nil {
-		return nil, err
+		return Token{}, err
 	}
 
-	return &Token{t: token}, nil
+	return Token{t: token}, nil
 }
 
-func (t *Token) GetToken() string {
+func (t Token) GetToken() string {
 	return t.t
 }

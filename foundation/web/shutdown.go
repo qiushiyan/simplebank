@@ -16,7 +16,7 @@ func NewShutdownError(message string) error {
 }
 
 // Error is the implementation of the error interface.
-func (se *shutdownError) Error() string {
+func (se shutdownError) Error() string {
 	return se.Message
 }
 

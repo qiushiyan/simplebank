@@ -30,7 +30,7 @@ func (h *Handler) Transfer(ctx context.Context, w http.ResponseWriter, r *http.R
 	}
 
 	payload := auth.GetPayload(ctx)
-	if payload == nil {
+	if payload.IsEmpty() {
 		return auth.ErrUnauthenticated
 	}
 
