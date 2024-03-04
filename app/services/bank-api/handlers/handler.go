@@ -9,6 +9,7 @@ import (
 	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/checkgrp"
 	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/entrygrp"
 	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/transfergrp"
+	"github.com/qiushiyan/simplebank/business/auth/token"
 	db "github.com/qiushiyan/simplebank/business/db/core"
 	"github.com/qiushiyan/simplebank/business/web/middleware"
 	"github.com/qiushiyan/simplebank/foundation/web"
@@ -45,7 +46,7 @@ func NewMux(cfg MuxConfig) *web.App {
 		"/accounts/all",
 		accountHandler.ListAll,
 		middleware.Authenticate(),
-		middleware.Authorize("ADMIN"),
+		middleware.Authorize(token.RoleAdmin),
 	)
 	app.Handle(http.MethodGet, "/accounts", accountHandler.List, middleware.Authenticate())
 	app.Handle(http.MethodGet, "/accounts/:id", accountHandler.Get, middleware.Authenticate())

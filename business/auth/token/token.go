@@ -1,6 +1,7 @@
 package token
 
 import (
+	"encoding/json"
 	"errors"
 	"time"
 
@@ -28,21 +29,20 @@ func Decrypt(t string) (Payload, error) {
 		return Payload{}, ErrInvalidToken
 	}
 
-	s := payload.Get("data")
-	c, err := decodeClaims(s)
-
+	var claims Claims
+	err = json.Unmarshal([]byte(payload.Get("data")), &claims)
 	if err != nil {
 		return Payload{}, ErrInvalidToken
 	}
 
-	payload.Username = c.Username
-	payload.Roles = c.Roles
+	payload.Username = claims.Username
+	payload.Roles = claims.Roles
 
 	return payload, nil
 }
 
 // NewToken creates a new paseto token with a username, a set of roles and a duration
-func NewToken(username string, roles []string, duration time.Duration) (Token, error) {
+func NewToken(username string, roles []Role, duration time.Duration) (Token, error) {
 	id, err := uuid.NewRandom()
 	if err != nil {
 		return Token{}, err
@@ -66,11 +66,12 @@ func NewToken(username string, roles []string, duration time.Duration) (Token, e
 		Roles:    roles,
 	}
 
-	s, err := encodeClaims(NewClaims(username, roles))
+	nc := NewClaims(username, roles)
+	b, err := json.Marshal(nc)
 	if err != nil {
 		return Token{}, err
 	}
-	payload.Set("data", s)
+	payload.Set("data", string(b))
 
 	token, err := v2.Encrypt(key, payload, nil)
 	if err != nil {

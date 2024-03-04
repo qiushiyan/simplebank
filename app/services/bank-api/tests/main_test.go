@@ -30,10 +30,13 @@ type DataResponse[T any] struct {
 }
 
 func TestMain(m *testing.M) {
-	t, _ := token.NewToken("admin", []string{"ADMIN"}, 0)
+	rolesAdmin := []token.Role{token.RoleAdmin}
+	rolesUser := []token.Role{token.RoleUser}
+
+	t, _ := token.NewToken("admin", rolesAdmin, 0)
 	adminToken = "Bearer " + t.GetToken()
 
-	t, _ = token.NewToken("user", []string{"USER"}, 0)
+	t, _ = token.NewToken("user", rolesUser, 0)
 	userToken = "Bearer " + t.GetToken()
 
 	logPath := fmt.Sprintf("%s/simplebank-log.txt", os.TempDir())

@@ -3,6 +3,8 @@ package auth
 import (
 	"errors"
 	"fmt"
+
+	"github.com/qiushiyan/simplebank/business/auth/token"
 )
 
 var (
@@ -22,8 +24,8 @@ func NewAuthError(format string, args ...any) error {
 	}
 }
 
-func NewUnauthorizedError(need string, args ...any) error {
-	return NewAuthError("attempted action now allowed, need %s", need)
+func NewUnauthorizedError(need token.Role, args ...any) error {
+	return NewAuthError("attempted action now allowed, need %s", need.Name())
 }
 
 // Error implements the error interface. It uses the default message of the

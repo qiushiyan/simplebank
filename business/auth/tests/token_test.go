@@ -8,17 +8,18 @@ import (
 )
 
 func TestTokenRole(t *testing.T) {
-	tk, err := token.NewToken("user", []string{"ADMIN"}, 0)
+	tk, err := token.NewToken("user", []token.Role{token.RoleAdmin}, 0)
 	require.NoError(t, err)
 
 	payload, err := token.Decrypt(tk.GetToken())
 	require.NoError(t, err)
-	require.True(t, payload.HasRole("ADMIN"))
+	require.True(t, payload.HasRole(token.RoleAdmin))
+	require.False(t, payload.HasRole(token.RoleUser))
 }
 
 func TestDecryptToken(t *testing.T) {
 	username := "user"
-	roles := []string{"ADMIN"}
+	roles := []token.Role{token.RoleAdmin}
 
 	tk, err := token.NewToken(username, roles, 0)
 	require.NoError(t, err)

@@ -4,9 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/qiushiyan/simplebank/business/auth"
-	db "github.com/qiushiyan/simplebank/business/db/core"
-	db_generated "github.com/qiushiyan/simplebank/business/db/generated"
+	"github.com/qiushiyan/simplebank/business/core/user"
 	"github.com/qiushiyan/simplebank/business/web/response"
 	"github.com/qiushiyan/simplebank/foundation/validate"
 	"github.com/qiushiyan/simplebank/foundation/web"
@@ -33,19 +31,14 @@ func (h *Handler) Signup(ctx context.Context, w http.ResponseWriter, r *http.Req
 		return err
 	}
 
-	hashedPassword, err := auth.HashPassword(req.Password)
-	if err != nil {
-		return response.NewError(err, http.StatusInternalServerError)
-	}
-
-	user, err := h.store.CreateUser(ctx, db_generated.CreateUserParams{
-		Username:       req.Username,
-		HashedPassword: hashedPassword,
-		Email:          req.Email,
+	user, err := h.core.Create(ctx, user.NewUser{
+		Username: req.Username,
+		Email:    req.Email,
+		Password: req.Password,
 	})
 
 	if err != nil {
-		return db.NewError(err)
+		return err
 	}
 
 	response := SignupResponse{

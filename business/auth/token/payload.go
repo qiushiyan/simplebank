@@ -9,7 +9,7 @@ import (
 type Payload struct {
 	paseto.JSONToken
 	Username string
-	Roles    []string
+	Roles    []Role
 }
 
 func (payload Payload) IsEmpty() bool {
@@ -24,7 +24,7 @@ func (payload Payload) Valid() error {
 	return nil
 }
 
-func (payload Payload) HasRole(role string) bool {
+func (payload Payload) HasRole(role Role) bool {
 	for _, userRole := range payload.Roles {
 		if role == userRole {
 			return true
@@ -35,5 +35,5 @@ func (payload Payload) HasRole(role string) bool {
 
 // isAdmin checks if the user is an admin
 func (payload Payload) IsAdmin() bool {
-	return payload.HasRole("ADMIN")
+	return payload.HasRole(RoleAdmin)
 }

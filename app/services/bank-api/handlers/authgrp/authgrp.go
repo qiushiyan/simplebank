@@ -3,12 +3,13 @@ package authgrp
 import (
 	"time"
 
+	"github.com/qiushiyan/simplebank/business/core/user"
 	db "github.com/qiushiyan/simplebank/business/db/core"
 	db_generated "github.com/qiushiyan/simplebank/business/db/generated"
 )
 
 type Handler struct {
-	store db.Store
+	core user.Core
 }
 
 type UserResponse struct {
@@ -20,7 +21,7 @@ type UserResponse struct {
 
 func New(store db.Store) *Handler {
 	return &Handler{
-		store: store,
+		core: user.NewCore(store),
 	}
 }
 

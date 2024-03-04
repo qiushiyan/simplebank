@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/qiushiyan/simplebank/business/auth"
+	"github.com/qiushiyan/simplebank/business/auth/token"
 	"github.com/qiushiyan/simplebank/foundation/web"
 )
 
@@ -31,7 +32,7 @@ func Authenticate() web.Middleware {
 
 // Authorize validates that an authenticated user has at least one role from a
 // specified list.
-func Authorize(role string) web.Middleware {
+func Authorize(role token.Role) web.Middleware {
 	m := func(handler web.Handler) web.Handler {
 		h := func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 			payload := auth.GetPayload(ctx)
@@ -40,7 +41,7 @@ func Authorize(role string) web.Middleware {
 			}
 
 			// check role match, skip if role is empty
-			if role != "" && !payload.HasRole(role) {
+			if !payload.HasRole(role) {
 				return auth.NewUnauthorizedError(role)
 			}
 
