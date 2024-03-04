@@ -115,7 +115,7 @@ func run(ctx context.Context, log *zap.SugaredLogger) error {
 	if err != nil {
 		log.Fatal("cannot connect to db:", err)
 	}
-	store := db.NewStore(DB)
+	store := db.NewPostgresStore(DB)
 
 	serverErrors := make(chan error, 1)
 	apiMux := handlers.NewMux(

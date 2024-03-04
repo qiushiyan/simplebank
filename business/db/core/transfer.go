@@ -7,7 +7,7 @@ import (
 	. "github.com/qiushiyan/simplebank/business/db/generated"
 )
 
-func (s *SQLStore) execTx(ctx context.Context, fn QueryFunc) error {
+func (s *PostgresStore) execTx(ctx context.Context, fn QueryFunc) error {
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -43,7 +43,7 @@ type TransferTxResult struct {
 
 // TransferTx performs a money transfer from one account to the other
 // It creates a transfer record, create an entry for both accounts, and update accounts' balance within a single database transaction
-func (s *SQLStore) TransferTx(
+func (s *PostgresStore) TransferTx(
 	ctx context.Context,
 	args TransferTxParams,
 ) (TransferTxResult, error) {

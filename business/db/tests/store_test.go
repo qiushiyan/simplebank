@@ -12,7 +12,7 @@ import (
 // check for transfer (single direction)
 func TestTransferTx(t *testing.T) {
 	var wg sync.WaitGroup
-	store := db.NewStore(testDB)
+	store := db.NewPostgresStore(testDB)
 
 	a1 := createRandomAccount()
 	a2 := createRandomAccount()
@@ -108,7 +108,7 @@ func TestTransferTx(t *testing.T) {
 
 // simulate two accounts transferring to each other concurrently
 func TestTransferTxDeadlock(t *testing.T) {
-	store := db.NewStore(testDB)
+	store := db.NewPostgresStore(testDB)
 
 	a1 := createRandomAccount()
 	a2 := createRandomAccount()
