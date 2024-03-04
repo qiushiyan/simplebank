@@ -30,8 +30,8 @@ func TestTransferTx(t *testing.T) {
 			defer wg.Done()
 
 			result, err := store.TransferTx(ctx, db.TransferTxParams{
-				FromAccountID: a1.ID,
-				ToAccountID:   a2.ID,
+				FromAccountId: a1.ID,
+				ToAccountId:   a2.ID,
 				Amount:        amount,
 			})
 
@@ -126,8 +126,8 @@ func TestTransferTxDeadlock(t *testing.T) {
 			if i%2 == 1 {
 				// transfer from a1 to a2
 				_, err = store.TransferTx(ctx, db.TransferTxParams{
-					FromAccountID: a1.ID,
-					ToAccountID:   a2.ID,
+					FromAccountId: a1.ID,
+					ToAccountId:   a2.ID,
 					Amount:        amount,
 				})
 
@@ -135,8 +135,8 @@ func TestTransferTxDeadlock(t *testing.T) {
 				// transfer from a2 to a1
 
 				_, err = store.TransferTx(ctx, db.TransferTxParams{
-					FromAccountID: a2.ID,
-					ToAccountID:   a1.ID,
+					FromAccountId: a2.ID,
+					ToAccountId:   a1.ID,
 					Amount:        amount,
 				})
 			}

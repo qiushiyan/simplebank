@@ -7,6 +7,7 @@ package db_generated
 
 import (
 	"context"
+	"database/sql"
 )
 
 const addAccountBalance = `-- name: AddAccountBalance :one
@@ -117,60 +118,22 @@ func (q *Queries) GetAccountForUpdate(ctx context.Context, id int64) (Account, e
 const listAccounts = `-- name: ListAccounts :many
 SELECT id, owner, balance, currency, created_at
 FROM accounts
-WHERE owner = $1
-ORDER BY id
-LIMIT $2 OFFSET $3
-`
-
-type ListAccountsParams struct {
-	Owner  string `json:"owner"`
-	Limit  int32  `json:"limit"`
-	Offset int32  `json:"offset"`
-}
-
-func (q *Queries) ListAccounts(ctx context.Context, arg ListAccountsParams) ([]Account, error) {
-	rows, err := q.db.QueryContext(ctx, listAccounts, arg.Owner, arg.Limit, arg.Offset)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	items := []Account{}
-	for rows.Next() {
-		var i Account
-		if err := rows.Scan(
-			&i.ID,
-			&i.Owner,
-			&i.Balance,
-			&i.Currency,
-			&i.CreatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const listAllAccounts = `-- name: ListAllAccounts :many
-SELECT id, owner, balance, currency, created_at
-FROM accounts
+WHERE (
+        $3::varchar IS NULL
+        OR owner = $3::varchar
+    )
 ORDER BY id
 LIMIT $1 OFFSET $2
 `
 
-type ListAllAccountsParams struct {
-	Limit  int32 `json:"limit"`
-	Offset int32 `json:"offset"`
+type ListAccountsParams struct {
+	Limit  int32          `json:"limit"`
+	Offset int32          `json:"offset"`
+	Owner  sql.NullString `json:"owner"`
 }
 
-func (q *Queries) ListAllAccounts(ctx context.Context, arg ListAllAccountsParams) ([]Account, error) {
-	rows, err := q.db.QueryContext(ctx, listAllAccounts, arg.Limit, arg.Offset)
+func (q *Queries) ListAccounts(ctx context.Context, arg ListAccountsParams) ([]Account, error) {
+	rows, err := q.db.QueryContext(ctx, listAccounts, arg.Limit, arg.Offset, arg.Owner)
 	if err != nil {
 		return nil, err
 	}

@@ -1,11 +1,19 @@
 package entrygrp
 
-import db "github.com/qiushiyan/simplebank/business/db/core"
+import (
+	"github.com/qiushiyan/simplebank/business/core/account"
+	"github.com/qiushiyan/simplebank/business/core/entry"
+	db "github.com/qiushiyan/simplebank/business/db/core"
+)
 
 type Handler struct {
-	store db.Store
+	accountCore account.Core
+	entryCore   entry.Core
 }
 
 func New(store db.Store) *Handler {
-	return &Handler{store: store}
+	return &Handler{
+		accountCore: account.NewCore(store),
+		entryCore:   entry.NewCore(store),
+	}
 }

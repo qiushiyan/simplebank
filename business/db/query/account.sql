@@ -16,12 +16,10 @@ UPDATE;
 -- name: ListAccounts :many
 SELECT *
 FROM accounts
-WHERE owner = $1
-ORDER BY id
-LIMIT $2 OFFSET $3;
--- name: ListAllAccounts :many
-SELECT *
-FROM accounts
+WHERE (
+        sqlc.narg(owner)::varchar IS NULL
+        OR owner = sqlc.narg(owner)::varchar
+    )
 ORDER BY id
 LIMIT $1 OFFSET $2;
 -- name: UpdateAccount :one

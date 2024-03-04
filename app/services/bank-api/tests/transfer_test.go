@@ -27,15 +27,15 @@ func TestTransferApi(t *testing.T) {
 			name:  "ok",
 			token: userToken,
 			args: db.TransferTxParams{
-				FromAccountID: userAccount.ID,
-				ToAccountID:   adminAccount.ID,
+				FromAccountId: userAccount.ID,
+				ToAccountId:   adminAccount.ID,
 				Amount:        10,
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
 					TransferTx(gomock.Any(), db.TransferTxParams{
-						FromAccountID: userAccount.ID,
-						ToAccountID:   adminAccount.ID,
+						FromAccountId: userAccount.ID,
+						ToAccountId:   adminAccount.ID,
 						Amount:        10,
 					}).
 					Times(1).
@@ -63,8 +63,8 @@ func TestTransferApi(t *testing.T) {
 			t.Parallel()
 
 			body := transfergrp.TransferRequest{
-				ToAccountId:   tc.args.ToAccountID,
-				FromAccountID: tc.args.FromAccountID,
+				ToAccountId:   tc.args.ToAccountId,
+				FromAccountId: tc.args.FromAccountId,
 				Amount:        tc.args.Amount,
 			}
 

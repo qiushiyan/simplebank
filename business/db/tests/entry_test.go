@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	db "github.com/qiushiyan/simplebank/business/db/core"
 	. "github.com/qiushiyan/simplebank/business/db/generated"
 	"github.com/qiushiyan/simplebank/business/random"
 	"github.com/stretchr/testify/require"
@@ -60,7 +61,7 @@ func TestListEntries(t *testing.T) {
 	}
 
 	args := ListEntriesParams{
-		AccountID: account.ID,
+		AccountID: db.NewNullInt64(&account.ID),
 		Limit:     5,
 		Offset:    0,
 	}

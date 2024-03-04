@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"github.com/qiushiyan/simplebank/business/auth"
-	db "github.com/qiushiyan/simplebank/business/db/core"
 	"github.com/qiushiyan/simplebank/business/web/response"
 	"github.com/qiushiyan/simplebank/foundation/web"
 )
@@ -24,10 +23,9 @@ func (h *Handler) Get(ctx context.Context, w http.ResponseWriter, r *http.Reques
 		return auth.ErrUnauthenticated
 	}
 
-	account, err := h.store.GetAccount(ctx, int64(aid))
-
+	account, err := h.core.QueryById(ctx, int64(aid))
 	if err != nil {
-		return db.NewError(err)
+		return err
 	}
 	if account.Owner != payload.Username {
 		return auth.NewAuthError("account does not belong to user %s", payload.Username)

@@ -27,8 +27,8 @@ func (s *PostgresStore) execTx(ctx context.Context, fn QueryFunc) error {
 
 // TransferTxParams is the input parameters for the transfer transaction
 type TransferTxParams struct {
-	FromAccountID int64 `json:"from_account_id"`
-	ToAccountID   int64 `json:"to_account_id"`
+	FromAccountId int64 `json:"from_account_id"`
+	ToAccountId   int64 `json:"to_account_id"`
 	Amount        int64 `json:"amount"`
 }
 
@@ -54,14 +54,18 @@ func (s *PostgresStore) TransferTx(
 		var err error
 
 		// create the transfer record
-		result.Transfer, err = q.CreateTransfer(ctx, CreateTransferParams(args))
+		result.Transfer, err = q.CreateTransfer(ctx, CreateTransferParams{
+			FromAccountID: args.FromAccountId,
+			ToAccountID:   args.ToAccountId,
+			Amount:        args.Amount,
+		})
 		if err != nil {
 			return err
 		}
 
 		// create the entry for the from account
 		result.FromEntry, err = q.CreateEntry(ctx, CreateEntryParams{
-			AccountID: args.FromAccountID,
+			AccountID: args.FromAccountId,
 			Amount:    -args.Amount,
 		})
 		if err != nil {
@@ -70,7 +74,7 @@ func (s *PostgresStore) TransferTx(
 
 		// create the entry for the to account
 		result.ToEntry, err = q.CreateEntry(ctx, CreateEntryParams{
-			AccountID: args.ToAccountID,
+			AccountID: args.ToAccountId,
 			Amount:    args.Amount,
 		})
 		if err != nil {
@@ -79,12 +83,12 @@ func (s *PostgresStore) TransferTx(
 
 		// update two account balance
 		var fromAccount, toAccount Account
-		fromAccount, err = q.GetAccountForUpdate(ctx, args.FromAccountID)
+		fromAccount, err = q.GetAccountForUpdate(ctx, args.FromAccountId)
 		if err != nil {
 			return err
 		}
 
-		toAccount, err = q.GetAccountForUpdate(ctx, args.ToAccountID)
+		toAccount, err = q.GetAccountForUpdate(ctx, args.ToAccountId)
 		if err != nil {
 			return err
 		}

@@ -5,7 +5,8 @@ RETURNING *;
 -- name: ListEntries :many
 SELECT *
 FROM entries
-WHERE account_id = $1
+WHERE sqlc.narg(account_id)::bigint IS NULL
+    OR account_id = sqlc.narg(account_id)::bigint
     AND (
         COALESCE(sqlc.narg(start_date)::timestamp, NULL) IS NULL
         OR created_at >= sqlc.narg(start_date)::timestamp
@@ -15,7 +16,7 @@ WHERE account_id = $1
         OR created_at <= sqlc.narg(end_date)::timestamp
     )
 ORDER BY created_at DESC
-LIMIT $2 OFFSET $3;
+LIMIT $1 OFFSET $2;
 -- name: GetEntry :one
 SELECT *
 FROM entries

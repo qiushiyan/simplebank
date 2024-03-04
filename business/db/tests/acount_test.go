@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	db "github.com/qiushiyan/simplebank/business/db/core"
 	. "github.com/qiushiyan/simplebank/business/db/generated"
 	"github.com/qiushiyan/simplebank/business/random"
 	"github.com/stretchr/testify/require"
@@ -92,8 +93,9 @@ func TestListAccounts(t *testing.T) {
 		lastAccount = createRandomAccount()
 	}
 
+	owner := db.NewNullString(&lastAccount.Owner)
 	arg := ListAccountsParams{
-		Owner:  lastAccount.Owner,
+		Owner:  owner,
 		Limit:  1,
 		Offset: 0,
 	}

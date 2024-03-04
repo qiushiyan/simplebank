@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/qiushiyan/simplebank/business/auth"
+	"github.com/qiushiyan/simplebank/business/core/account"
 	db "github.com/qiushiyan/simplebank/business/db/core"
-	db_generated "github.com/qiushiyan/simplebank/business/db/generated"
 	"github.com/qiushiyan/simplebank/business/web/response"
 	"github.com/qiushiyan/simplebank/foundation/validate"
 	"github.com/qiushiyan/simplebank/foundation/web"
@@ -32,7 +32,7 @@ func (h *Handler) Create(ctx context.Context, w http.ResponseWriter, r *http.Req
 		return auth.ErrUnauthenticated
 	}
 
-	ret, err := h.store.CreateAccount(ctx, db_generated.CreateAccountParams{
+	ret, err := h.core.Create(ctx, account.NewAccount{
 		Owner:    payload.Username,
 		Currency: req.Currency,
 	})

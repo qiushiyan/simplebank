@@ -6,14 +6,14 @@ import (
 	"net/http"
 
 	"github.com/qiushiyan/simplebank/business/auth"
-	db "github.com/qiushiyan/simplebank/business/db/core"
+	"github.com/qiushiyan/simplebank/business/core/transfer"
 	"github.com/qiushiyan/simplebank/business/web/response"
 	"github.com/qiushiyan/simplebank/foundation/validate"
 	"github.com/qiushiyan/simplebank/foundation/web"
 )
 
 type TransferRequest struct {
-	FromAccountID int64 `json:"from_account_id" validate:"required"`
+	FromAccountId int64 `json:"from_account_id" validate:"required"`
 	ToAccountId   int64 `json:"to_account_id"   validate:"required"`
 	Amount        int64 `json:"amount"          validate:"required,gt=0"`
 }
@@ -34,18 +34,18 @@ func (h *Handler) Transfer(ctx context.Context, w http.ResponseWriter, r *http.R
 		return auth.ErrUnauthenticated
 	}
 
-	fromAccount, err := h.store.GetAccount(ctx, req.FromAccountID)
+	fromAccount, err := h.accountCore.QueryById(ctx, req.FromAccountId)
 	if err != nil {
-		return db.NewError(err)
+		return err
 	}
 
 	if fromAccount.Owner != payload.Username {
 		return auth.NewAuthError("account does not belong to user %s", payload.Username)
 	}
 
-	toAccount, err := h.store.GetAccount(ctx, req.ToAccountId)
+	toAccount, err := h.accountCore.QueryById(ctx, req.ToAccountId)
 	if err != nil {
-		return db.NewError(err)
+		return err
 	}
 
 	if fromAccount.Currency != toAccount.Currency {
@@ -56,15 +56,9 @@ func (h *Handler) Transfer(ctx context.Context, w http.ResponseWriter, r *http.R
 		return fmt.Errorf("insufficient balance: %d", fromAccount.Balance)
 	}
 
-	args := db.TransferTxParams{
-		FromAccountID: req.FromAccountID,
-		ToAccountID:   req.ToAccountId,
-		Amount:        req.Amount,
-	}
-
-	result, err := h.store.TransferTx(ctx, args)
+	result, err := h.transferCore.Create(ctx, transfer.NewTransfer(req))
 	if err != nil {
-		return db.NewError(err)
+		return err
 	}
 
 	return web.RespondJson(ctx, w, result, http.StatusCreated)
