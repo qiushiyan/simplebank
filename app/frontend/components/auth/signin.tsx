@@ -9,6 +9,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "../ui/card";
+import { FloatingInput, FloatingLabel } from "../ui/floating-label-input";
 import { Input } from "../ui/input";
 
 export const SignIn = () => {
@@ -22,14 +23,19 @@ export const SignIn = () => {
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
-				<form className="space-y-2">
-					<div className="space-y-1">
-						<Label htmlFor="username">Username</Label>
-						<Input id="username" defaultValue="" />
+				<form className="space-y-3">
+					<div className="space-y-1 relative">
+						<FloatingInput id="username" defaultValue="" required />
+						<FloatingLabel htmlFor="username">Username</FloatingLabel>
 					</div>
-					<div className="space-y-1">
-						<Label htmlFor="password">Password</Label>
-						<Input id="password" defaultValue="" type="password" />
+					<div className="space-y-1 relative">
+						<FloatingInput
+							id="password"
+							defaultValue=""
+							type="password"
+							required
+						/>
+						<FloatingLabel htmlFor="password">Password</FloatingLabel>
 					</div>
 					<footer className="mt-4 flex justify-end">
 						<Button>Sign in</Button>

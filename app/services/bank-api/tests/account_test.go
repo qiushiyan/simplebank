@@ -8,11 +8,12 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/accountgrp"
+	"github.com/qiushiyan/simplebank/business/core/account"
 	db_generated "github.com/qiushiyan/simplebank/business/db/generated"
 	mockdb "github.com/qiushiyan/simplebank/business/db/mock"
-	"github.com/qiushiyan/simplebank/foundation/validate"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
@@ -28,10 +29,10 @@ func TestGetAccountApi(t *testing.T) {
 		{
 			name:  "ok",
 			token: userToken,
-			id:    userAccount.ID,
+			id:    userAccountId,
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
-					GetAccount(gomock.Any(), gomock.Eq(userAccount.ID)).
+					GetAccount(gomock.Any(), gomock.Eq(userAccountId)).
 					Times(1).
 					Return(userAccount, nil)
 			},
@@ -59,15 +60,15 @@ func TestGetAccountApi(t *testing.T) {
 			// try to get account that does not belong to the user
 			name:  "wrong-owner",
 			token: userToken,
-			id:    adminAccount.ID,
+			id:    adminAccountId,
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
-					GetAccount(gomock.Any(), gomock.Eq(adminAccount.ID)).
+					GetAccount(gomock.Any(), gomock.Eq(adminAccountId)).
 					Times(1).
 					Return(adminAccount, nil)
 			},
 			checker: func(recorder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusUnauthorized, recorder.Code)
+				require.Equal(t, http.StatusForbidden, recorder.Code)
 			},
 		},
 	}
@@ -86,50 +87,54 @@ func TestGetAccountApi(t *testing.T) {
 }
 
 func TestCreateAccountApi(t *testing.T) {
-	newAccount := db_generated.Account{
+	newAccount := account.NewAccount{
 		Owner:    "user",
-		Currency: validate.CAD,
+		Name:     "new account",
 		Balance:  0,
+		Currency: "USD",
 	}
-	args := db_generated.CreateAccountParams{
-		Owner:    newAccount.Owner,
-		Currency: newAccount.Currency,
-		Balance:  newAccount.Balance,
+	arg := db_generated.CreateAccountParams(newAccount)
+
+	account := db_generated.Account{
+		Owner:     newAccount.Owner,
+		Name:      newAccount.Name,
+		Balance:   newAccount.Balance,
+		Currency:  newAccount.Currency,
+		CreatedAt: time.Now(),
 	}
+
 	body := accountgrp.CreateAccountRequest{
+		Name:     newAccount.Name,
 		Currency: newAccount.Currency,
 	}
 	cases := []struct {
 		name       string
-		currency   string
 		token      string
 		buildStubs func(*mockdb.MockStore)
 		checker    func(*httptest.ResponseRecorder)
 	}{
 		{
 			// create new account as user
-			name:     "ok",
-			token:    userToken,
-			currency: newAccount.Currency,
+			name:  "ok",
+			token: userToken,
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
-					CreateAccount(gomock.Any(), gomock.Eq(args)).
+					CreateAccount(gomock.Any(), gomock.Eq(arg)).
 					Times(1).
-					Return(newAccount, nil)
+					Return(account, nil)
 			},
 			checker: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusCreated, recorder.Code)
-				requireBodyMatchAccount(t, recorder.Body, newAccount)
+				requireBodyMatchAccount(t, recorder.Body, account)
 			},
 		},
 		{
 			// create new account without token
-			name:     "unauthorized",
-			token:    "",
-			currency: newAccount.Currency,
+			name:  "unauthorized",
+			token: "",
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
-					CreateAccount(gomock.Any(), gomock.Eq(args)).
+					CreateAccount(gomock.Any(), gomock.Eq(arg)).
 					Times(0)
 			},
 			checker: func(recorder *httptest.ResponseRecorder) {
@@ -140,9 +145,7 @@ func TestCreateAccountApi(t *testing.T) {
 
 	for i := range cases {
 		tc := cases[i]
-
 		t.Run(tc.name, func(t *testing.T) {
-
 			t.Parallel()
 			b, err := json.Marshal(body)
 			require.NoError(t, err)
@@ -159,18 +162,25 @@ func TestCreateAccountApi(t *testing.T) {
 
 func requireBodyMatchAccount(t *testing.T, body *bytes.Buffer, expected db_generated.Account) {
 	got := getResponseData[db_generated.Account](t, body)
-	require.Equal(t, got, expected)
+	require.Equal(t, got.ID, expected.ID)
+	require.Equal(t, got.Owner, expected.Owner)
+	require.Equal(t, got.Name, expected.Name)
+	require.Equal(t, got.Balance, expected.Balance)
+	require.Equal(t, got.Currency, expected.Currency)
+	require.WithinDuration(t, got.CreatedAt, expected.CreatedAt, time.Second)
 }
 
+var userAccountId int64 = 3
 var userAccount = db_generated.Account{
-	ID:       3,
+	ID:       userAccountId,
 	Owner:    "user",
 	Currency: "USD",
 	Balance:  100,
 }
 
+var adminAccountId int64 = 1
 var adminAccount = db_generated.Account{
-	ID:       1,
+	ID:       adminAccountId,
 	Owner:    "admin",
 	Currency: "USD",
 	Balance:  100,

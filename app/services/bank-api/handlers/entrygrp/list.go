@@ -47,7 +47,7 @@ func (h *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Reque
 	}
 
 	if account.Owner != payload.Username {
-		return auth.NewAuthError("account does not belong to user %s", payload.Username)
+		return auth.NewForbiddenError(payload.Username)
 	}
 
 	var q ListEntriesQuery

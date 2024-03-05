@@ -36,7 +36,7 @@ func Errors(log *zap.SugaredLogger) web.Middleware {
 					er = response.ErrorDocument{
 						Error: authErr.Error(),
 					}
-					status = http.StatusUnauthorized
+					status = authErr.Status
 
 				case db.IsError(err):
 					dbErr := db.GetError(err)

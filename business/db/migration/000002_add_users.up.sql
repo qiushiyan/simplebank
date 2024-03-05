@@ -23,8 +23,8 @@ VALUES (
         '$2a$10$SZw5eHfb.e94cBVUbrZ0BOTmXOFtINl7ZOv9Ac9WbYJdOnNZ9Gk6a'
     );
 -- create accounts for the two users
-INSERT INTO "accounts" ("owner", "balance", "currency")
-VALUES ('admin', 100, 'USD'),
-    ('admin', 100, 'EUR'),
-    ('user', 100, 'USD'),
-    ('user', 100, 'EUR');
+INSERT INTO "accounts" ("owner", "name", "balance", "currency")
+VALUES ('admin', 'Investment 1', 100, 'USD'),
+    ('admin', 'Investment 2', 100, 'EUR'),
+    ('user', 'Personal', 100, 'USD'),
+    ('user', 'Family', 100, 'EUR');

@@ -30,6 +30,7 @@ func init() {
 	validate.RegisterValidation("currency", validCurrency)
 	validate.RegisterValidation("password", validPassword)
 	validate.RegisterValidation("username", validUsername)
+	validate.RegisterValidation("accountname", validAccountName)
 
 	// Create a translator for english so the error messages are
 	// more human-readable than technical.
@@ -81,6 +82,14 @@ var validUsername validator.Func = func(fieldLevel validator.FieldLevel) bool {
 	}
 	return false
 
+}
+
+// require account name to be less than 30 characters
+var validAccountName validator.Func = func(fieldLevel validator.FieldLevel) bool {
+	if name, ok := fieldLevel.Field().Interface().(string); ok {
+		return len(name) <= 30
+	}
+	return false
 }
 
 // Check validates the provided model against it's declared tags.

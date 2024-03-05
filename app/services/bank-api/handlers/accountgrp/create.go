@@ -6,13 +6,13 @@ import (
 
 	"github.com/qiushiyan/simplebank/business/auth"
 	"github.com/qiushiyan/simplebank/business/core/account"
-	db "github.com/qiushiyan/simplebank/business/db/core"
 	"github.com/qiushiyan/simplebank/business/web/response"
 	"github.com/qiushiyan/simplebank/foundation/validate"
 	"github.com/qiushiyan/simplebank/foundation/web"
 )
 
 type CreateAccountRequest struct {
+	Name     string `json:"name"     validate:"required,accountname"`
 	Currency string `json:"currency" validate:"required,currency"`
 }
 
@@ -34,10 +34,12 @@ func (h *Handler) Create(ctx context.Context, w http.ResponseWriter, r *http.Req
 
 	ret, err := h.core.Create(ctx, account.NewAccount{
 		Owner:    payload.Username,
+		Name:     req.Name,
 		Currency: req.Currency,
+		Balance:  0,
 	})
 	if err != nil {
-		return db.NewError(err)
+		return err
 	}
 
 	return web.RespondJson(ctx, w, ret, http.StatusCreated)

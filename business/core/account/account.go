@@ -19,6 +19,8 @@ func (a *Core) Create(ctx context.Context, na NewAccount) (Account, error) {
 	account, err := a.store.CreateAccount(ctx, CreateAccountParams{
 		Owner:    na.Owner,
 		Currency: na.Currency,
+		Name:     na.Name,
+		Balance:  na.Balance,
 	})
 
 	if err != nil {

@@ -1,3 +1,4 @@
 export const config = {
-	title: "SimpleBank",
+	title: "Simple Bank",
+	description: "A banking system",
 };

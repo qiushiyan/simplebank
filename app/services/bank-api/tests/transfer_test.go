@@ -27,27 +27,27 @@ func TestTransferApi(t *testing.T) {
 			name:  "ok",
 			token: userToken,
 			args: db.TransferTxParams{
-				FromAccountId: userAccount.ID,
-				ToAccountId:   adminAccount.ID,
+				FromAccountId: userAccountId,
+				ToAccountId:   adminAccountId,
 				Amount:        10,
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
 					TransferTx(gomock.Any(), db.TransferTxParams{
-						FromAccountId: userAccount.ID,
-						ToAccountId:   adminAccount.ID,
+						FromAccountId: userAccountId,
+						ToAccountId:   adminAccountId,
 						Amount:        10,
 					}).
 					Times(1).
 					Return(db.TransferTxResult{}, nil)
 
 				store.EXPECT().
-					GetAccount(gomock.Any(), userAccount.ID).
+					GetAccount(gomock.Any(), userAccountId).
 					Times(1).
 					Return(userAccount, nil)
 
 				store.EXPECT().
-					GetAccount(gomock.Any(), adminAccount.ID).
+					GetAccount(gomock.Any(), adminAccountId).
 					Times(1).
 					Return(adminAccount, nil)
 			},

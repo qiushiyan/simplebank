@@ -3,29 +3,45 @@ package auth
 import (
 	"errors"
 	"fmt"
+	"net/http"
 
 	"github.com/qiushiyan/simplebank/business/auth/token"
 )
 
 var (
-	ErrUnauthenticated = NewAuthError("missing token in `authorization` header")
+	ErrUnauthenticated = NewAuthError(
+		"missing token in `authorization` header",
+		http.StatusUnauthorized,
+	)
 )
 
 // AuthError is used to pass an error during the request through the
 // application with auth specific context.
 type AuthError struct {
-	msg string
+	Status int
+	msg    string
 }
 
 // NewAuthError creates an AuthError for the provided message.
-func NewAuthError(format string, args ...any) error {
+func NewAuthError(msg string, status int) error {
 	return &AuthError{
-		msg: fmt.Sprintf(format, args...),
+		msg:    msg,
+		Status: status,
 	}
 }
 
 func NewUnauthorizedError(need token.Role, args ...any) error {
-	return NewAuthError("attempted action now allowed, need %s", need.Name())
+	return NewAuthError(
+		fmt.Sprintf("attempted action now allowed, need %s", need.Name()),
+		http.StatusUnauthorized,
+	)
+}
+
+func NewForbiddenError(username string) error {
+	return NewAuthError(
+		fmt.Sprintf("account does not belong to user %s", username),
+		http.StatusForbidden,
+	)
 }
 
 // Error implements the error interface. It uses the default message of the

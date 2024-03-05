@@ -40,7 +40,7 @@ func (h *Handler) Transfer(ctx context.Context, w http.ResponseWriter, r *http.R
 	}
 
 	if fromAccount.Owner != payload.Username {
-		return auth.NewAuthError("account does not belong to user %s", payload.Username)
+		return auth.NewForbiddenError(payload.Username)
 	}
 
 	toAccount, err := h.accountCore.QueryById(ctx, req.ToAccountId)

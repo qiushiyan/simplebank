@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"net/http"
 	"time"
 
 	"github.com/qiushiyan/simplebank/business/auth"
@@ -47,7 +48,7 @@ func (u *Core) CreateSession(
 	}
 
 	if !auth.VerifyPassword(user.HashedPassword, ns.Password) {
-		return token.Token{}, User{}, auth.NewAuthError("wrong password")
+		return token.Token{}, User{}, auth.NewAuthError("wrong password", http.StatusForbidden)
 	}
 
 	roles := []token.Role{token.RoleUser}

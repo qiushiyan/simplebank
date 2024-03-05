@@ -28,7 +28,7 @@ func (h *Handler) Get(ctx context.Context, w http.ResponseWriter, r *http.Reques
 		return err
 	}
 	if account.Owner != payload.Username {
-		return auth.NewAuthError("account does not belong to user %s", payload.Username)
+		return auth.NewForbiddenError(payload.Username)
 	}
 
 	return web.RespondJson(ctx, w, account, http.StatusOK)

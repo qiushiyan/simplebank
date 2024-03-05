@@ -16,7 +16,7 @@ func Authenticate() web.Middleware {
 		h := func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 			payload, err := auth.Authenticate(ctx, r.Header.Get("authorization"))
 			if err != nil {
-				return auth.NewAuthError("authenticate: failed: %s", err)
+				return err
 			}
 
 			ctx = auth.SetPayload(ctx, payload)
