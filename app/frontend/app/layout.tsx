@@ -14,7 +14,9 @@ export default function RootLayout({
 }>) {
 	return (
 		<html lang="en">
-			<body className={cn("max-w-3xl mx-auto")}>{children}</body>
+			<body className="min-h-screen bg-background font-sans antialiased">
+				{children}
+			</body>
 		</html>
 	);
 }

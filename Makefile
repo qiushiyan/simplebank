@@ -56,7 +56,7 @@ generate:
 # ==============================================================================
 # Running locally
 run-local:
-	go run app/services/bank-api/main.go --db-port=5433 | go run app/tooling/logfmt/main.go --service=$(SERVICE_NAME)
+	go run app/services/bank-api/main.go | go run app/tooling/logfmt/main.go --service=$(SERVICE_NAME)
 
 run-local-help:
 	go run app/services/bank-api/main.go -h
@@ -132,6 +132,9 @@ bank-api:
 
 # ==============================================================================
 # Chores
+conf-help:
+	go run app/services/bank-api/main.go -h
+
 tidy:
 	go mod tidy
 

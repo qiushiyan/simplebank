@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/ardanlabs/conf/v3"
+	"github.com/joho/godotenv"
 	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers"
 	db "github.com/qiushiyan/simplebank/business/db/core"
 	"github.com/qiushiyan/simplebank/business/web/debug"
@@ -29,6 +30,12 @@ func main() {
 	}
 	defer log.Sync()
 
+	err = godotenv.Load()
+	if err != nil {
+		log.Errorw("startup", "ERROR", err)
+		os.Exit(1)
+	}
+
 	if err := run(context.Background(), log); err != nil {
 		log.Errorw("startup", "ERROR", err)
 		log.Sync()
@@ -37,7 +44,6 @@ func main() {
 }
 
 func run(ctx context.Context, log *zap.SugaredLogger) error {
-
 	log.Infow("startup", "GOMAXPROCS", runtime.GOMAXPROCS(0), "BUILD-", build)
 
 	cfg := struct {
@@ -68,7 +74,7 @@ func run(ctx context.Context, log *zap.SugaredLogger) error {
 		},
 	}
 
-	prefix := "BANK"
+	prefix := ""
 	help, err := conf.Parse(prefix, &cfg)
 	if err != nil {
 		if errors.Is(err, conf.ErrHelpWanted) {
@@ -111,6 +117,7 @@ func run(ctx context.Context, log *zap.SugaredLogger) error {
 	// -------------------------------------------------------------------------
 	// Start API service
 
+	fmt.Println(cfg.DB)
 	DB, err := db.Open(cfg.DB.User, cfg.DB.Password, cfg.DB.Host, cfg.DB.Port, cfg.DB.Name)
 	if err != nil {
 		log.Fatal("cannot connect to db:", err)
