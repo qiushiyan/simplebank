@@ -16,12 +16,7 @@ func NewCore(store db.Store) Core {
 }
 
 func (a *Core) Create(ctx context.Context, na NewAccount) (Account, error) {
-	account, err := a.store.CreateAccount(ctx, CreateAccountParams{
-		Owner:    na.Owner,
-		Currency: na.Currency,
-		Name:     na.Name,
-		Balance:  na.Balance,
-	})
+	account, err := a.store.CreateAccount(ctx, CreateAccountParams(na))
 
 	if err != nil {
 		return Account{}, db.NewError(err)
@@ -56,4 +51,17 @@ func (a *Core) Query(
 	}
 
 	return accounts, nil
+}
+
+func (a *Core) UpdateName(ctx context.Context, id int64, name string) (Account, error) {
+	account, err := a.store.UpdateAccountName(ctx, UpdateAccountNameParams{
+		ID:   id,
+		Name: name,
+	})
+
+	if err != nil {
+		return Account{}, db.NewError(err)
+	}
+
+	return account, nil
 }

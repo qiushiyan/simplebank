@@ -41,21 +41,6 @@ func (m *MockStore) EXPECT() *MockStoreMockRecorder {
 	return m.recorder
 }
 
-// AddAccountBalance mocks base method.
-func (m *MockStore) AddAccountBalance(arg0 context.Context, arg1 db_generated.AddAccountBalanceParams) (db_generated.Account, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddAccountBalance", arg0, arg1)
-	ret0, _ := ret[0].(db_generated.Account)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// AddAccountBalance indicates an expected call of AddAccountBalance.
-func (mr *MockStoreMockRecorder) AddAccountBalance(arg0, arg1 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAccountBalance", reflect.TypeOf((*MockStore)(nil).AddAccountBalance), arg0, arg1)
-}
-
 // Check mocks base method.
 func (m *MockStore) Check(arg0 context.Context) error {
 	m.ctrl.T.Helper()
@@ -277,6 +262,21 @@ func (m *MockStore) TransferTx(arg0 context.Context, arg1 db.TransferTxParams) (
 func (mr *MockStoreMockRecorder) TransferTx(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TransferTx", reflect.TypeOf((*MockStore)(nil).TransferTx), arg0, arg1)
+}
+
+// UpdateAccountBalance mocks base method.
+func (m *MockStore) UpdateAccountBalance(arg0 context.Context, arg1 db_generated.UpdateAccountBalanceParams) (db_generated.Account, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateAccountBalance", arg0, arg1)
+	ret0, _ := ret[0].(db_generated.Account)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateAccountBalance indicates an expected call of UpdateAccountBalance.
+func (mr *MockStoreMockRecorder) UpdateAccountBalance(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateAccountBalance", reflect.TypeOf((*MockStore)(nil).UpdateAccountBalance), arg0, arg1)
 }
 
 // UpdateAccountName mocks base method.

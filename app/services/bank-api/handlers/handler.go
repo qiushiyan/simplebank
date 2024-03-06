@@ -50,6 +50,12 @@ func NewMux(cfg MuxConfig) *web.App {
 	)
 	app.Handle(http.MethodGet, "/accounts", accountHandler.List, middleware.Authenticate())
 	app.Handle(http.MethodGet, "/accounts/:id", accountHandler.Get, middleware.Authenticate())
+	app.Handle(
+		http.MethodPost,
+		"/accounts/:id",
+		accountHandler.UpdateName,
+		middleware.Authenticate(),
+	)
 	app.Handle(http.MethodPost, "/accounts", accountHandler.Create, middleware.Authenticate())
 
 	// ==============================================================================

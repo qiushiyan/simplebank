@@ -1,3 +1,4 @@
+import { AccountLink } from "@/components/account/account-link";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
 	Collapsible,
@@ -9,7 +10,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { ChevronsUpDown } from "lucide-react";
 import Link from "next/link";
 
-export default async function () {
+export default async function ({ children }: { children: React.ReactNode }) {
 	const user = await getCurrentUser();
 	if (!user) {
 		return (
@@ -35,7 +36,7 @@ export default async function () {
 					<Link href="/">Simple Bank</Link>
 				</h2>
 			</header>
-			<section className="flex flex-row gap-4">
+			<section className="flex flex-row gap-4 group">
 				<aside className="w-[200px]">
 					<nav>
 						<ul className="space-y-4">
@@ -50,15 +51,10 @@ export default async function () {
 											</Button>
 										</CollapsibleTrigger>
 									</div>
-									<CollapsibleContent className="space-y-2">
+									<CollapsibleContent className="flex flex-col space-y-2">
 										{accounts ? (
 											accounts.data.map((acc) => (
-												<div
-													className="rounded-md border px-4 py-3 font-mono text-sm"
-													key={acc.id}
-												>
-													{acc.name}
-												</div>
+												<AccountLink id={acc.id} name={acc.name} key={acc.id} />
 											))
 										) : (
 											<p>error loading accounts</p>
@@ -72,7 +68,9 @@ export default async function () {
 						</ul>
 					</nav>
 				</aside>
-				<section className="flex-1">hello {user.name}</section>
+				<section className="flex-1 group-has-[[data-pending]]:animate-pulse">
+					{children}
+				</section>
 			</section>
 		</section>
 	);

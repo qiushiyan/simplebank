@@ -98,7 +98,7 @@ func (s *PostgresStore) TransferTx(
 		// we always update a1 first before a2
 		if fromAccount.ID < toAccount.ID {
 
-			result.FromAccount, err = q.AddAccountBalance(ctx, AddAccountBalanceParams{
+			result.FromAccount, err = q.UpdateAccountBalance(ctx, UpdateAccountBalanceParams{
 				ID:     fromAccount.ID,
 				Amount: -args.Amount,
 			})
@@ -106,26 +106,26 @@ func (s *PostgresStore) TransferTx(
 				return err
 			}
 
-			result.ToAccount, err = q.AddAccountBalance(
+			result.ToAccount, err = q.UpdateAccountBalance(
 				ctx,
-				AddAccountBalanceParams{ID: toAccount.ID, Amount: args.Amount},
+				UpdateAccountBalanceParams{ID: toAccount.ID, Amount: args.Amount},
 			)
 			if err != nil {
 				return err
 			}
 		} else {
 
-			result.ToAccount, err = q.AddAccountBalance(
+			result.ToAccount, err = q.UpdateAccountBalance(
 				ctx,
-				AddAccountBalanceParams{ID: toAccount.ID, Amount: args.Amount},
+				UpdateAccountBalanceParams{ID: toAccount.ID, Amount: args.Amount},
 			)
 			if err != nil {
 				return err
 			}
 
-			result.FromAccount, err = q.AddAccountBalance(
+			result.FromAccount, err = q.UpdateAccountBalance(
 				ctx,
-				AddAccountBalanceParams{ID: fromAccount.ID, Amount: -args.Amount},
+				UpdateAccountBalanceParams{ID: fromAccount.ID, Amount: -args.Amount},
 			)
 			if err != nil {
 				return err
