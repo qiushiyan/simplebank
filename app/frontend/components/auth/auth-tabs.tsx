@@ -12,17 +12,19 @@ type Props = {
 
 export const AuthTabs = ({ tab }: Props) => {
 	return (
-		<Tabs defaultValue={tab}>
-			<TabsList className="grid w-full grid-cols-2">
-				<TabsTrigger value="signin">Sign in</TabsTrigger>
-				<TabsTrigger value="signup">Sign up</TabsTrigger>
-			</TabsList>
-			<TabsContent value="signin" className="">
-				<SignIn />
-			</TabsContent>
-			<TabsContent value="signup">
-				<SignUp />
-			</TabsContent>
-		</Tabs>
+		<section>
+			<Tabs defaultValue={tab}>
+				<TabsList className="grid w-full grid-cols-2">
+					<TabsTrigger value="signin">Sign in</TabsTrigger>
+					<TabsTrigger value="signup">Sign up</TabsTrigger>
+				</TabsList>
+				<TabsContent value="signin" className="">
+					<SignIn />
+				</TabsContent>
+				<TabsContent value="signup">
+					<SignUp />
+				</TabsContent>
+			</Tabs>
+		</section>
 	);
 };

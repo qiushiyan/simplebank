@@ -1,3 +1,4 @@
+import { BreadCrumb } from "@/components/account/breadcrumb";
 import { EditableText } from "@/components/ui/editable-text";
 import { getAccount, getAccounts } from "@/lib/account";
 import { updateAccountName } from "@/lib/actions/account";
@@ -21,6 +22,7 @@ export default async function ({ params }: { params: { id: string } }) {
 
 	return (
 		<div>
+			<BreadCrumb id={account.id} name={account.name} />
 			<EditableText
 				initialValue={account.name}
 				fieldName="account"

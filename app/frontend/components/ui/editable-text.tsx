@@ -40,14 +40,18 @@ export function EditableText({
 		},
 	);
 
+	const escapeEdit = () => {
+		flushSync(() => {
+			setEdit(false);
+		});
+		buttonRef.current?.focus();
+	};
+
 	return edit ? (
 		<form
 			action={async (formData) => {
-				flushSync(() => {
-					setEdit(false);
-				});
-				buttonRef.current?.focus();
-				const newVal = formData.get(fieldName) as string;
+				escapeEdit();
+				const newVal = String(formData.get(fieldName));
 
 				if (newVal && newVal.trim() !== "") {
 					updateText({ value: newVal, pending: true });
@@ -65,17 +69,11 @@ export function EditableText({
 				className={inputClassName}
 				onKeyDown={(event) => {
 					if (event.key === "Escape") {
-						flushSync(() => {
-							setEdit(false);
-						});
-						buttonRef.current?.focus();
+						escapeEdit();
 					}
 				}}
 				onBlur={(event) => {
-					flushSync(() => {
-						setEdit(false);
-					});
-					buttonRef.current?.focus();
+					escapeEdit();
 				}}
 			/>
 		</form>

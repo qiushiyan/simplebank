@@ -6,6 +6,8 @@ CREATE TABLE "accounts" (
   "currency" varchar NOT NULL,
   "created_at" timestamptz NOT NULL DEFAULT (now())
 );
+ALTER TABLE "accounts"
+ADD CONSTRAINT "owner_name_key" UNIQUE ("owner", "name");
 CREATE TABLE "entries" (
   "id" bigserial PRIMARY KEY,
   "account_id" bigint NOT NULL,
