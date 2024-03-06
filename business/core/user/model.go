@@ -6,7 +6,7 @@ type NewUser struct {
 	Email    string
 }
 
-type NewSession struct {
+type NewToken struct {
 	Username string
 	Password string
 }

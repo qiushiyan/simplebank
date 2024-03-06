@@ -35,7 +35,12 @@ func (h *Handler) Signin(ctx context.Context, w http.ResponseWriter, r *http.Req
 		return err
 	}
 
-	token, user, err := h.core.CreateSession(ctx, user.NewSession{
+	u, err := h.core.QueryByUsername(ctx, req.Username)
+	if err != nil {
+		return err
+	}
+
+	token, err := h.core.CreateToken(ctx, u, user.NewToken{
 		Username: req.Username,
 		Password: req.Password,
 	})
@@ -45,7 +50,7 @@ func (h *Handler) Signin(ctx context.Context, w http.ResponseWriter, r *http.Req
 	}
 
 	return web.RespondJson(ctx, w, SigninResponse{
-		User:        NewUserResponse(user),
+		User:        NewUserResponse(u),
 		AccessToken: token.GetToken(),
 	}, http.StatusOK)
 }

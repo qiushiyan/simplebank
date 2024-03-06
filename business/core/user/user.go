@@ -19,6 +19,14 @@ func NewCore(store db.Store) Core {
 	return Core{store: store}
 }
 
+func (u *Core) QueryByUsername(ctx context.Context, username string) (User, error) {
+	user, err := u.store.GetUser(ctx, username)
+	if err != nil {
+		return User{}, db.NewError(err)
+	}
+	return user, nil
+}
+
 func (u *Core) Create(ctx context.Context, nu NewUser) (User, error) {
 	hash, err := auth.HashPassword(nu.Password)
 	if err != nil {
@@ -38,17 +46,13 @@ func (u *Core) Create(ctx context.Context, nu NewUser) (User, error) {
 	return user, nil
 }
 
-func (u *Core) CreateSession(
+func (u *Core) CreateToken(
 	ctx context.Context,
-	ns NewSession,
-) (token.Token, User, error) {
-	user, err := u.store.GetUser(ctx, ns.Username)
-	if err != nil {
-		return token.Token{}, User{}, db.NewError(err)
-	}
-
-	if !auth.VerifyPassword(user.HashedPassword, ns.Password) {
-		return token.Token{}, User{}, auth.NewAuthError("wrong password", http.StatusForbidden)
+	user User,
+	nt NewToken,
+) (token.Token, error) {
+	if !auth.VerifyPassword(user.HashedPassword, nt.Password) {
+		return token.Token{}, auth.NewAuthError("wrong password", http.StatusForbidden)
 	}
 
 	roles := []token.Role{token.RoleUser}
@@ -56,14 +60,14 @@ func (u *Core) CreateSession(
 		roles = append(roles, token.RoleAdmin)
 	}
 
-	nt, err := token.NewToken(
+	t, err := token.NewToken(
 		user.Username,
 		roles,
 		24*7*30*time.Hour,
 	)
 	if err != nil {
-		return token.Token{}, User{}, err
+		return token.Token{}, err
 	}
 
-	return nt, user, nil
+	return t, nil
 }
