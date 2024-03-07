@@ -6,6 +6,7 @@ import (
 	"github.com/qiushiyan/simplebank/business/core/user"
 	db "github.com/qiushiyan/simplebank/business/db/core"
 	db_generated "github.com/qiushiyan/simplebank/business/db/generated"
+	"github.com/qiushiyan/simplebank/foundation/web"
 )
 
 type Handler struct {
@@ -33,3 +34,10 @@ func NewUserResponse(user db_generated.User) UserResponse {
 		PasswordChangedAt: user.PasswordChangedAt,
 	}
 }
+
+func (h *Handler) Register(app *web.App) {
+	app.POST("/signup", h.Signup)
+	app.POST("/signin", h.Signin)
+}
+
+var _ web.RouteGroup = (*Handler)(nil)

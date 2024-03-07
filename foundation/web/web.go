@@ -10,13 +10,18 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/dimfeld/httptreemux/v5"
+	"github.com/dimfeld/httptreemux"
 	"github.com/google/uuid"
 )
 
 // A Handler is a type that handles an http request within App
 // different than the http.Handler in that it accepts context as the first parameter and returns an error
 type Handler func(ctx context.Context, w http.ResponseWriter, r *http.Request) error
+
+// A route group register routes to the app
+type RouteGroup interface {
+	Register(*App)
+}
 
 type App struct {
 	*httptreemux.ContextMux
@@ -30,6 +35,10 @@ func NewApp(shutdown chan os.Signal, mw ...Middleware) *App {
 		shutdown:   shutdown,
 		mw:         mw,
 	}
+}
+
+func (a *App) AddGroup(rg RouteGroup) {
+	rg.Register(a)
 }
 
 func (a *App) Handle(method string, path string, handler Handler, mw ...Middleware) {
@@ -63,14 +72,18 @@ func (a *App) handle(method string, path string, handler Handler) {
 	a.ContextMux.Handle(method, path, h)
 }
 
-func Params(r *http.Request) map[string]string {
-	return httptreemux.ContextParams(r.Context())
+func (a *App) GET(path string, handler Handler, mw ...Middleware) {
+	a.Handle(http.MethodGet, path, handler, mw...)
+}
+
+func (a *App) POST(path string, handler Handler, mw ...Middleware) {
+	a.Handle(http.MethodPost, path, handler, mw...)
 }
 
 // Param returns the web call parameters from the request.
-func Param(r *http.Request, key string) string {
-	m := httptreemux.ContextParams(r.Context())
-	return m[key]
+func Param(r *http.Request, name string) string {
+	params := httptreemux.ContextParams(r.Context())
+	return params[name]
 }
 
 // ParseBody decodes the body of an HTTP request and stores the result in dst.

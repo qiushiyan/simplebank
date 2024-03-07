@@ -117,7 +117,6 @@ func run(ctx context.Context, log *zap.SugaredLogger) error {
 	// -------------------------------------------------------------------------
 	// Start API service
 
-	fmt.Println(cfg.DB)
 	DB, err := db.Open(cfg.DB.User, cfg.DB.Password, cfg.DB.Host, cfg.DB.Port, cfg.DB.Name)
 	if err != nil {
 		log.Fatal("cannot connect to db:", err)
@@ -133,6 +132,7 @@ func run(ctx context.Context, log *zap.SugaredLogger) error {
 			Build:    build,
 		},
 	)
+
 	apiServer := http.Server{
 		Addr:         cfg.Web.APIHost,
 		ReadTimeout:  cfg.Web.ReadTimeout,

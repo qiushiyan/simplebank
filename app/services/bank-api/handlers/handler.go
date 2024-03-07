@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"net/http"
 	"os"
 
 	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/accountgrp"
@@ -9,7 +8,6 @@ import (
 	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/checkgrp"
 	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/entrygrp"
 	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/transfergrp"
-	"github.com/qiushiyan/simplebank/business/auth/token"
 	db "github.com/qiushiyan/simplebank/business/db/core"
 	"github.com/qiushiyan/simplebank/business/web/middleware"
 	"github.com/qiushiyan/simplebank/foundation/web"
@@ -33,48 +31,12 @@ func NewMux(cfg MuxConfig) *web.App {
 	}
 
 	app := web.NewApp(cfg.Shutdown, mw...)
-	accountHandler := accountgrp.New(cfg.Store)
-	authHandler := authgrp.New(cfg.Store)
-	transferHandler := transfergrp.New(cfg.Store)
-	entryHandler := entrygrp.New(cfg.Store)
-	checkHandler := checkgrp.New(cfg.Store, cfg.Build)
 
-	// ==============================================================================
-	// Account route group
-	app.Handle(
-		http.MethodGet,
-		"/accounts/all",
-		accountHandler.ListAll,
-		middleware.Authenticate(),
-		middleware.Authorize(token.RoleAdmin),
-	)
-	app.Handle(http.MethodGet, "/accounts", accountHandler.List, middleware.Authenticate())
-	app.Handle(http.MethodGet, "/accounts/:id", accountHandler.Get, middleware.Authenticate())
-	app.Handle(
-		http.MethodPost,
-		"/accounts/:id",
-		accountHandler.UpdateName,
-		middleware.Authenticate(),
-	)
-	app.Handle(http.MethodPost, "/accounts", accountHandler.Create, middleware.Authenticate())
-
-	// ==============================================================================
-	// Auth route group
-	app.Handle(http.MethodPost, "/signup", authHandler.Signup)
-	app.Handle(http.MethodPost, "/signin", authHandler.Signin)
-
-	// ==============================================================================
-	// Transfer route group
-	app.Handle(http.MethodPost, "/transfer", transferHandler.Transfer, middleware.Authenticate())
-
-	// ==============================================================================
-	// Entires route group
-	app.Handle(http.MethodGet, "/entries", entryHandler.List, middleware.Authenticate())
-
-	// ==============================================================================
-	// Health check route
-	app.Handle(http.MethodGet, "/readiness", checkHandler.Readiness)
-	app.Handle(http.MethodGet, "/liveness", checkHandler.Liveness)
+	app.AddGroup(accountgrp.New(cfg.Store))
+	app.AddGroup(authgrp.New(cfg.Store))
+	app.AddGroup(transfergrp.New(cfg.Store))
+	app.AddGroup(entrygrp.New(cfg.Store))
+	app.AddGroup(checkgrp.New(cfg.Store, cfg.Build))
 
 	return app
 }

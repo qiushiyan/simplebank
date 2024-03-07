@@ -68,3 +68,8 @@ func (h *Handler) Liveness(ctx context.Context, w http.ResponseWriter, r *http.R
 	return web.RespondJson(ctx, w, data, http.StatusOK)
 
 }
+
+func (h Handler) Register(a *web.App) {
+	a.GET("/liveness", h.Liveness)
+	a.GET("/readiness", h.Readiness)
+}
