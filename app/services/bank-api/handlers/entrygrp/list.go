@@ -3,11 +3,11 @@ package entrygrp
 import (
 	"context"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/qiushiyan/simplebank/business/auth"
 	"github.com/qiushiyan/simplebank/business/core/entry"
+	"github.com/qiushiyan/simplebank/business/data/limit"
 	"github.com/qiushiyan/simplebank/business/web/response"
 	"github.com/qiushiyan/simplebank/foundation/validate"
 	"github.com/qiushiyan/simplebank/foundation/web"
@@ -18,13 +18,13 @@ type ListEntriesRequest struct {
 }
 
 type ListEntriesQuery struct {
-	PageId    int `json:"page_id"   validate:"min=1"`
-	PageSize  int `json:"page_size" validate:"min=1,max=20"`
 	EndDate   *time.Time
 	StartDate *time.Time
 }
 
 // List entries for an account
+// pass account id in post request body
+// accepts 4 query parameters, start_date, end_date and page_id, page_size
 func (h *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	var req ListEntriesRequest
 	err := web.ParseBody(r, &req)
@@ -52,24 +52,6 @@ func (h *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Reque
 
 	var q ListEntriesQuery
 
-	if r.FormValue("page_id") == "" {
-		q.PageId = 1
-	} else {
-		q.PageId, err = strconv.Atoi(r.FormValue("page_id"))
-		if err != nil {
-			return response.NewError(err, http.StatusBadRequest)
-		}
-	}
-
-	if r.FormValue("page_size") == "" {
-		q.PageSize = 20
-	} else {
-		q.PageSize, err = strconv.Atoi(r.FormValue("page_size"))
-		if err != nil {
-			return response.NewError(err, http.StatusBadRequest)
-		}
-	}
-
 	if r.FormValue("start_date") != "" {
 		val, err := time.Parse(time.DateOnly, r.FormValue("start_date"))
 		q.StartDate = &val
@@ -90,18 +72,21 @@ func (h *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Reque
 		return err
 	}
 
-	entries, err := h.entryCore.Query(ctx, entry.QueryFilter{
-		AccountId: &req.FromAccountId,
-		StartDate: q.StartDate,
-		EndDate:   q.EndDate,
-	}, entry.QueryLimiter{
-		PageId:   int32(q.PageId),
-		PageSize: int32(q.PageSize),
-	})
+	filter := entry.NewQueryFilter()
+	filter.WithAccountId(req.FromAccountId)
+	filter.WithEndDate(q.EndDate)
+	filter.WithStartDate(q.StartDate)
+
+	limiter, err := limit.Parse(r, 1, 20)
 	if err != nil {
 		return err
 	}
 
+	entries, err := h.entryCore.Query(
+		ctx,
+		filter,
+		limiter,
+	)
 	if err != nil {
 		return err
 	}

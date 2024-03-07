@@ -17,6 +17,10 @@ func RespondJson(ctx context.Context, w http.ResponseWriter, data any, statusCod
 	// Set the status code for the response writer.
 	w.WriteHeader(statusCode)
 
+	if statusCode == http.StatusNoContent {
+		return nil
+	}
+
 	// If the data is not nil, encode it to the response writer.
 	if data != nil {
 		switch statusCode {

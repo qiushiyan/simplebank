@@ -3,6 +3,7 @@ package account
 import (
 	"context"
 
+	"github.com/qiushiyan/simplebank/business/data/limit"
 	db "github.com/qiushiyan/simplebank/business/db/core"
 	. "github.com/qiushiyan/simplebank/business/db/generated"
 )
@@ -37,13 +38,13 @@ func (a *Core) QueryById(ctx context.Context, id int64) (Account, error) {
 func (a *Core) Query(
 	ctx context.Context,
 	filter QueryFilter,
-	limiter QueryLimiter,
+	limiter limit.Limiter,
 ) ([]Account, error) {
 	owner := db.NewNullString(filter.Owner)
 	params := ListAccountsParams{
 		Owner:  owner,
-		Limit:  limiter.PageSize,
-		Offset: (limiter.PageId - 1) * limiter.PageSize,
+		Limit:  limiter.Limit,
+		Offset: limiter.Offset,
 	}
 	accounts, err := a.store.ListAccounts(ctx, params)
 	if err != nil {

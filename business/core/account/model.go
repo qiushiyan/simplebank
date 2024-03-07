@@ -6,12 +6,3 @@ type NewAccount struct {
 	Balance  int64
 	Currency string
 }
-
-type QueryFilter struct {
-	Owner *string
-}
-
-type QueryLimiter struct {
-	PageId   int32
-	PageSize int32
-}

@@ -3,6 +3,7 @@ package entry
 import (
 	"context"
 
+	"github.com/qiushiyan/simplebank/business/data/limit"
 	db "github.com/qiushiyan/simplebank/business/db/core"
 	. "github.com/qiushiyan/simplebank/business/db/generated"
 )
@@ -18,14 +19,14 @@ func NewCore(store db.Store) Core {
 func (c *Core) Query(
 	ctx context.Context,
 	filter QueryFilter,
-	limiter QueryLimiter,
+	limiter limit.Limiter,
 ) ([]Entry, error) {
 	params := ListEntriesParams{
 		AccountID: db.NewNullInt64(filter.AccountId),
 		StartDate: db.NewNullTime(filter.StartDate),
 		EndDate:   db.NewNullTime(filter.EndDate),
-		Limit:     limiter.PageSize,
-		Offset:    (limiter.PageId - 1) * limiter.PageSize,
+		Limit:     limiter.Limit,
+		Offset:    limiter.Offset,
 	}
 	entries, err := c.store.ListEntries(ctx, params)
 	if err != nil {
