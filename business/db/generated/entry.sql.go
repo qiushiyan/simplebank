@@ -7,7 +7,8 @@ package db_generated
 
 import (
 	"context"
-	"database/sql"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createEntry = `-- name: CreateEntry :one
@@ -22,7 +23,7 @@ type CreateEntryParams struct {
 }
 
 func (q *Queries) CreateEntry(ctx context.Context, arg CreateEntryParams) (Entry, error) {
-	row := q.db.QueryRowContext(ctx, createEntry, arg.AccountID, arg.Amount)
+	row := q.db.QueryRow(ctx, createEntry, arg.AccountID, arg.Amount)
 	var i Entry
 	err := row.Scan(
 		&i.ID,
@@ -40,7 +41,7 @@ WHERE id = $1
 `
 
 func (q *Queries) GetEntry(ctx context.Context, id int64) (Entry, error) {
-	row := q.db.QueryRowContext(ctx, getEntry, id)
+	row := q.db.QueryRow(ctx, getEntry, id)
 	var i Entry
 	err := row.Scan(
 		&i.ID,
@@ -69,15 +70,15 @@ LIMIT $1 OFFSET $2
 `
 
 type ListEntriesParams struct {
-	Limit     int32         `json:"limit"`
-	Offset    int32         `json:"offset"`
-	AccountID sql.NullInt64 `json:"account_id"`
-	StartDate sql.NullTime  `json:"start_date"`
-	EndDate   sql.NullTime  `json:"end_date"`
+	Limit     int32            `json:"limit"`
+	Offset    int32            `json:"offset"`
+	AccountID pgtype.Int8      `json:"account_id"`
+	StartDate pgtype.Timestamp `json:"start_date"`
+	EndDate   pgtype.Timestamp `json:"end_date"`
 }
 
 func (q *Queries) ListEntries(ctx context.Context, arg ListEntriesParams) ([]Entry, error) {
-	rows, err := q.db.QueryContext(ctx, listEntries,
+	rows, err := q.db.Query(ctx, listEntries,
 		arg.Limit,
 		arg.Offset,
 		arg.AccountID,
@@ -100,9 +101,6 @@ func (q *Queries) ListEntries(ctx context.Context, arg ListEntriesParams) ([]Ent
 			return nil, err
 		}
 		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

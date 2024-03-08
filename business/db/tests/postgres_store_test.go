@@ -119,6 +119,11 @@ func TestTransferTxDeadlock(t *testing.T) {
 
 	errs := make(chan error)
 
+	// 4 concurrent transfer
+	// 1. a1 -> a2
+	// 2. a2 -> a1
+	// 3. a1 -> a2
+	// 4. a2 -> a1
 	for i := 0; i < n; i++ {
 		go func(i int) {
 			var err error

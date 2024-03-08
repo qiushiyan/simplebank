@@ -2,11 +2,11 @@ package tests
 
 import (
 	"context"
-	"database/sql"
 	"log"
 	"testing"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	db "github.com/qiushiyan/simplebank/business/db/core"
 	. "github.com/qiushiyan/simplebank/business/db/generated"
 	"github.com/qiushiyan/simplebank/business/random"
@@ -104,7 +104,7 @@ func TestDeleteAccount(t *testing.T) {
 
 	account2, err := testQueries.GetAccount(context.Background(), account1.ID)
 	require.Error(t, err)
-	require.EqualError(t, err, sql.ErrNoRows.Error())
+	require.EqualError(t, err, pgx.ErrNoRows.Error())
 	require.Empty(t, account2)
 }
 
@@ -114,7 +114,7 @@ func TestListAccounts(t *testing.T) {
 		lastAccount = createRandomAccount()
 	}
 
-	owner := db.NewNullString(&lastAccount.Owner)
+	owner := db.NewText(&lastAccount.Owner)
 	arg := ListAccountsParams{
 		Owner:  owner,
 		Limit:  1,

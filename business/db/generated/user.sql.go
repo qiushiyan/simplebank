@@ -7,7 +7,8 @@ package db_generated
 
 import (
 	"context"
-	"database/sql"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createUser = `-- name: CreateUser :one
@@ -23,7 +24,7 @@ type CreateUserParams struct {
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, createUser, arg.Username, arg.HashedPassword, arg.Email)
+	row := q.db.QueryRow(ctx, createUser, arg.Username, arg.HashedPassword, arg.Email)
 	var i User
 	err := row.Scan(
 		&i.Username,
@@ -43,7 +44,7 @@ LIMIT 1
 `
 
 func (q *Queries) GetUser(ctx context.Context, username string) (User, error) {
-	row := q.db.QueryRowContext(ctx, getUser, username)
+	row := q.db.QueryRow(ctx, getUser, username)
 	var i User
 	err := row.Scan(
 		&i.Username,
@@ -68,14 +69,14 @@ RETURNING username, email, hashed_password, password_changed_at, created_at
 `
 
 type UpdateUserParams struct {
-	HashedPassword    sql.NullString `json:"hashed_password"`
-	PasswordChangedAt sql.NullTime   `json:"password_changed_at"`
-	Email             sql.NullString `json:"email"`
-	Username          string         `json:"username"`
+	HashedPassword    pgtype.Text        `json:"hashed_password"`
+	PasswordChangedAt pgtype.Timestamptz `json:"password_changed_at"`
+	Email             pgtype.Text        `json:"email"`
+	Username          string             `json:"username"`
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, updateUser,
+	row := q.db.QueryRow(ctx, updateUser,
 		arg.HashedPassword,
 		arg.PasswordChangedAt,
 		arg.Email,

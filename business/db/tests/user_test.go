@@ -45,7 +45,12 @@ func TestGetUser(t *testing.T) {
 	require.True(t, auth.VerifyPassword(user2.HashedPassword, password))
 
 	require.WithinDuration(t, user.CreatedAt, user2.CreatedAt, time.Second)
-	require.WithinDuration(t, user.PasswordChangedAt, user2.PasswordChangedAt, time.Second)
+	require.WithinDuration(
+		t,
+		user.PasswordChangedAt,
+		user2.PasswordChangedAt,
+		time.Second,
+	)
 }
 
 func createRandomUser() (User, string) {

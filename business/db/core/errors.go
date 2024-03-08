@@ -1,11 +1,12 @@
 package db
 
 import (
-	"database/sql"
 	"errors"
 	"net/http"
 
-	"github.com/lib/pq"
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 type Error struct {
@@ -18,9 +19,9 @@ func NewError(err error) error {
 
 	switch {
 	case isPgError(err):
-		de := err.(*pq.Error)
-		switch de.Code.Name() {
-		case "unique_violation", "foreign_key_violation":
+		de := err.(*pgconn.PgError)
+		switch de.Code {
+		case pgerrcode.UniqueViolation, pgerrcode.ForeignKeyViolation:
 			status = http.StatusForbidden
 		default:
 			status = http.StatusInternalServerError
@@ -55,10 +56,10 @@ func IsError(err error) bool {
 }
 
 func isPgError(err error) bool {
-	var e *pq.Error
+	var e *pgconn.PgError
 	return errors.As(err, &e)
 }
 
 func isNoRowsError(err error) bool {
-	return err == sql.ErrNoRows
+	return err == pgx.ErrNoRows
 }

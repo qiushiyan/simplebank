@@ -2,7 +2,6 @@ package tests
 
 import (
 	"bytes"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -10,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/accountgrp"
 	"github.com/qiushiyan/simplebank/business/core/account"
 	db "github.com/qiushiyan/simplebank/business/db/core"
@@ -46,12 +46,12 @@ func TestGetAccountApi(t *testing.T) {
 			// try to get account that does not exist
 			name:  "not-found",
 			token: userToken,
-			id:    1111,
+			id:    0,
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
-					GetAccount(gomock.Any(), gomock.Eq(int64(1111))).
+					GetAccount(gomock.Any(), gomock.Eq(int64(0))).
 					Times(1).
-					Return(db_generated.Account{}, sql.ErrNoRows)
+					Return(db_generated.Account{}, pgx.ErrNoRows)
 			},
 			checker: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusNotFound, recorder.Code)
@@ -169,7 +169,7 @@ func TestListAccountsApi(t *testing.T) {
 		return db_generated.ListAccountsParams{
 			Limit:  5,
 			Offset: 0,
-			Owner:  db.NewNullString(&owner),
+			Owner:  db.NewText(&owner),
 		}
 	}
 

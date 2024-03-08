@@ -22,9 +22,9 @@ func (c *Core) Query(
 	limiter limit.Limiter,
 ) ([]Entry, error) {
 	params := ListEntriesParams{
-		AccountID: db.NewNullInt64(filter.AccountId),
-		StartDate: db.NewNullTime(filter.StartDate),
-		EndDate:   db.NewNullTime(filter.EndDate),
+		AccountID: db.NewInt8(filter.AccountId),
+		StartDate: db.NewTimestamp(filter.StartDate),
+		EndDate:   db.NewTimestamp(filter.EndDate),
 		Limit:     limiter.Limit,
 		Offset:    limiter.Offset,
 	}

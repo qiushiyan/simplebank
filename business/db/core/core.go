@@ -3,7 +3,7 @@ package db
 import (
 	"context"
 
-	_ "github.com/lib/pq"
+	_ "github.com/jackc/pgx/v5"
 
 	. "github.com/qiushiyan/simplebank/business/db/generated"
 )

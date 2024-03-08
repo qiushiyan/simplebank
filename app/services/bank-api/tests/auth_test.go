@@ -10,7 +10,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/lib/pq"
+	"github.com/jackc/pgerrcode"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/authgrp"
 	"github.com/qiushiyan/simplebank/business/auth"
 	db_generated "github.com/qiushiyan/simplebank/business/db/generated"
@@ -69,9 +70,8 @@ func TestSignupAPi(t *testing.T) {
 				store.EXPECT().CreateUser(gomock.Any(), EqCreateUserParams(
 					arg,
 					password,
-				)).Times(1).Return(user, &pq.Error{
-					// pq errorCodeNames
-					Code: "23505",
+				)).Times(1).Return(db_generated.User{}, &pgconn.PgError{
+					Code: pgerrcode.UniqueViolation,
 				})
 			},
 			checker: func(recorder *httptest.ResponseRecorder) {

@@ -40,7 +40,7 @@ func (a *Core) Query(
 	filter QueryFilter,
 	limiter limit.Limiter,
 ) ([]Account, error) {
-	owner := db.NewNullString(filter.Owner)
+	owner := db.NewText(filter.Owner)
 	params := ListAccountsParams{
 		Owner:  owner,
 		Limit:  limiter.Limit,

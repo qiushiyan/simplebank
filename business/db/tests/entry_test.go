@@ -61,7 +61,7 @@ func TestListEntries(t *testing.T) {
 	}
 
 	args := ListEntriesParams{
-		AccountID: db.NewNullInt64(&account.ID),
+		AccountID: db.NewInt8(&account.ID),
 		Limit:     5,
 		Offset:    0,
 	}
