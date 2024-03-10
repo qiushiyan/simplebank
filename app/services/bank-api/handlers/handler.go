@@ -32,11 +32,13 @@ func NewMux(cfg MuxConfig) *web.App {
 
 	app := web.NewApp(cfg.Shutdown, mw...)
 
-	app.AddGroup(accountgrp.New(cfg.Store))
-	app.AddGroup(authgrp.New(cfg.Store))
-	app.AddGroup(transfergrp.New(cfg.Store))
-	app.AddGroup(entrygrp.New(cfg.Store))
-	app.AddGroup(checkgrp.New(cfg.Store, cfg.Build))
+	app.AddGroup(
+		accountgrp.New(cfg.Store),
+		authgrp.New(cfg.Store),
+		transfergrp.New(cfg.Store),
+		entrygrp.New(cfg.Store),
+		checkgrp.New(cfg.Store, cfg.Build),
+	)
 
 	return app
 }

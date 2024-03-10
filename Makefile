@@ -9,6 +9,8 @@ APP             := bank-api
 VERSION         := 0.0.1
 SERVICE_IMAGE   := $(BASE_IMAGE_NAME)/$(SERVICE_NAME):$(VERSION)
 CONTAINER_NAME  := bank-api-postgres
+POSTGRES        := postgres:latest
+
 
 # ==============================================================================
 # Install dependencies
@@ -26,6 +28,9 @@ dev-brew:
 	brew list kubectl || brew install kubectl
 	brew list kustomize || brew install kustomize
 	brew list pgcli || brew install pgcli
+
+dev-docker:
+	docker pull $(POSTGRES)
 
 # ==============================================================================
 # Database
@@ -72,11 +77,15 @@ dev-up:
 		--config zarf/k8s/dev/kind-config.yaml
 
 	kubectl wait --timeout=120s --namespace=local-path-storage --for=condition=Available deployment/local-path-provisioner
+	kind load docker-image $(POSTGRES) --name $(KIND_CLUSTER)
 
 dev-load:
 	kind load docker-image $(SERVICE_IMAGE) --name $(KIND_CLUSTER)
 
 dev-apply:
+	kustomize build zarf/k8s/dev/database | kubectl apply -f -
+	kubectl rollout status --namespace=$(NAMESPACE) --watch --timeout=120s sts/database
+
 	kustomize build zarf/k8s/dev/bank-api | kubectl apply -f -
 	kubectl wait pods --namespace=$(NAMESPACE) --selector app=$(APP) --timeout=120s --for=condition=Ready
 
@@ -121,6 +130,9 @@ dev-update-apply: all dev-load dev-apply
 # ==============================================================================
 # Building containers
 all: bank-api
+
+frontend:
+	docker build -f zarf/docker/dockerfile.frontend -t simplebank-frontend .
 
 bank-api:
 	docker build \

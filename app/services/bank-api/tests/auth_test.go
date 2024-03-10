@@ -10,10 +10,9 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/jackc/pgerrcode"
-	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/authgrp"
 	"github.com/qiushiyan/simplebank/business/auth"
+	db "github.com/qiushiyan/simplebank/business/db/core"
 	db_generated "github.com/qiushiyan/simplebank/business/db/generated"
 	mockdb "github.com/qiushiyan/simplebank/business/db/mock"
 	"github.com/qiushiyan/simplebank/business/random"
@@ -70,9 +69,7 @@ func TestSignupAPi(t *testing.T) {
 				store.EXPECT().CreateUser(gomock.Any(), EqCreateUserParams(
 					arg,
 					password,
-				)).Times(1).Return(db_generated.User{}, &pgconn.PgError{
-					Code: pgerrcode.UniqueViolation,
-				})
+				)).Times(1).Return(db_generated.User{}, &db.ErrUniqueViolation)
 			},
 			checker: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusForbidden, recorder.Code)

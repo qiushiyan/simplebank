@@ -37,8 +37,10 @@ func NewApp(shutdown chan os.Signal, mw ...Middleware) *App {
 	}
 }
 
-func (a *App) AddGroup(rg RouteGroup) {
-	rg.Register(a)
+func (a *App) AddGroup(gs ...RouteGroup) {
+	for i := range gs {
+		gs[i].Register(a)
+	}
 }
 
 func (a *App) Handle(method string, path string, handler Handler, mw ...Middleware) {
@@ -64,6 +66,8 @@ func (a *App) handle(method string, path string, handler Handler) {
 			// except for the shutdown error
 			if validateShutdown(err) {
 				a.SignalShutdown()
+				return
+			} else {
 				return
 			}
 		}

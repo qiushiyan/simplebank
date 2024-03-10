@@ -1,8 +1,8 @@
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { TestUsername } from "@/lib/user";
 import { getServerSession } from "next-auth";
 import { z } from "zod";
 import { env } from "./env.mjs";
+import { authOptions } from "./nextauth";
 
 const TestUsernameSchema = z.custom<TestUsername>();
 

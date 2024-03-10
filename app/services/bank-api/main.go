@@ -32,8 +32,7 @@ func main() {
 
 	err = godotenv.Load()
 	if err != nil {
-		log.Errorw("startup", "ERROR", err)
-		os.Exit(1)
+		log.Warn("no .env file found")
 	}
 
 	if err := run(context.Background(), log); err != nil {
