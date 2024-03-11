@@ -1,5 +1,5 @@
 ALPINE          := alpine:3.18
-KIND_CLUSTER    := bank-system-cluster
+KIND_CLUSTER    := simplebank-cluster
 NAMESPACE       := simplebank
 KIND            := kindest/node:v1.29.0@sha256:eaa1450915475849a73a9227b8f201df25e55e268e5d619312131292e324d570
 TELEPRESENCE    := datawire/tel2:2.13.1
@@ -120,6 +120,12 @@ dev-describe-gateway:
 
 dev-logs:
 	kubectl logs --namespace=$(NAMESPACE) -l app=$(APP) --all-containers=true -f --tail=100 | go run app/tooling/logfmt/main.go --service=$(SERVICE_NAME)
+
+dev-logs-db:
+	kubectl logs --namespace=$(NAMESPACE) -l app=database --all-containers=true -f --tail=100
+
+dev-logs-init:
+	kubectl logs --namespace=$(NAMESPACE) -l app=$(APP) -f --tail=100 -c init-migrate
 
 
 dev-restart:
