@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -55,17 +54,8 @@ func (s *PostgresStore) Check(ctx context.Context) error {
 	return s.pool.QueryRow(ctx, q).Scan(&tmp)
 }
 
-func Open(ctx context.Context, user, password, host, port, dbname string) (*pgxpool.Pool, error) {
-	connectionString := fmt.Sprintf(
-		"postgresql://%s:%s@%s:%s/%s?sslmode=disable",
-		user,
-		password,
-		host,
-		port,
-		dbname,
-	)
-
-	return pgxpool.New(ctx, connectionString)
+func Open(ctx context.Context, url string) (*pgxpool.Pool, error) {
+	return pgxpool.New(ctx, url)
 }
 
 // TransferTxParams is the input parameters for the transfer transaction

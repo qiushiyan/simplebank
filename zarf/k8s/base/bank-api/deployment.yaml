@@ -42,10 +42,8 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
-            - name: DB_HOST
-              value: database-service.simplebank.svc.cluster.local
-            - name: DB_NAME
-              value: postgres
+            - name: DB_URL
+              value: postgres://postgres:postgres@database-service.simplebank.svc.cluster.local:5432/postgres
 
           ports:
             - name: bank-api

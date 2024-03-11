@@ -19,7 +19,7 @@ ARG BUILD_DATE
 ARG BUILD_REF
 RUN addgroup -g 1000 -S bank && \
     adduser -u 1000 -h /simplebank -G bank -S bank
-# COPY --from=build_bank-api --chown=bank:bank /simplebank/zarf/keys/. /simplebank/zarf/keys/.
+
 COPY --from=build_bank-api --chown=bank:bank /simplebank/app/services/bank-api/bank-api /simplebank/bank-api
 WORKDIR /simplebank
 USER bank
