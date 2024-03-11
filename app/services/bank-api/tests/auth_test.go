@@ -72,7 +72,7 @@ func TestSignupAPi(t *testing.T) {
 				)).Times(1).Return(db_generated.User{}, &db.ErrUniqueViolation)
 			},
 			checker: func(recorder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusForbidden, recorder.Code)
+				require.Equal(t, http.StatusConflict, recorder.Code)
 			},
 		},
 		{

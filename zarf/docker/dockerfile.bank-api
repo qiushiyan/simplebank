@@ -4,12 +4,11 @@ ENV CGO_ENABLED=0
 ARG BUILD_REF
 
 RUN mkdir /simplebank
-COPY go.* /simplebank/
+COPY . /simplebank/
 WORKDIR /simplebank
 RUN go mod download
 
 COPY . /simplebank
-
 WORKDIR /simplebank/app/services/bank-api
 RUN go build -ldflags "-X main.build=${BUILD_REF}"
 
@@ -21,6 +20,7 @@ RUN addgroup -g 1000 -S bank && \
     adduser -u 1000 -h /simplebank -G bank -S bank
 
 COPY --from=build_bank-api --chown=bank:bank /simplebank/app/services/bank-api/bank-api /simplebank/bank-api
+COPY --from=build_bank-api --chown=bank:bank /simplebank/business/db/migration /simplebank/business/db/migration
 WORKDIR /simplebank
 USER bank
 CMD ["./bank-api"]

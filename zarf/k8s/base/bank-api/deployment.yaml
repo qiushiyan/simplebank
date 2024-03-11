@@ -43,7 +43,7 @@ spec:
                 fieldRef:
                   fieldPath: spec.nodeName
             - name: DB_URL
-              value: postgres://postgres:postgres@database-service.simplebank.svc.cluster.local:5432/postgres
+              value: postgres://postgres:postgres@database-service.simplebank.svc.cluster.local:5432/bank?sslmode=disable
 
           ports:
             - name: bank-api

@@ -12,6 +12,9 @@ import (
 	"time"
 
 	"github.com/ardanlabs/conf/v3"
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/joho/godotenv"
 	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers"
 	db "github.com/qiushiyan/simplebank/business/db/core"
@@ -88,8 +91,11 @@ func run(ctx context.Context, log *zap.SugaredLogger) error {
 	log.Infow("startup", "with config", out)
 
 	// -------------------------------------------------------------------------
-	// Start Debug Service
+	// run migration
+	runMigration(ctx, log, cfg.DB.URL)
 
+	// -------------------------------------------------------------------------
+	// Start Debug Service
 	log.Infow("startup", "status", "debug v1 router started", "host", cfg.Web.DebugHost)
 
 	go func() {
@@ -161,5 +167,17 @@ func run(ctx context.Context, log *zap.SugaredLogger) error {
 	}
 
 	return nil
+}
 
+func runMigration(ctx context.Context, log *zap.SugaredLogger, dbUrl string) {
+	migration, err := migrate.New("file://business/db/migration", dbUrl)
+	if err != nil {
+		log.Errorf("failed to create migration: %v", err)
+	}
+
+	if err = migration.Up(); err != nil && err != migrate.ErrNoChange {
+		log.Errorf("failed to run migration up: %v", err)
+	}
+
+	log.Info("db migrated successfully")
 }

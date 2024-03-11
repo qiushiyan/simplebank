@@ -50,10 +50,13 @@ migrate-create:
 	migrate create -ext sql -dir business/db/migration -seq init_schema
 
 migrate-up:
-	migrate -path business/db/migration -database "postgresql://postgres:postgres@localhost:5433/bank?sslmode=disable" --verbose up
+	migrate -path business/db/migration -database "postgresql://postgres:postgres@localhost:5432/bank?sslmode=disable" --verbose up
 
 migrate-down:
 	migrate -path business/db/migration -database "postgresql://postgres:postgres@localhost:5433/bank?sslmode=disable" --verbose down
+
+migrate-up-test:
+	migrate -path business/db/migration -database "postgresql://postgres:postgres@localhost:5432/bank_test?sslmode=disable" --verbose up
 
 generate:
 	sqlc generate
