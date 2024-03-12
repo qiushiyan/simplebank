@@ -19,7 +19,7 @@ var (
 )
 
 type Token struct {
-	t string
+	Value string
 }
 
 func Decrypt(t string) (Payload, error) {
@@ -78,9 +78,5 @@ func NewToken(username string, roles []Role, duration time.Duration) (Token, err
 		return Token{}, err
 	}
 
-	return Token{t: token}, nil
-}
-
-func (t Token) GetToken() string {
-	return t.t
+	return Token{Value: token}, nil
 }

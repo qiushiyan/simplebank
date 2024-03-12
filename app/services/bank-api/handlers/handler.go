@@ -23,14 +23,14 @@ type MuxConfig struct {
 }
 
 func NewMux(cfg MuxConfig) *web.App {
-	mw := []web.Middleware{
+	globalMiddlewares := []web.Middleware{
 		middleware.Logger(cfg.Log),
 		middleware.Errors(cfg.Log),
 		middleware.Panics(),
 		middleware.Metrics(),
 	}
 
-	app := web.NewApp(cfg.Shutdown, mw...)
+	app := web.NewApp(cfg.Shutdown, globalMiddlewares...)
 
 	app.AddGroup(
 		accountgrp.New(cfg.Store),

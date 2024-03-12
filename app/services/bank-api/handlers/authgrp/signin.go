@@ -42,6 +42,6 @@ func (h *Handler) Signin(ctx context.Context, w http.ResponseWriter, r *http.Req
 
 	return web.RespondJson(ctx, w, SigninResponse{
 		User:        NewUserResponse(u),
-		AccessToken: token.GetToken(),
+		AccessToken: token.Value,
 	}, http.StatusOK)
 }

@@ -54,8 +54,13 @@ func (s *PostgresStore) Check(ctx context.Context) error {
 	return s.pool.QueryRow(ctx, q).Scan(&tmp)
 }
 
-func Open(ctx context.Context, url string) (*pgxpool.Pool, error) {
-	return pgxpool.New(ctx, url)
+func Open(ctx context.Context, config string) (*pgxpool.Pool, error) {
+	conf, err := pgxpool.ParseConfig(config)
+	if err != nil {
+		return nil, err
+	}
+	db, err := pgxpool.NewWithConfig(ctx, conf)
+	return db, err
 }
 
 // TransferTxParams is the input parameters for the transfer transaction

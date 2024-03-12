@@ -20,7 +20,7 @@ func NewLimiter() Limiter {
 	}
 }
 
-func WithPage(pageId int32, pageSize int32) Limiter {
+func WithPaging(pageId int32, pageSize int32) Limiter {
 	return Limiter{
 		Limit:  pageSize,
 		Offset: (pageId - 1) * pageSize,
@@ -28,31 +28,29 @@ func WithPage(pageId int32, pageSize int32) Limiter {
 }
 
 func Parse(r *http.Request, defaultPageId int32, defaultPageSize int32) (Limiter, error) {
-	pageId := r.URL.Query().Get("page_id")
-	pageSize := r.URL.Query().Get("page_size")
+	id := int(defaultPageId)
+	size := int(defaultPageSize)
+	var err error
 
-	if pageId == "" {
-		pageId = strconv.Itoa(int(defaultPageId))
+	if pageId := r.URL.Query().Get("page_id"); pageId != "" {
+		id, err = strconv.Atoi(pageId)
+		if err != nil {
+			return Limiter{}, err
+		}
 	}
 
-	if pageSize == "" {
-		pageSize = strconv.Itoa(int(defaultPageSize))
+	if pageSize := r.URL.Query().Get("page_size"); pageSize != "" {
+		size, err = strconv.Atoi(pageSize)
+		if err != nil {
+			return Limiter{}, err
+		}
 	}
 
-	id, err := strconv.Atoi(pageId)
-	if err != nil {
+	l := WithPaging(int32(id), int32(size))
+
+	if err := validate.Check(l); err != nil {
 		return Limiter{}, err
 	}
 
-	size, err := strconv.Atoi(pageSize)
-	if err != nil {
-		return Limiter{}, err
-	}
-
-	limiter := WithPage(int32(id), int32(size))
-	if err := validate.Check(limiter); err != nil {
-		return Limiter{}, err
-	}
-
-	return limiter, nil
+	return l, nil
 }

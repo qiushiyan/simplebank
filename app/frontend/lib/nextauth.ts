@@ -1,8 +1,7 @@
-import { AuthOptions, getServerSession } from "next-auth";
+import { AuthOptions } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { z } from "zod";
 import { getUser } from "./auth";
-import { env } from "./env.mjs";
 import { TestUsername } from "./user";
 
 const QuerySchema = z.object({

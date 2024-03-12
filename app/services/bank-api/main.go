@@ -56,10 +56,9 @@ func run(ctx context.Context, log *zap.SugaredLogger) error {
 			DebugHost       string        `conf:"default:0.0.0.0:4000"`
 		}
 		DB struct {
-			URL          string `conf:"default:postgres://postgres:postgres@localhost:5432/bank?sslmode=disable,mask"`
-			MaxIdleConns int    `conf:"default:2"`
-			MaxOpenConns int    `conf:"default:0"`
-			DisableTLS   bool   `conf:"default:true"`
+			URL      string `conf:"default:postgres://postgres:postgres@localhost:5432/bank?sslmode=disable,mask"`
+			MaxConns int    `conf:"default:4"`
+			SSLMode  string `conf:"default:disable"`
 		}
 		Args conf.Args
 	}{
@@ -110,8 +109,15 @@ func run(ctx context.Context, log *zap.SugaredLogger) error {
 
 	// -------------------------------------------------------------------------
 	// Start API service
+	// postgres://jack:secret@pg.example.com:5432/mydb?sslmode=verify-ca&pool_max_conns=10
 
-	DB, err := db.Open(ctx, cfg.DB.URL)
+	dbConfigString := fmt.Sprintf(
+		"%s?pool_max_conns=%d&sslmode=%s",
+		cfg.DB.URL,
+		cfg.DB.MaxConns,
+		cfg.DB.SSLMode,
+	)
+	DB, err := db.Open(ctx, dbConfigString)
 	if err != nil {
 		log.Fatal("cannot connect to db:", err)
 	}

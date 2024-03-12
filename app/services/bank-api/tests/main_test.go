@@ -34,10 +34,10 @@ func TestMain(m *testing.M) {
 	rolesUser := []token.Role{token.RoleUser}
 
 	t, _ := token.NewToken("admin", rolesAdmin, 0)
-	adminToken = "Bearer " + t.GetToken()
+	adminToken = "Bearer " + t.Value
 
 	t, _ = token.NewToken("user", rolesUser, 0)
-	userToken = "Bearer " + t.GetToken()
+	userToken = "Bearer " + t.Value
 
 	logPath := fmt.Sprintf("%s/simplebank-log.txt", os.TempDir())
 	logger, _ = loggerlib.New("bank-api", logPath)

@@ -1,6 +1,5 @@
 "use client";
 
-import { Label } from "@radix-ui/react-label";
 import { Button } from "../ui/button";
 import {
 	Card,
@@ -10,7 +9,6 @@ import {
 	CardTitle,
 } from "../ui/card";
 import { FloatingInput, FloatingLabel } from "../ui/floating-label-input";
-import { Input } from "../ui/input";
 
 export const SignIn = () => {
 	return (
