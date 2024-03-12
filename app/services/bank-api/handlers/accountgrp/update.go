@@ -31,13 +31,10 @@ func (h *Handler) UpdateName(ctx context.Context, w http.ResponseWriter, r *http
 		return err
 	}
 
-	payload := auth.GetPayload(ctx)
-	if payload.IsEmpty() {
-		return auth.ErrUnauthenticated
-	}
+	username := auth.GetUsername(ctx)
 
-	if payload.Username != account.Owner {
-		return auth.NewForbiddenError(payload.Username)
+	if account.Owner != username {
+		return auth.NewForbiddenError(username)
 	}
 
 	account, err = h.core.UpdateName(ctx, account.ID, req.Name)

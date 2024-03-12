@@ -21,13 +21,10 @@ func (h *Handler) Create(ctx context.Context, w http.ResponseWriter, r *http.Req
 		return err
 	}
 
-	payload := auth.GetPayload(ctx)
-	if payload.IsEmpty() {
-		return auth.ErrUnauthenticated
-	}
+	username := auth.GetUsername(ctx)
 
 	ret, err := h.core.Create(ctx, account.NewAccount{
-		Owner:    payload.Username,
+		Owner:    username,
 		Name:     req.Name,
 		Currency: req.Currency,
 		Balance:  0,

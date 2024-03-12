@@ -35,18 +35,15 @@ func (h *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Reque
 		return web.NewError(errors.New("from_account_id is a required query parameter"), http.StatusBadRequest)
 	}
 
-	payload := auth.GetPayload(ctx)
-	if payload.IsEmpty() {
-		return auth.ErrUnauthenticated
-	}
+	username := auth.GetUsername(ctx)
 
 	account, err := h.accountCore.QueryById(ctx, fromAccountId)
 	if err != nil {
 		return err
 	}
 
-	if account.Owner != payload.Username {
-		return auth.NewForbiddenError(payload.Username)
+	if account.Owner != username {
+		return auth.NewForbiddenError(username)
 	}
 
 	var q ListEntriesQuery

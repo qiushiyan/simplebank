@@ -23,18 +23,15 @@ func (h *Handler) Transfer(ctx context.Context, w http.ResponseWriter, r *http.R
 		return err
 	}
 
-	payload := auth.GetPayload(ctx)
-	if payload.IsEmpty() {
-		return auth.ErrUnauthenticated
-	}
+	username := auth.GetUsername(ctx)
 
 	fromAccount, err := h.accountCore.QueryById(ctx, req.FromAccountId)
 	if err != nil {
 		return err
 	}
 
-	if fromAccount.Owner != payload.Username {
-		return auth.NewForbiddenError(payload.Username)
+	if fromAccount.Owner != username {
+		return auth.NewForbiddenError(username)
 	}
 
 	toAccount, err := h.accountCore.QueryById(ctx, req.ToAccountId)

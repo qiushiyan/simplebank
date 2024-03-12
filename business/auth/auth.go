@@ -42,3 +42,7 @@ func GetPayload(ctx context.Context) token.Payload {
 	}
 	return val.(token.Payload)
 }
+
+func GetUsername(ctx context.Context) string {
+	return GetPayload(ctx).Username
+}

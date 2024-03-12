@@ -13,13 +13,10 @@ import (
 // List accounts for a user
 // accepts two query parameters: page_id and page_size
 func (h *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	payload := auth.GetPayload(ctx)
-	if payload.IsEmpty() {
-		return auth.ErrUnauthenticated
-	}
+	username := auth.GetUsername(ctx)
 
 	filter := account.NewQueryFilter()
-	filter.WithOwner(payload.Username)
+	filter.WithOwner(username)
 
 	limiter, err := limit.Parse(r, 1, 5)
 	if err != nil {

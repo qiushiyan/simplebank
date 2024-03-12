@@ -17,17 +17,14 @@ func (h *Handler) Get(ctx context.Context, w http.ResponseWriter, r *http.Reques
 		return web.NewError(err, http.StatusBadRequest)
 	}
 
-	payload := auth.GetPayload(ctx)
-	if payload.IsEmpty() {
-		return auth.ErrUnauthenticated
-	}
+	username := auth.GetUsername(ctx)
 
 	account, err := h.core.QueryById(ctx, int64(aid))
 	if err != nil {
 		return err
 	}
-	if account.Owner != payload.Username {
-		return auth.NewForbiddenError(payload.Username)
+	if account.Owner != username {
+		return auth.NewForbiddenError(username)
 	}
 
 	return web.RespondJson(ctx, w, account, http.StatusOK)
