@@ -25,8 +25,8 @@ func (payload Payload) Valid() error {
 }
 
 func (payload Payload) HasRole(role Role) bool {
-	for _, userRole := range payload.Roles {
-		if role == userRole {
+	for i := range payload.Roles {
+		if role == payload.Roles[i] {
 			return true
 		}
 	}

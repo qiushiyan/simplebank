@@ -6,7 +6,6 @@ import (
 	"os"
 
 	db "github.com/qiushiyan/simplebank/business/db/core"
-	"github.com/qiushiyan/simplebank/business/web/response"
 	"github.com/qiushiyan/simplebank/foundation/web"
 )
 
@@ -26,7 +25,7 @@ func (h *Handler) Readiness(ctx context.Context, w http.ResponseWriter, r *http.
 	err := h.store.Check(ctx)
 
 	if err != nil {
-		return response.NewError(err, http.StatusInternalServerError)
+		return web.NewError(err, http.StatusInternalServerError)
 	}
 
 	return web.RespondJson(ctx, w, "OK", http.StatusOK)

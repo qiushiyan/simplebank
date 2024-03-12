@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"github.com/qiushiyan/simplebank/business/auth"
-	"github.com/qiushiyan/simplebank/business/web/response"
 	"github.com/qiushiyan/simplebank/foundation/web"
 )
 
@@ -18,13 +17,13 @@ func (h *Handler) UpdateName(ctx context.Context, w http.ResponseWriter, r *http
 	id := web.Param(r, "id")
 	aid, err := strconv.Atoi(id)
 	if err != nil {
-		return response.NewError(err, http.StatusBadRequest)
+		return web.NewError(err, http.StatusBadRequest)
 	}
 
 	var req UpdateNameRequest
-	err = web.ParseBody(r, &req)
+	err = web.Decode(r, &req)
 	if err != nil {
-		return response.NewError(err, http.StatusBadRequest)
+		return err
 	}
 
 	account, err := h.core.QueryById(ctx, int64(aid))

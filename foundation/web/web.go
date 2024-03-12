@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -12,6 +13,7 @@ import (
 
 	"github.com/dimfeld/httptreemux"
 	"github.com/google/uuid"
+	"github.com/qiushiyan/simplebank/foundation/validate"
 )
 
 // A Handler is a type that handles an http request within App
@@ -62,12 +64,10 @@ func (a *App) handle(method string, path string, handler Handler) {
 
 		ctx := context.WithValue(r.Context(), key, &v)
 		if err := handler(ctx, w, r); err != nil {
-			// most errors should be processed in the errors middleware
+			// all errors should be processed in the errors middleware
 			// except for the shutdown error
 			if validateShutdown(err) {
 				a.SignalShutdown()
-				return
-			} else {
 				return
 			}
 		}
@@ -90,13 +90,28 @@ func Param(r *http.Request, name string) string {
 	return params[name]
 }
 
-// ParseBody decodes the body of an HTTP request and stores the result in dst.
-func ParseBody(r *http.Request, dst interface{}) error {
-	err := json.NewDecoder(r.Body).Decode(dst)
-	if err == io.EOF {
-		return errors.New("request body cannot be empty")
+// Decode decodes the body of an HTTP request and stores the result in dst.
+func Decode(r *http.Request, val any) error {
+	decoder := json.NewDecoder(r.Body)
+
+	if err := decoder.Decode(val); err != nil {
+		if err == io.EOF {
+			return NewError(
+				errors.New("request body cannot be empty"),
+				http.StatusBadRequest,
+			)
+		}
+
+		return NewError(
+			fmt.Errorf("unable to decode payload: %w", err),
+			http.StatusBadRequest,
+		)
 	}
-	return err
+	if err := validate.Check(val); err != nil {
+		return err
+	}
+
+	return nil
 
 }
 

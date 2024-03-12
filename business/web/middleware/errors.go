@@ -6,7 +6,6 @@ import (
 
 	"github.com/qiushiyan/simplebank/business/auth"
 	db "github.com/qiushiyan/simplebank/business/db/core"
-	"github.com/qiushiyan/simplebank/business/web/response"
 	"github.com/qiushiyan/simplebank/foundation/validate"
 	"github.com/qiushiyan/simplebank/foundation/web"
 	"go.uber.org/zap"
@@ -19,13 +18,13 @@ func Errors(log *zap.SugaredLogger) web.Middleware {
 
 				log.Errorw("ERROR", "trace_id", web.GetTraceID(ctx), "message", err)
 
-				var er response.ErrorDocument
+				var er web.ErrorDocument
 				var status int
 				// trusted error
 				switch {
 				case validate.IsFieldErrors(err):
 					fieldErrors := validate.GetFieldErrors(err)
-					er = response.ErrorDocument{
+					er = web.ErrorDocument{
 						Error:  "malformed request data",
 						Fields: fieldErrors.Fields(),
 					}
@@ -33,27 +32,27 @@ func Errors(log *zap.SugaredLogger) web.Middleware {
 
 				case auth.IsAuthError(err):
 					authErr := auth.GetAuthError(err)
-					er = response.ErrorDocument{
+					er = web.ErrorDocument{
 						Error: authErr.Error(),
 					}
 					status = authErr.Status
 
 				case db.IsError(err):
 					dbErr := db.GetError(err)
-					er = response.ErrorDocument{
+					er = web.ErrorDocument{
 						Error: dbErr.Error(),
 					}
 					status = dbErr.Status
 
-				case response.IsError(err):
-					reqErr := response.GetError(err)
-					er = response.ErrorDocument{
+				case web.IsError(err):
+					reqErr := web.GetError(err)
+					er = web.ErrorDocument{
 						Error: reqErr.Error(),
 					}
 					status = reqErr.Status
 
 				default:
-					er = response.ErrorDocument{
+					er = web.ErrorDocument{
 						Error: err.Error(),
 					}
 					status = http.StatusInternalServerError

@@ -7,8 +7,6 @@ import (
 
 	"github.com/qiushiyan/simplebank/business/auth"
 	"github.com/qiushiyan/simplebank/business/core/transfer"
-	"github.com/qiushiyan/simplebank/business/web/response"
-	"github.com/qiushiyan/simplebank/foundation/validate"
 	"github.com/qiushiyan/simplebank/foundation/web"
 )
 
@@ -20,12 +18,8 @@ type TransferRequest struct {
 
 func (h *Handler) Transfer(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	var req TransferRequest
-	err := web.ParseBody(r, &req)
+	err := web.Decode(r, &req)
 	if err != nil {
-		return response.NewError(err, http.StatusBadRequest)
-	}
-
-	if err := validate.Check(req); err != nil {
 		return err
 	}
 

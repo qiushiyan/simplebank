@@ -13,7 +13,6 @@ import (
 // List accounts for a user
 // accepts two query parameters: page_id and page_size
 func (h *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-
 	payload := auth.GetPayload(ctx)
 	if payload.IsEmpty() {
 		return auth.ErrUnauthenticated

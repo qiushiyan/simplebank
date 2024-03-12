@@ -5,8 +5,6 @@ import (
 	"net/http"
 
 	"github.com/qiushiyan/simplebank/business/core/user"
-	"github.com/qiushiyan/simplebank/business/web/response"
-	"github.com/qiushiyan/simplebank/foundation/validate"
 	"github.com/qiushiyan/simplebank/foundation/web"
 )
 
@@ -26,12 +24,8 @@ type SigninResponse struct {
 
 func (h *Handler) Signin(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	var req SigninRequest
-	err := web.ParseBody(r, &req)
+	err := web.Decode(r, &req)
 	if err != nil {
-		return response.NewError(err, http.StatusBadRequest)
-	}
-
-	if err = validate.Check(req); err != nil {
 		return err
 	}
 
@@ -40,10 +34,7 @@ func (h *Handler) Signin(ctx context.Context, w http.ResponseWriter, r *http.Req
 		return err
 	}
 
-	token, err := h.core.CreateToken(ctx, u, user.NewToken{
-		Username: req.Username,
-		Password: req.Password,
-	})
+	token, err := h.core.CreateToken(ctx, u, user.NewToken(req))
 
 	if err != nil {
 		return err

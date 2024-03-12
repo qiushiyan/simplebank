@@ -6,8 +6,6 @@ import (
 
 	"github.com/qiushiyan/simplebank/business/auth"
 	"github.com/qiushiyan/simplebank/business/core/account"
-	"github.com/qiushiyan/simplebank/business/web/response"
-	"github.com/qiushiyan/simplebank/foundation/validate"
 	"github.com/qiushiyan/simplebank/foundation/web"
 )
 
@@ -18,12 +16,8 @@ type CreateAccountRequest struct {
 
 func (h *Handler) Create(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	var req CreateAccountRequest
-	err := web.ParseBody(r, &req)
+	err := web.Decode(r, &req)
 	if err != nil {
-		return response.NewError(err, http.StatusBadRequest)
-	}
-
-	if err := validate.Check(req); err != nil {
 		return err
 	}
 

@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"github.com/qiushiyan/simplebank/business/auth"
-	"github.com/qiushiyan/simplebank/business/web/response"
 	"github.com/qiushiyan/simplebank/foundation/web"
 )
 
@@ -15,7 +14,7 @@ func (h *Handler) Get(ctx context.Context, w http.ResponseWriter, r *http.Reques
 	id := web.Param(r, "id")
 	aid, err := strconv.Atoi(id)
 	if err != nil {
-		return response.NewError(err, http.StatusBadRequest)
+		return web.NewError(err, http.StatusBadRequest)
 	}
 
 	payload := auth.GetPayload(ctx)

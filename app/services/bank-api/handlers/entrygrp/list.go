@@ -8,7 +8,6 @@ import (
 	"github.com/qiushiyan/simplebank/business/auth"
 	"github.com/qiushiyan/simplebank/business/core/entry"
 	"github.com/qiushiyan/simplebank/business/data/limit"
-	"github.com/qiushiyan/simplebank/business/web/response"
 	"github.com/qiushiyan/simplebank/foundation/validate"
 	"github.com/qiushiyan/simplebank/foundation/web"
 )
@@ -27,12 +26,8 @@ type ListEntriesQuery struct {
 // accepts 4 query parameters, start_date, end_date and page_id, page_size
 func (h *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	var req ListEntriesRequest
-	err := web.ParseBody(r, &req)
+	err := web.Decode(r, &req)
 	if err != nil {
-		return response.NewError(err, http.StatusBadRequest)
-	}
-
-	if err := validate.Check(req); err != nil {
 		return err
 	}
 
@@ -56,7 +51,7 @@ func (h *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Reque
 		val, err := time.Parse(time.DateOnly, r.FormValue("start_date"))
 		q.StartDate = &val
 		if err != nil {
-			return response.NewError(err, http.StatusBadRequest)
+			return web.NewError(err, http.StatusBadRequest)
 		}
 	}
 
@@ -64,7 +59,7 @@ func (h *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Reque
 		val, err := time.Parse(time.DateOnly, r.FormValue("end_date"))
 		q.EndDate = &val
 		if err != nil {
-			return response.NewError(err, http.StatusBadRequest)
+			return web.NewError(err, http.StatusBadRequest)
 		}
 	}
 
