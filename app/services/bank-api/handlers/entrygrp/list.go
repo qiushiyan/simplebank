@@ -2,7 +2,9 @@ package entrygrp
 
 import (
 	"context"
+	"errors"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/qiushiyan/simplebank/business/auth"
@@ -12,23 +14,25 @@ import (
 	"github.com/qiushiyan/simplebank/foundation/web"
 )
 
-type ListEntriesRequest struct {
-	FromAccountId int64 `json:"from_account_id" validate:"required"`
-}
-
 type ListEntriesQuery struct {
-	EndDate   *time.Time
-	StartDate *time.Time
+	FromAccountId int64
+	EndDate       *time.Time
+	StartDate     *time.Time
 }
 
 // List entries for an account
 // pass account id in post request body
-// accepts 4 query parameters, start_date, end_date and page_id, page_size
+// accepts 5 query parameters, from_account_id, start_date, end_date and page_id, page_size
 func (h *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	var req ListEntriesRequest
-	err := web.Decode(r, &req)
-	if err != nil {
-		return err
+	var fromAccountId int64
+	if aid := r.URL.Query().Get("from_account_id"); aid != "" {
+		aid, err := strconv.Atoi(aid)
+		if err != nil {
+			return web.NewError(err, http.StatusBadRequest)
+		}
+		fromAccountId = int64(aid)
+	} else {
+		return web.NewError(errors.New("from_account_id is a required query parameter"), http.StatusBadRequest)
 	}
 
 	payload := auth.GetPayload(ctx)
@@ -36,7 +40,7 @@ func (h *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Reque
 		return auth.ErrUnauthenticated
 	}
 
-	account, err := h.accountCore.QueryById(ctx, req.FromAccountId)
+	account, err := h.accountCore.QueryById(ctx, fromAccountId)
 	if err != nil {
 		return err
 	}
@@ -68,7 +72,7 @@ func (h *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Reque
 	}
 
 	filter := entry.NewQueryFilter()
-	filter.WithAccountId(req.FromAccountId)
+	filter.WithAccountId(fromAccountId)
 	filter.WithEndDate(q.EndDate)
 	filter.WithStartDate(q.StartDate)
 

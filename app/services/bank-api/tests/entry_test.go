@@ -1,13 +1,11 @@
 package tests
 
 import (
-	"bytes"
-	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/entrygrp"
 	db_generated "github.com/qiushiyan/simplebank/business/db/generated"
 	mockdb "github.com/qiushiyan/simplebank/business/db/mock"
 	"github.com/stretchr/testify/require"
@@ -18,18 +16,16 @@ func TestGetEntries(t *testing.T) {
 	url := "/entries"
 
 	cases := []struct {
-		name       string
-		req        entrygrp.ListEntriesRequest
-		token      string
-		buildStubs func(*mockdb.MockStore)
-		checker    func(*httptest.ResponseRecorder)
+		name          string
+		fromAccountId int64
+		token         string
+		buildStubs    func(*mockdb.MockStore)
+		checker       func(*httptest.ResponseRecorder)
 	}{
 		{
-			name:  "ok",
-			token: userToken,
-			req: entrygrp.ListEntriesRequest{
-				FromAccountId: userAccountId,
-			},
+			name:          "ok",
+			token:         userToken,
+			fromAccountId: userAccountId,
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().GetAccount(gomock.Any(), userAccountId).
 					Times(1).
@@ -48,11 +44,9 @@ func TestGetEntries(t *testing.T) {
 
 		{
 			// list entries without token
-			name:  "unauthenticated",
-			token: "",
-			req: entrygrp.ListEntriesRequest{
-				FromAccountId: userAccountId,
-			},
+			name:          "unauthenticated",
+			token:         "",
+			fromAccountId: userAccountId,
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().GetAccount(gomock.Any(), userAccountId).
 					Times(0)
@@ -64,11 +58,9 @@ func TestGetEntries(t *testing.T) {
 
 		{
 			// list entries of a different user
-			name:  "forbidden",
-			token: userToken,
-			req: entrygrp.ListEntriesRequest{
-				FromAccountId: adminAccountId,
-			},
+			name:          "forbidden",
+			token:         userToken,
+			fromAccountId: adminAccountId,
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().GetAccount(gomock.Any(), adminAccountId).
 					Times(1).
@@ -88,10 +80,12 @@ func TestGetEntries(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			body, err := json.Marshal(tc.req)
-			require.NoError(t, err)
+			request, err := http.NewRequest(http.MethodGet, url, nil)
+			q := request.URL.Query()
+			q.Add("from_account_id", fmt.Sprintf("%d", tc.fromAccountId))
 
-			request, err := http.NewRequest(http.MethodGet, url, bytes.NewReader(body))
+			request.URL.RawQuery = q.Encode()
+
 			require.NoError(t, err)
 			request.Header.Add("authorization", tc.token)
 
