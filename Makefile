@@ -12,6 +12,9 @@ CONTAINER_NAME  := bank-api-postgres
 POSTGRES        := postgres:latest
 
 
+compose:
+	docker-compose up -d
+
 # ==============================================================================
 # Install dependencies
 dev-gotooling:
