@@ -62,7 +62,8 @@ func Errors(log *zap.SugaredLogger) web.Middleware {
 					return err
 				}
 
-				// shutdown error is also a kinda trusted error, but we'll leave it to the root handle method
+				// If we receive the shutdown err we need to return it
+				// back to the base handler to shut down the service.
 				if web.IsShutdown(err) {
 					return err
 				}

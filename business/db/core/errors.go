@@ -8,6 +8,7 @@ import (
 	"github.com/jackc/pgerrcode"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/qiushiyan/simplebank/foundation/web"
 )
 
 var (
@@ -25,11 +26,17 @@ func NewError(err error) error {
 	var status int
 
 	switch {
+
+	// connection error
 	case isPgConnectionError(err):
 		status = http.StatusServiceUnavailable
 		err = fmt.Errorf("database connection error: %w", err)
+
+	// no result set
 	case isNoRowsError(err):
 		status = http.StatusNotFound
+
+	// postgres server error
 	case isPgError(err):
 		de := GetPgError(err)
 		switch de.Code {
@@ -46,7 +53,15 @@ func NewError(err error) error {
 		case pgerrcode.ForeignKeyViolation:
 			status = http.StatusConflict
 		default:
-			err = errors.New(de.Detail)
+			if de.Detail != "" {
+				err = errors.New(de.Detail)
+			}
+
+			if de.Code == "42P01" {
+				return web.NewShutdownError(
+					fmt.Sprintf("%s, did you forget the run the migrations?", err.Error()),
+				)
+			}
 			status = http.StatusInternalServerError
 		}
 

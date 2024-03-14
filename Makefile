@@ -10,7 +10,7 @@ VERSION         := 0.0.1
 SERVICE_IMAGE   := $(BASE_IMAGE_NAME)/$(SERVICE_NAME):$(VERSION)
 CONTAINER_NAME  := bank-api-postgres
 POSTGRES        := postgres:latest
-
+DATABASE_URL 	:= postgres://postgres:postgres@localhost:5432/bank?sslmode=disable
 
 compose:
 	docker-compose up -d
@@ -53,10 +53,10 @@ migrate-create:
 	migrate create -ext sql -dir business/db/migration -seq init_schema
 
 migrate-up:
-	migrate -path business/db/migration -database "postgresql://postgres:postgres@localhost:5432/bank?sslmode=disable" --verbose up
+	migrate -path business/db/migration -database $(DATABASE_URL) --verbose up
 
 migrate-down:
-	migrate -path business/db/migration -database "postgresql://postgres:postgres@localhost:5433/bank?sslmode=disable" --verbose down
+	migrate -path business/db/migration -database $(DATABASE_URL) --verbose down
 
 migrate-up-test:
 	migrate -path business/db/migration -database "postgresql://postgres:postgres@localhost:5432/bank_test?sslmode=disable" --verbose up
