@@ -7,6 +7,7 @@ import (
 	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/authgrp"
 	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/checkgrp"
 	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/entrygrp"
+	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/friendgrp"
 	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/transfergrp"
 	db "github.com/qiushiyan/simplebank/business/db/core"
 	"github.com/qiushiyan/simplebank/business/web/middleware"
@@ -37,6 +38,7 @@ func NewMux(cfg MuxConfig) *web.App {
 		authgrp.New(cfg.Store),
 		transfergrp.New(cfg.Store),
 		entrygrp.New(cfg.Store),
+		friendgrp.New(cfg.Store),
 		checkgrp.New(cfg.Store, cfg.Build),
 	)
 

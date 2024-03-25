@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-type ResponseData struct {
+type responseData struct {
 	Data interface{} `json:"data,omitempty"`
 }
 
@@ -25,7 +25,7 @@ func RespondJson(ctx context.Context, w http.ResponseWriter, data any, statusCod
 	if data != nil {
 		switch statusCode {
 		case http.StatusOK, http.StatusCreated:
-			return json.NewEncoder(w).Encode(ResponseData{Data: data})
+			return json.NewEncoder(w).Encode(responseData{Data: data})
 		default:
 			return json.NewEncoder(w).Encode(data)
 		}

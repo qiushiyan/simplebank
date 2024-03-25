@@ -63,6 +63,7 @@ migrate-up-test:
 
 generate:
 	sqlc generate
+	mockgen -destination=./business/db/mock/mockstore.go -package=mockdb github.com/qiushiyan/simplebank/business/db/core Store
 
 # ==============================================================================
 # Running locally
@@ -89,9 +90,11 @@ dev-load:
 	kind load docker-image $(SERVICE_IMAGE) --name $(KIND_CLUSTER)
 
 dev-apply:
+	# database
 	kustomize build zarf/k8s/dev/database | kubectl apply -f -
 	kubectl rollout status --namespace=$(NAMESPACE) --watch --timeout=120s sts/database
 
+	# bank-api
 	kustomize build zarf/k8s/dev/bank-api | kubectl apply -f -
 	kubectl wait pods --namespace=$(NAMESPACE) --selector app=$(APP) --timeout=120s --for=condition=Ready
 
@@ -174,5 +177,4 @@ metrics-view:
 metrics-view-local:
 	expvarmon -ports="localhost:4000" -vars="build,requests,goroutines,errors,panics,mem:memstats.Alloc"
 
-gen-mock:
-	mockgen -destination=./business/db/mock/mockstore.go -package=mockdb github.com/qiushiyan/simplebank/business/db/core Store
+

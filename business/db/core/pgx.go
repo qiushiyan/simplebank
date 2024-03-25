@@ -33,3 +33,13 @@ func NewTimestamp(t *time.Time) pgtype.Timestamp {
 	}
 	return ts
 }
+
+func NewBool(b *bool) pgtype.Bool {
+	var pb pgtype.Bool
+	if b != nil {
+		pb.Valid = true
+		pb.Bool = *b
+	}
+
+	return pb
+}

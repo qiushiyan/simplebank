@@ -41,6 +41,21 @@ func (m *MockStore) EXPECT() *MockStoreMockRecorder {
 	return m.recorder
 }
 
+// AcceptFriend mocks base method.
+func (m *MockStore) AcceptFriend(arg0 context.Context, arg1 int64) (db_generated.Friendship, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AcceptFriend", arg0, arg1)
+	ret0, _ := ret[0].(db_generated.Friendship)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AcceptFriend indicates an expected call of AcceptFriend.
+func (mr *MockStoreMockRecorder) AcceptFriend(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AcceptFriend", reflect.TypeOf((*MockStore)(nil).AcceptFriend), arg0, arg1)
+}
+
 // Check mocks base method.
 func (m *MockStore) Check(arg0 context.Context) error {
 	m.ctrl.T.Helper()
@@ -85,6 +100,21 @@ func (mr *MockStoreMockRecorder) CreateEntry(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateEntry", reflect.TypeOf((*MockStore)(nil).CreateEntry), arg0, arg1)
 }
 
+// CreateFriend mocks base method.
+func (m *MockStore) CreateFriend(arg0 context.Context, arg1 db_generated.CreateFriendParams) (db_generated.Friendship, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateFriend", arg0, arg1)
+	ret0, _ := ret[0].(db_generated.Friendship)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateFriend indicates an expected call of CreateFriend.
+func (mr *MockStoreMockRecorder) CreateFriend(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateFriend", reflect.TypeOf((*MockStore)(nil).CreateFriend), arg0, arg1)
+}
+
 // CreateTransfer mocks base method.
 func (m *MockStore) CreateTransfer(arg0 context.Context, arg1 db_generated.CreateTransferParams) (db_generated.Transfer, error) {
 	m.ctrl.T.Helper()
@@ -113,6 +143,21 @@ func (m *MockStore) CreateUser(arg0 context.Context, arg1 db_generated.CreateUse
 func (mr *MockStoreMockRecorder) CreateUser(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockStore)(nil).CreateUser), arg0, arg1)
+}
+
+// DeclineFriend mocks base method.
+func (m *MockStore) DeclineFriend(arg0 context.Context, arg1 int64) (db_generated.Friendship, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeclineFriend", arg0, arg1)
+	ret0, _ := ret[0].(db_generated.Friendship)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeclineFriend indicates an expected call of DeclineFriend.
+func (mr *MockStoreMockRecorder) DeclineFriend(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeclineFriend", reflect.TypeOf((*MockStore)(nil).DeclineFriend), arg0, arg1)
 }
 
 // DeleteAccount mocks base method.
@@ -232,6 +277,21 @@ func (m *MockStore) ListEntries(arg0 context.Context, arg1 db_generated.ListEntr
 func (mr *MockStoreMockRecorder) ListEntries(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListEntries", reflect.TypeOf((*MockStore)(nil).ListEntries), arg0, arg1)
+}
+
+// ListFriends mocks base method.
+func (m *MockStore) ListFriends(arg0 context.Context, arg1 db_generated.ListFriendsParams) ([]db_generated.Friendship, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListFriends", arg0, arg1)
+	ret0, _ := ret[0].([]db_generated.Friendship)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListFriends indicates an expected call of ListFriends.
+func (mr *MockStoreMockRecorder) ListFriends(arg0, arg1 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListFriends", reflect.TypeOf((*MockStore)(nil).ListFriends), arg0, arg1)
 }
 
 // ListTransfers mocks base method.

@@ -103,7 +103,7 @@ func Decode(r *http.Request, val any) error {
 		}
 
 		return NewError(
-			fmt.Errorf("unable to decode payload: %w", err),
+			fmt.Errorf("unable to parse request body: %w", err),
 			http.StatusBadRequest,
 		)
 	}
