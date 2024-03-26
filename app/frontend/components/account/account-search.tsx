@@ -1,32 +1,21 @@
-"use client";
-
-import { useRouter } from "next/navigation";
+import { Session } from "next-auth";
+import { AccountSearchInput } from "./account-search-input";
+import { AccountSearchResult } from "./account-search-result";
 
 type Props = {
+	user: Session["user"];
 	owner: string | undefined;
 };
 
-export const AccountSearch = ({ owner }: Props) => {
-	const router = useRouter();
+export const AccountSearch = ({ owner, user }: Props) => {
 	return (
-		<form
-			onSubmit={(e) => {
-				e.preventDefault();
-				const formData = new FormData(e.target as HTMLFormElement);
-				const owner = formData.get("search") as string;
-				const url = new URL(window.location.href);
-				url.searchParams.set("search_account_owner", owner);
-				router.push(url.toString());
-			}}
-		>
-			<input
-				type="search"
-				name="search"
-				className="p-4"
-				required
-				placeholder="search accounts by owner"
-				defaultValue={owner || ""}
+		<div className="group">
+			<AccountSearchInput owner={owner} />
+			<AccountSearchResult
+				owner={owner}
+				user={user}
+				className="group-has-[[data-pending]]:animate-pulse"
 			/>
-		</form>
+		</div>
 	);
 };
