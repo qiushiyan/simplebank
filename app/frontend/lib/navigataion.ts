@@ -12,9 +12,12 @@ export const { routes, useSafeParams, useSafeSearchParams } =
 				})
 				.default({ tab: "signin" }),
 		}),
-		invoice: defineRoute("/invoices/[invoiceId]", {
+		account: defineRoute("/accounts/[id]", {
 			params: z.object({
-				invoiceId: z.string(),
+				id: z.string(),
+			}),
+			search: z.object({
+				search_account_owner: z.string().optional(),
 			}),
 		}),
 	}));

@@ -2,6 +2,7 @@ import { Session } from "next-auth";
 import { z } from "zod";
 import { env } from "./env.mjs";
 import { fetcher } from "./fetcher";
+import { delay } from "./utils";
 
 export const AccountSchema = z.object({
 	id: z.number(),
@@ -32,6 +33,15 @@ export const getAccounts = async (user: Session["user"]) => {
 export const getAccount = async (id: number, user: Session["user"]) => {
 	const data = await fetcher(`accounts/${id}`, "GET", user);
 	const parsed = OneAccountResponseSchema.safeParse(data);
+	if (!parsed.success) {
+		return null;
+	}
+	return parsed.data;
+};
+
+export const searchAccounts = async (owner: string, user: Session["user"]) => {
+	const data = await fetcher(`accounts/search?owner=${owner}`, "GET", user);
+	const parsed = AccountsResponseSchema.safeParse(data);
 	if (!parsed.success) {
 		return null;
 	}

@@ -1,13 +1,24 @@
+import { AccountSearch } from "@/components/account/account-search";
+import { AccountSearchList } from "@/components/account/account-search-list";
 import { BreadCrumb } from "@/components/account/breadcrumb";
 import { EditableText } from "@/components/ui/editable-text";
-import { getAccount, getAccounts } from "@/lib/account";
+import { Spinner } from "@/components/ui/spinner";
+import { getAccount } from "@/lib/account";
 import { updateAccountName } from "@/lib/actions/account";
 import { getCurrentUser } from "@/lib/auth";
-import { delay } from "@/lib/utils";
+import { routes } from "@/lib/navigataion";
 import { revalidatePath } from "next/cache";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
-export default async function ({ params }: { params: { id: string } }) {
+type Props = {
+	params: { id: string };
+	searchParams?: { [key: string]: string | string[] | undefined };
+};
+
+export default async function ({ params, searchParams }: Props) {
+	const { search_account_owner } =
+		routes.account.$parseSearchParams(searchParams);
 	const user = await getCurrentUser();
 	if (!user) {
 		return null;
@@ -21,8 +32,12 @@ export default async function ({ params }: { params: { id: string } }) {
 	const account = result.data;
 
 	return (
-		<div>
+		<div className="space-y-4">
 			<BreadCrumb id={account.id} name={account.name} />
+			<AccountSearch owner={search_account_owner} />
+			<Suspense fallback={<Spinner />}>
+				<AccountSearchList user={user} owner={search_account_owner} />
+			</Suspense>
 			<EditableText
 				initialValue={account.name}
 				fieldName="account"

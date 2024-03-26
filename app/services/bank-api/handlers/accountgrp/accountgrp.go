@@ -32,6 +32,7 @@ func (h *Handler) Register(app *web.App) {
 		h.UpdateName,
 		middleware.Authenticate(),
 	)
+	app.GET("/accounts/search", h.Search, middleware.Authenticate())
 	app.POST("/accounts", h.Create, middleware.Authenticate())
 }
 
