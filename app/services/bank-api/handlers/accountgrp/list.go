@@ -19,7 +19,7 @@ type ListAccountsResponse struct {
 //
 //	@Summary		List accounts for user
 //	@Description	List accounts for the authenticated user in the token
-//	@Tags			accounts
+//	@Tags			Accounts
 //	@Accept			json
 //	@Produce		json
 //	@Param			page_id		query	int	false	"page id, default to 1"

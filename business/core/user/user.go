@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"time"
 
@@ -22,6 +23,9 @@ func NewCore(store db.Store) Core {
 func (u *Core) QueryByUsername(ctx context.Context, username string) (User, error) {
 	user, err := u.store.GetUser(ctx, username)
 	if err != nil {
+		if db.IsNoRowsError(err) {
+			return User{}, errors.New("user not found")
+		}
 		return User{}, db.NewError(err)
 	}
 	return user, nil

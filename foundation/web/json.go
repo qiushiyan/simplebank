@@ -10,6 +10,7 @@ type responseData struct {
 	Data interface{} `json:"data,omitempty"`
 }
 
+// RespondJson wraps data according to the status code and sends json to the response writer.
 func RespondJson(ctx context.Context, w http.ResponseWriter, data any, statusCode int) error {
 	// Set the status code for the request logger middleware.
 	SetStatusCode(ctx, statusCode)
@@ -33,4 +34,10 @@ func RespondJson(ctx context.Context, w http.ResponseWriter, data any, statusCod
 	}
 
 	return nil
+}
+
+// RespondJsonPlain sends json to the response writer without wrapping the data.
+func RespondJsonPlain(ctx context.Context, w http.ResponseWriter, data any, statusCode int) error {
+	w.WriteHeader(statusCode)
+	return json.NewEncoder(w).Encode(data)
 }

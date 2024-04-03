@@ -5,6 +5,7 @@ go 1.22
 require (
 	github.com/ardanlabs/conf/v3 v3.1.7
 	github.com/dimfeld/httptreemux v5.0.1+incompatible
+	github.com/go-json-experiment/json v0.0.0-20231102232822-2e55bd4e08b0
 	github.com/go-playground/locales v0.14.1
 	github.com/go-playground/universal-translator v0.18.1
 	github.com/go-playground/validator/v10 v10.18.0

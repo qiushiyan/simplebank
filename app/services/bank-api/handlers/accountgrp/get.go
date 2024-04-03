@@ -18,7 +18,7 @@ type GetAccountResponse struct {
 //
 //	@Summary		Get an account
 //	@Description	Get account by id, token should match account owner
-//	@Tags			accounts
+//	@Tags			Accounts
 //	@Accept			json
 //	@Produce		json
 //	@Param			id	path	int	true	"account id"

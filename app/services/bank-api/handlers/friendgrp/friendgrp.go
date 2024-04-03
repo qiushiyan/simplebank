@@ -1,3 +1,4 @@
+// Package friendgrp provides friendship-related handlers
 package friendgrp
 
 import (
@@ -5,6 +6,7 @@ import (
 
 	"github.com/qiushiyan/simplebank/business/core/friend"
 	db "github.com/qiushiyan/simplebank/business/db/core"
+	"github.com/qiushiyan/simplebank/business/web/middleware"
 	"github.com/qiushiyan/simplebank/foundation/web"
 )
 
@@ -19,6 +21,6 @@ func New(store db.Store) *Handler {
 }
 
 func (h Handler) Register(a *web.App) {
-	a.Handle(http.MethodGet, "/friend/create", h.Create)
-	a.Handle(http.MethodGet, "/friend/list", h.List)
+	a.Handle(http.MethodGet, "/friend/create", h.Create, middleware.Authenticate())
+	a.Handle(http.MethodGet, "/friend/list", h.List, middleware.Authenticate())
 }

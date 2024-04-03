@@ -2,12 +2,13 @@ package tests
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
+
+	"github.com/go-json-experiment/json"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/accountgrp"

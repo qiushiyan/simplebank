@@ -18,10 +18,22 @@ type SigninRequest struct {
 }
 
 type SigninResponse struct {
-	User        UserResponse `json:"user"`
+	User        userResponse `json:"user"`
 	AccessToken string       `json:"access_token"`
 }
 
+// Signin godoc
+//
+//	@Summary		Signin
+//	@Description	Signin with username and password
+//	@Tags			Authentication
+//	@Accept			json
+//	@Produce		json
+//	@Param			body	body		SigninRequest	true	"request body"
+//	@Success		200		{object}	SigninResponse
+//	@Failure		400
+//	@Failure		409
+//	@Router			/signin [post]
 func (h *Handler) Signin(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	var req SigninRequest
 	err := web.Decode(r, &req)

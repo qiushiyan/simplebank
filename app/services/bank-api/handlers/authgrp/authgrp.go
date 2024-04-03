@@ -14,7 +14,7 @@ type Handler struct {
 	core user.Core
 }
 
-type UserResponse struct {
+type userResponse struct {
 	Username          string    `json:"username"`
 	Email             string    `json:"email"`
 	CreatedAt         time.Time `json:"created_at"`
@@ -27,8 +27,8 @@ func New(store db.Store) *Handler {
 	}
 }
 
-func NewUserResponse(user db_generated.User) UserResponse {
-	return UserResponse{
+func NewUserResponse(user db_generated.User) userResponse {
+	return userResponse{
 		Username:          user.Username,
 		Email:             user.Email,
 		CreatedAt:         user.CreatedAt,

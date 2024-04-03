@@ -1,3 +1,4 @@
+// Package entrygrp provides entry-related handlers
 package entrygrp
 
 import (

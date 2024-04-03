@@ -65,7 +65,7 @@ migrate-up-test:
 	migrate -path business/db/migration -database "postgresql://postgres:postgres@localhost:5432/bank_test?sslmode=disable" --verbose up
 
 generate:
-	sqlc generate
+	sqlc generate -f zarf/sqlc/sqlc.yaml
 	mockgen -destination=./business/db/mock/mockstore.go -package=mockdb github.com/qiushiyan/simplebank/business/db/core Store
 
 # ==============================================================================

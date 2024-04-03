@@ -23,7 +23,7 @@ type CreateAccountResponse struct {
 //
 //	@Summary		Create an account
 //	@Description	Create an account with the given name and currency. Currency should be one of "USD", "EUR" or "CAD". Name-Currency combination should be unique.
-//	@Tags			accounts
+//	@Tags			Accounts
 //	@Accept			json
 //	@Produce		json
 //	@Param			body	body	CreateAccountRequest	true	"request body"

@@ -26,7 +26,7 @@ func (handler *Handler) Register(app *web.App) {
 		return nil
 	})
 	app.GET("/", func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-		return web.RespondJson(ctx, w, struct {
+		return web.RespondJsonPlain(ctx, w, struct {
 			Message string `json:"message"`
 		}{
 			Message: "Welcome to the Simple Bank API, see swagger docs at /swagger/index.html and development instructions at https://github.com/qiushiyan/simplebank.",

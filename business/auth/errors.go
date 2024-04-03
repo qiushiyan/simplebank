@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/qiushiyan/simplebank/business/auth/token"
 )
@@ -30,9 +31,17 @@ func NewAuthError(msg string, status int) error {
 	}
 }
 
-func NewUnauthorizedError(need token.Role, args ...any) error {
+func NewUnauthorizedError(need token.Role, has []token.Role) error {
+	var hasRoles strings.Builder
+	for i := range has {
+		if i == len(has)-1 {
+			hasRoles.WriteString(has[i].Name())
+		} else {
+			hasRoles.WriteString(fmt.Sprintf("%s, ", has[i].Name()))
+		}
+	}
 	return NewAuthError(
-		fmt.Sprintf("attempted action now allowed, need %s", need.Name()),
+		fmt.Sprintf("attempted action not allowed, need %s, has %s", need.Name(), &hasRoles),
 		http.StatusUnauthorized,
 	)
 }

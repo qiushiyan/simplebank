@@ -33,7 +33,7 @@ func NewError(err error) error {
 		err = fmt.Errorf("database connection error: %w", err)
 
 	// no result set
-	case isNoRowsError(err):
+	case IsNoRowsError(err):
 		status = http.StatusNotFound
 
 	// postgres server error
@@ -73,7 +73,7 @@ func NewError(err error) error {
 }
 
 func (de *Error) Error() string {
-	if isNoRowsError(de.Err) {
+	if IsNoRowsError(de.Err) {
 		return "no rows found"
 	}
 	return de.Err.Error()
@@ -110,6 +110,6 @@ func GetPgError(err error) *pgconn.PgError {
 	return e
 }
 
-func isNoRowsError(err error) bool {
+func IsNoRowsError(err error) bool {
 	return err == pgx.ErrNoRows
 }

@@ -8,9 +8,31 @@ import (
 
 	"github.com/qiushiyan/simplebank/business/core/friend"
 	"github.com/qiushiyan/simplebank/business/data/limit"
+	db_generated "github.com/qiushiyan/simplebank/business/db/generated"
 	"github.com/qiushiyan/simplebank/foundation/web"
 )
 
+type ListFriendshipResponse struct {
+	Data []db_generated.Friendship `json:"data"`
+}
+
+// ListFriendship godoc
+//	@Summary		List friendships
+//	@Description	List friendship requests
+//	@Tags			Friendship
+//	@Accept			json
+//	@Produce		json
+//	@Param			from_account_id	query	int		false	"from account id"
+//	@Param			to_account_id	query	int		false	"to account id"
+//	@Param			pending			query	bool	false	"pending"
+//	@Param			accepted		query	bool	false	"accepted"
+//	@Param			page_id			query	int		false	"page id, default to 1"
+//	@Param			page_size		query	int		false	"page size, default to 50"
+//	@Security		Bearer
+//	@Success		200	{object}	ListFriendshipResponse
+//	@Failure		400
+//	@Failure		409
+//	@Router			/friend/list [get]
 func (h *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	var fromAccountId int
 	var toAccountId int

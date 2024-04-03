@@ -22,7 +22,7 @@ type UpdateResponse struct {
 //
 //	@Summary		Update an account
 //	@Description	Update account by id, token should match account owner, currently only name can be updated
-//	@Tags			accounts
+//	@Tags			Accounts
 //	@Accept			json
 //	@Produce		json
 //	@Param			id		path	int				true	"account id"

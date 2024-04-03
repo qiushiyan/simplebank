@@ -20,9 +20,26 @@ type ListEntriesQuery struct {
 	StartDate     *time.Time
 }
 
-// List entries for an account
-// pass account id in post request body
-// accepts 5 query parameters, from_account_id, start_date, end_date and page_id, page_size
+// ListEntries godoc
+//
+//	@Summary		List entries for an account
+//	@Description	List entries for the account from the token
+//	@Tags			Entries
+//	@Accept			json
+//	@Produce		json
+//	@Param			from_account_id	query	int		true	"Account ID"
+//	@Param			start_date		query	string	false	"Start Date"
+//	@Param			end_date		query	string	false	"End Date"
+//	@Param			page_id			query	int		false	"Page ID"
+//	@Param			page_size		query	int		false	"Page Size"
+//
+// @Security		Bearer
+//
+//	@Success		200
+//	@Failure		400
+//	@Failure		401
+//	@Failure		500
+//	@Router			/entries [get]
 func (h *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	var fromAccountId int64
 	if aid := r.URL.Query().Get("from_account_id"); aid != "" {

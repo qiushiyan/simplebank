@@ -1,10 +1,10 @@
 package token
 
 import (
-	"encoding/json"
 	"errors"
 	"time"
 
+	"github.com/go-json-experiment/json"
 	"github.com/google/uuid"
 	"github.com/o1egl/paseto"
 )

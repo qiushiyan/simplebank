@@ -2,11 +2,11 @@ package tests
 
 import (
 	"bytes"
-	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/go-json-experiment/json"
 	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/transfergrp"
 	db "github.com/qiushiyan/simplebank/business/db/core"
 	mockdb "github.com/qiushiyan/simplebank/business/db/mock"

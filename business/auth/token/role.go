@@ -4,8 +4,8 @@ import "fmt"
 
 // Set of possible roles for a user.
 var (
-	RoleAdmin = Role{"ADMIN"}
-	RoleUser  = Role{"USER"}
+	RoleAdmin = Role{"admin"}
+	RoleUser  = Role{"user"}
 )
 
 // Set of known roles.

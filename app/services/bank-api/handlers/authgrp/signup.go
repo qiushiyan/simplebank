@@ -15,9 +15,21 @@ type SignupRequest struct {
 }
 
 type SignupResponse struct {
-	User UserResponse `json:"user"`
+	User userResponse `json:"user"`
 }
 
+// Signup godoc
+//
+//	@Summary		Signup
+//	@Description	Signup with username, email and password
+//	@Tags			Authentication
+//	@Accept			json
+//	@Produce		json
+//	@Param			body	body		SignupRequest	true	"request body"
+//	@Success		201		{object}	SignupResponse
+//	@Failure		400
+//	@Failure		409
+//	@Router			/signup [post]
 func (h *Handler) Signup(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	var req SignupRequest
 	err := web.Decode(r, &req)

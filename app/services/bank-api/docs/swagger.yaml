@@ -46,6 +46,71 @@ definitions:
       data:
         $ref: '#/definitions/db_generated.Account'
     type: object
+  authgrp.SigninRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  authgrp.SigninResponse:
+    properties:
+      access_token:
+        type: string
+      user:
+        $ref: '#/definitions/authgrp.userResponse'
+    type: object
+  authgrp.SignupRequest:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  authgrp.SignupResponse:
+    properties:
+      user:
+        $ref: '#/definitions/authgrp.userResponse'
+    type: object
+  authgrp.userResponse:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      password_changed_at:
+        type: string
+      username:
+        type: string
+    type: object
+  checkgrp.LivenessResponse:
+    properties:
+      GOMAXPROCS:
+        type: string
+      build:
+        type: string
+      host:
+        type: string
+      name:
+        type: string
+      namespace:
+        type: string
+      node:
+        type: string
+      podIP:
+        type: string
+      status:
+        type: string
+    type: object
   db_generated.Account:
     properties:
       balance:
@@ -60,6 +125,40 @@ definitions:
         type: string
       owner:
         type: string
+    type: object
+  db_generated.Friendship:
+    properties:
+      accepted:
+        type: boolean
+      created_at:
+        type: string
+      from_account_id:
+        type: integer
+      id:
+        type: integer
+      pending:
+        type: boolean
+      to_account_id:
+        type: integer
+    type: object
+  friendgrp.CreateFriendRequest:
+    properties:
+      fromAccountId:
+        type: integer
+      toAccountId:
+        type: integer
+    type: object
+  friendgrp.CreateFriendResponse:
+    properties:
+      data:
+        $ref: '#/definitions/db_generated.Friendship'
+    type: object
+  friendgrp.ListFriendshipResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/db_generated.Friendship'
+        type: array
     type: object
 host: localhost:3000
 info:
@@ -105,7 +204,7 @@ paths:
       - Bearer: []
       summary: List accounts for user
       tags:
-      - accounts
+      - Accounts
   /accounts/{id}:
     get:
       consumes:
@@ -132,7 +231,7 @@ paths:
       - Bearer: []
       summary: Get an account
       tags:
-      - accounts
+      - Accounts
     patch:
       consumes:
       - application/json
@@ -165,7 +264,7 @@ paths:
       - Bearer: []
       summary: Update an account
       tags:
-      - accounts
+      - Accounts
   /accounts/all:
     get:
       consumes:
@@ -186,9 +285,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/accountgrp.ListAllAccountsResponse'
-            type: array
+            $ref: '#/definitions/accountgrp.ListAllAccountsResponse'
         "401":
           description: Unauthorized
         "409":
@@ -197,7 +294,7 @@ paths:
       - Bearer: []
       summary: List all accounts
       tags:
-      - accounts
+      - Accounts
   /accounts/create:
     post:
       consumes:
@@ -226,7 +323,7 @@ paths:
       - Bearer: []
       summary: Create an account
       tags:
-      - accounts
+      - Accounts
   /accounts/search:
     get:
       consumes:
@@ -261,7 +358,213 @@ paths:
       - Bearer: []
       summary: Search accounts
       tags:
-      - accounts
+      - Accounts
+  /entries:
+    get:
+      consumes:
+      - application/json
+      description: List entries for the account from the token
+      parameters:
+      - description: Account ID
+        in: query
+        name: from_account_id
+        required: true
+        type: integer
+      - description: Start Date
+        in: query
+        name: start_date
+        type: string
+      - description: End Date
+        in: query
+        name: end_date
+        type: string
+      - description: Page ID
+        in: query
+        name: page_id
+        type: integer
+      - description: Page Size
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: List entries for an account
+      tags:
+      - Entries
+  /friend/create:
+    post:
+      consumes:
+      - application/json
+      description: Create a friendship between two accounts
+      parameters:
+      - description: request body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/friendgrp.CreateFriendRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/friendgrp.CreateFriendResponse'
+        "400":
+          description: Bad Request
+        "409":
+          description: Conflict
+        "500":
+          description: Internal Server Error
+      security:
+      - Bearer: []
+      summary: Create a friendship
+      tags:
+      - Friendship
+  /friend/list:
+    get:
+      consumes:
+      - application/json
+      description: List friendship requests
+      parameters:
+      - description: from account id
+        in: query
+        name: from_account_id
+        type: integer
+      - description: to account id
+        in: query
+        name: to_account_id
+        type: integer
+      - description: pending
+        in: query
+        name: pending
+        type: boolean
+      - description: accepted
+        in: query
+        name: accepted
+        type: boolean
+      - description: page id, default to 1
+        in: query
+        name: page_id
+        type: integer
+      - description: page size, default to 50
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/friendgrp.ListFriendshipResponse'
+        "400":
+          description: Bad Request
+        "409":
+          description: Conflict
+      security:
+      - Bearer: []
+      summary: List friendships
+      tags:
+      - Friendship
+  /liveness:
+    get:
+      description: Liveness returns simple status info if the service is alive. If
+        the app is deployed to a Kubernetes cluster, it will also return pod, node,
+        and namespace details via the Downward API. The Kubernetes environment variables
+        need to be set within your Pod/Deployment manifest.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/checkgrp.LivenessResponse'
+        "500":
+          description: Internal Server Error
+      summary: Check the service is alive
+      tags:
+      - Health
+  /readiness:
+    get:
+      description: Readiness checks if the database is ready and if not will return
+        a 500 status. Do not respond by just returning an error because further up
+        in the call stack it will interpret that as a non-trusted error.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+      summary: Check the service is ready
+      tags:
+      - Health
+  /signin:
+    post:
+      consumes:
+      - application/json
+      description: Signin with username and password
+      parameters:
+      - description: request body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/authgrp.SigninRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/authgrp.SigninResponse'
+        "400":
+          description: Bad Request
+        "409":
+          description: Conflict
+      summary: Signin
+      tags:
+      - Authentication
+  /signup:
+    post:
+      consumes:
+      - application/json
+      description: Signup with username, email and password
+      parameters:
+      - description: request body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/authgrp.SignupRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/authgrp.SignupResponse'
+        "400":
+          description: Bad Request
+        "409":
+          description: Conflict
+      summary: Signup
+      tags:
+      - Authentication
 securityDefinitions:
   Bearer:
     description: Type "Bearer" followed by a space and JWT token.

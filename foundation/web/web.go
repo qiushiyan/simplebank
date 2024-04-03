@@ -20,17 +20,20 @@ import (
 // different than the http.Handler in that it accepts context as the first parameter and returns an error
 type Handler func(ctx context.Context, w http.ResponseWriter, r *http.Request) error
 
-// A route group register routes to the app
+// RouteGroup defines the behavior that binds routes to App
 type RouteGroup interface {
 	Register(*App)
 }
 
+// App is the entrypoint into our application and what configures our context
+// object for each of our http handlers.
 type App struct {
 	*httptreemux.ContextMux
 	shutdown chan os.Signal
 	mw       []Middleware
 }
 
+// NewApp creates an App value that handle a set of routes for the application.
 func NewApp(shutdown chan os.Signal, mw ...Middleware) *App {
 	return &App{
 		ContextMux: httptreemux.NewContextMux(),
@@ -39,9 +42,10 @@ func NewApp(shutdown chan os.Signal, mw ...Middleware) *App {
 	}
 }
 
-func (a *App) AddGroup(gs ...RouteGroup) {
-	for i := range gs {
-		gs[i].Register(a)
+// AddGroup accepts a list of RouteGroup and registers them with the App
+func (a *App) AddGroup(rg ...RouteGroup) {
+	for i := range rg {
+		rg[i].Register(a)
 	}
 }
 

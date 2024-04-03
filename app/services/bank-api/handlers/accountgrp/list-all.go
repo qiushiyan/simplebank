@@ -18,7 +18,7 @@ type ListAllAccountsResponse struct {
 //
 //	@Summary		List all accounts
 //	@Description	list all accounts, available only to admin
-//	@Tags			accounts
+//	@Tags			Accounts
 //	@Accept			json
 //	@Produce		json
 //	@Param			page_id		query	int	false	"page id, default to 1"
@@ -26,7 +26,7 @@ type ListAllAccountsResponse struct {
 //
 //	@Security		Bearer
 //
-//	@Success		200	{object}	[]ListAllAccountsResponse
+//	@Success		200	{object}	ListAllAccountsResponse
 //	@Failure		401
 //	@Failure		409
 //	@Router			/accounts/all [get]

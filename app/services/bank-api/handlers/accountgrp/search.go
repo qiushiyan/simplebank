@@ -19,7 +19,7 @@ type SearchAccountsResponse struct {
 //
 //	@Summary		Search accounts
 //	@Description	Search accounts by owner
-//	@Tags			accounts
+//	@Tags			Accounts
 //	@Accept			json
 //	@Produce		json
 //	@Param			owner		query	string	true	"owner name"

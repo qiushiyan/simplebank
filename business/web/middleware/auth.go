@@ -42,7 +42,7 @@ func Authorize(role token.Role) web.Middleware {
 
 			// check role match, skip if role is empty
 			if !payload.HasRole(role) {
-				return auth.NewUnauthorizedError(role)
+				return auth.NewUnauthorizedError(role, payload.Roles)
 			}
 
 			return handler(ctx, w, r)
