@@ -153,7 +153,7 @@ func TestCreateAccountApi(t *testing.T) {
 			t.Parallel()
 			b, err := json.Marshal(body)
 			require.NoError(t, err)
-			request, err := http.NewRequest(http.MethodPost, "/accounts", bytes.NewReader(b))
+			request, err := http.NewRequest(http.MethodPost, "/accounts/create", bytes.NewReader(b))
 			require.NoError(t, err)
 
 			request.Header.Add("authorization", tc.token)
