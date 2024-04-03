@@ -6,10 +6,29 @@ import (
 	"strconv"
 
 	"github.com/qiushiyan/simplebank/business/auth"
+	db_generated "github.com/qiushiyan/simplebank/business/db/generated"
 	"github.com/qiushiyan/simplebank/foundation/web"
 )
 
-// Get retrieves an account by its ID, and checks if the account belongs to the user from token payload
+type GetAccountResponse struct {
+	Data db_generated.Account `json:"data"`
+}
+
+// GetAccount godoc
+//
+//	@Summary		Get an account
+//	@Description	Get account by id, token should match account owner
+//	@Tags			accounts
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path	int	true	"account id"
+//
+//	@Security		Bearer
+//
+//	@Success		200	{object}	GetAccountResponse
+//	@Failure		401
+//	@Failure		409
+//	@Router			/accounts/{id} [get]
 func (h *Handler) Get(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	id := web.Param(r, "id")
 	aid, err := strconv.Atoi(id)

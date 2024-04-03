@@ -6,21 +6,43 @@ import (
 	"strconv"
 
 	"github.com/qiushiyan/simplebank/business/auth"
+	db_generated "github.com/qiushiyan/simplebank/business/db/generated"
 	"github.com/qiushiyan/simplebank/foundation/web"
 )
 
-type UpdateNameRequest struct {
+type UpdateRequest struct {
 	Name string `json:"name" validate:"required"`
 }
 
-func (h *Handler) UpdateName(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+type UpdateResponse struct {
+	Data db_generated.Account `json:"data"`
+}
+
+// Update godoc
+//
+//	@Summary		Update an account
+//	@Description	Update account by id, token should match account owner, currently only name can be updated
+//	@Tags			accounts
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path	int				true	"account id"
+//	@Param			body	body	UpdateRequest	true	"request body"
+//
+//	@Security		Bearer
+//
+//	@Success		200	{object}	UpdateResponse
+//	@Failure		400
+//	@Failure		403
+//
+//	@Router			/accounts/{id} [patch]
+func (h *Handler) Update(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	id := web.Param(r, "id")
 	aid, err := strconv.Atoi(id)
 	if err != nil {
 		return web.NewError(err, http.StatusBadRequest)
 	}
 
-	var req UpdateNameRequest
+	var req UpdateRequest
 	err = web.Decode(r, &req)
 	if err != nil {
 		return err

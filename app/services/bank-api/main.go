@@ -22,6 +22,23 @@ import (
 
 var build = "develop"
 
+//	@title			SimpleBank API
+//	@version		1.0
+//	@description	Example API for a banking system, see development notes at https://github.com/qiushiyan/simplebank
+
+//	@contact.name	Qiushi Yan
+//	@contact.url	github.com/qiushiyan/simplebank/issues
+//	@contact.email	qiushi.yann@gmail.com
+
+//	@license.name	Apache 2.0
+//	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host						localhost:3000
+// @BasePath					/
+// @securityDefinitions.apikey	Bearer
+// @in							header
+// @name						Authorization
+// @description				Type "Bearer" followed by a space and JWT token.
 func main() {
 	log, err := logger.New("bank-api")
 	if err != nil {
@@ -58,7 +75,6 @@ func run(ctx context.Context, log *zap.SugaredLogger) error {
 		DB struct {
 			URL      string `conf:"default:postgres://postgres:postgres@localhost:5432/bank?sslmode=disable,mask"`
 			MaxConns int    `conf:"default:4"`
-			SSLMode  string `conf:"default:disable"`
 		}
 		Args conf.Args
 	}{
@@ -112,10 +128,9 @@ func run(ctx context.Context, log *zap.SugaredLogger) error {
 	// postgres://jack:secret@pg.example.com:5432/mydb?sslmode=verify-ca&pool_max_conns=10
 
 	dbConfigString := fmt.Sprintf(
-		"%s?pool_max_conns=%d&sslmode=%s",
+		"%s?pool_max_conns=%d",
 		cfg.DB.URL,
 		cfg.DB.MaxConns,
-		cfg.DB.SSLMode,
 	)
 	DB, err := db.Open(ctx, dbConfigString)
 	if err != nil {

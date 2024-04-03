@@ -6,11 +6,31 @@ import (
 
 	"github.com/qiushiyan/simplebank/business/core/account"
 	"github.com/qiushiyan/simplebank/business/data/limit"
+	db_generated "github.com/qiushiyan/simplebank/business/db/generated"
 	"github.com/qiushiyan/simplebank/foundation/web"
 )
 
-// List all accounts in the database
-// this is protected by the authorize middleware and can only be called by admin
+type ListAllAccountsResponse struct {
+	Data []db_generated.Account `json:"data"`
+}
+
+// ListAllAccounts godoc
+//
+//	@Summary		List all accounts
+//	@Description	list all accounts, available only to admin
+//	@Tags			accounts
+//	@Accept			json
+//	@Produce		json
+//	@Param			page_id		query	int	false	"page id, default to 1"
+//	@Param			page_size	query	int	false	"page size, default to 50"
+//
+//	@Security		Bearer
+//
+//	@Success		200	{object}	[]ListAllAccountsResponse
+//	@Failure		401
+//	@Failure		409
+//	@Router			/accounts/all [get]
+//
 // accepts two query parameters: page_id and page_size
 func (h *Handler) ListAll(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	filter := account.NewQueryFilter()

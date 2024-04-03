@@ -1,3 +1,4 @@
+// Package authgrp provides handlers for user registration and signin
 package authgrp
 
 import (

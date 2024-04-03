@@ -6,6 +6,7 @@ import (
 
 	"github.com/qiushiyan/simplebank/business/auth"
 	"github.com/qiushiyan/simplebank/business/core/account"
+	db_generated "github.com/qiushiyan/simplebank/business/db/generated"
 	"github.com/qiushiyan/simplebank/foundation/web"
 )
 
@@ -14,6 +15,25 @@ type CreateAccountRequest struct {
 	Currency string `json:"currency" validate:"required,currency"`
 }
 
+type CreateAccountResponse struct {
+	Data db_generated.Account `json:"data"`
+}
+
+// CreateAccount godoc
+//
+//	@Summary		Create an account
+//	@Description	Create an account with the given name and currency. Currency should be one of "USD", "EUR" or "CAD". Name-Currency combination should be unique.
+//	@Tags			accounts
+//	@Accept			json
+//	@Produce		json
+//	@Param			body	body	CreateAccountRequest	true	"request body"
+//
+//	@Security		Bearer
+//
+//	@Success		200	{object}	CreateAccountResponse
+//	@Failure		400
+//	@Failure		409
+//	@Router			/accounts/create [post]
 func (h *Handler) Create(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	var req CreateAccountRequest
 	err := web.Decode(r, &req)

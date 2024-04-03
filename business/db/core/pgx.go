@@ -6,6 +6,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+// NewText converts a string pointer to a pgtype.Text
 func NewText(s *string) pgtype.Text {
 	var text pgtype.Text
 	if s != nil {
@@ -16,6 +17,7 @@ func NewText(s *string) pgtype.Text {
 	return text
 }
 
+// NewInt8 converts an int64 pointer to a pgtype.Int8
 func NewInt8(i *int64) pgtype.Int8 {
 	var i8 pgtype.Int8
 	if i != nil {
@@ -25,6 +27,7 @@ func NewInt8(i *int64) pgtype.Int8 {
 	return i8
 }
 
+// NewTimestamp converts a time.Time pointer to a pgtype.Timestamp
 func NewTimestamp(t *time.Time) pgtype.Timestamp {
 	var ts pgtype.Timestamp
 	if t != nil {
@@ -34,6 +37,7 @@ func NewTimestamp(t *time.Time) pgtype.Timestamp {
 	return ts
 }
 
+// NewBool converts a bool pointer to a pgtype.Bool
 func NewBool(b *bool) pgtype.Bool {
 	var pb pgtype.Bool
 	if b != nil {

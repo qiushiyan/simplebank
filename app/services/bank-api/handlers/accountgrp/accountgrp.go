@@ -1,3 +1,4 @@
+// Package accountgrp provides account-related handlers, starting with the /accounts subpath.
 package accountgrp
 
 import (
@@ -27,13 +28,13 @@ func (h *Handler) Register(app *web.App) {
 	)
 	app.GET("/accounts", h.List, middleware.Authenticate())
 	app.GET("/accounts/:id", h.Get, middleware.Authenticate())
-	app.POST(
+	app.PATCH(
 		"/accounts/:id",
-		h.UpdateName,
+		h.Update,
 		middleware.Authenticate(),
 	)
 	app.GET("/accounts/search", h.Search, middleware.Authenticate())
-	app.POST("/accounts", h.Create, middleware.Authenticate())
+	app.POST("/accounts/create", h.Create, middleware.Authenticate())
 }
 
 var _ web.RouteGroup = (*Handler)(nil)

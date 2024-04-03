@@ -84,6 +84,10 @@ func (a *App) POST(path string, handler Handler, mw ...Middleware) {
 	a.Handle(http.MethodPost, path, handler, mw...)
 }
 
+func (a *App) PATCH(path string, handler Handler, mw ...Middleware) {
+	a.Handle(http.MethodPatch, path, handler, mw...)
+}
+
 // Param returns the web call parameters from the request.
 func Param(r *http.Request, name string) string {
 	params := httptreemux.ContextParams(r.Context())

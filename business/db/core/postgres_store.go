@@ -8,7 +8,7 @@ import (
 	. "github.com/qiushiyan/simplebank/business/db/generated"
 )
 
-// PostgresStore is the implementation of the Store interface that uses postgres
+// PostgresStore is the implementation of the Store interface that uses the postgres database
 type PostgresStore struct {
 	*Queries
 	pool *pgxpool.Pool
@@ -21,7 +21,7 @@ func NewPostgresStore(pool *pgxpool.Pool) Store {
 	}
 }
 
-// Checl returns nil if it can successfully talk to the database. It
+// Check returns nil if it can successfully talk to the database. It
 // returns a non-nil error otherwise.
 func (s *PostgresStore) Check(ctx context.Context) error {
 	if _, ok := ctx.Deadline(); !ok {

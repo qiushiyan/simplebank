@@ -24,6 +24,8 @@ dev-gotooling:
 	go install golang.org/x/vuln/cmd/govulncheck@latest
 	go install golang.org/x/tools/cmd/goimports@latest
 	go install go.uber.org/mock/mockgen@latest
+	go install github.com/swaggo/swag/cmd/swag@latest
+
 
 dev-brew:
 	brew update
@@ -31,6 +33,7 @@ dev-brew:
 	brew list kubectl || brew install kubectl
 	brew list kustomize || brew install kustomize
 	brew list pgcli || brew install pgcli
+
 
 dev-docker:
 	docker pull $(POSTGRES)
@@ -104,7 +107,6 @@ dev-forward:
 dev-down:
 	kind delete cluster --name $(KIND_CLUSTER)
 
-
 dev-status:
 	kubectl get nodes -o wide -n $(NAMESPACE)
 	kubectl get svc -o wide -n $(NAMESPACE)
@@ -161,6 +163,10 @@ bank-api:
 # Chores
 conf-help:
 	go run app/services/bank-api/main.go -h
+
+docs:
+	swag init --dir app/services/bank-api -o app/services/bank-api/docs --parseDependency --parseInternal --parseDepth 1
+	swag fmt
 
 tidy:
 	go mod tidy
