@@ -1,15 +1,15 @@
-package handlers
+package routes
 
 import (
 	"os"
 
-	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/accountgrp"
-	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/authgrp"
-	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/checkgrp"
-	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/docsgrp"
-	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/entrygrp"
-	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/friendgrp"
-	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/transfergrp"
+	"github.com/qiushiyan/simplebank/app/services/bank-api/routes/accountgrp"
+	"github.com/qiushiyan/simplebank/app/services/bank-api/routes/authgrp"
+	"github.com/qiushiyan/simplebank/app/services/bank-api/routes/checkgrp"
+	"github.com/qiushiyan/simplebank/app/services/bank-api/routes/docsgrp"
+	"github.com/qiushiyan/simplebank/app/services/bank-api/routes/entrygrp"
+	"github.com/qiushiyan/simplebank/app/services/bank-api/routes/friendgrp"
+	"github.com/qiushiyan/simplebank/app/services/bank-api/routes/transfergrp"
 	db "github.com/qiushiyan/simplebank/business/db/core"
 	"github.com/qiushiyan/simplebank/business/web/middleware"
 	"github.com/qiushiyan/simplebank/foundation/web"

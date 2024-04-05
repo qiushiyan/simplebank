@@ -32,14 +32,16 @@ func Parse(r *http.Request, defaultPageId int32, defaultPageSize int32) (Limiter
 	size := int(defaultPageSize)
 	var err error
 
-	if pageId := r.URL.Query().Get("page_id"); pageId != "" {
+	values := r.URL.Query()
+
+	if pageId := values.Get("page_id"); pageId != "" {
 		id, err = strconv.Atoi(pageId)
 		if err != nil {
 			return Limiter{}, err
 		}
 	}
 
-	if pageSize := r.URL.Query().Get("page_size"); pageSize != "" {
+	if pageSize := values.Get("page_size"); pageSize != "" {
 		size, err = strconv.Atoi(pageSize)
 		if err != nil {
 			return Limiter{}, err

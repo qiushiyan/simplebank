@@ -10,7 +10,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers"
+	"github.com/qiushiyan/simplebank/app/services/bank-api/routes"
 	"github.com/qiushiyan/simplebank/business/auth/token"
 	mockdb "github.com/qiushiyan/simplebank/business/db/mock"
 	loggerlib "github.com/qiushiyan/simplebank/foundation/logger"
@@ -45,7 +45,6 @@ func TestMain(m *testing.M) {
 	defer logger.Sync()
 
 	m.Run()
-
 }
 
 func serveRequest(
@@ -59,14 +58,14 @@ func serveRequest(
 
 	buildStubs(store)
 
-	cfg := handlers.MuxConfig{
+	cfg := routes.MuxConfig{
 		Shutdown: make(chan os.Signal, 1),
 		Log:      logger,
 		Store:    store,
 		Build:    "develop",
 	}
 
-	app := handlers.NewMux(cfg)
+	app := routes.NewMux(cfg)
 	recorder := httptest.NewRecorder()
 	app.ServeHTTP(recorder, request)
 

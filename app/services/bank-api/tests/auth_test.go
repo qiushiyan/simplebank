@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/go-json-experiment/json"
-	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/authgrp"
+	"github.com/qiushiyan/simplebank/app/services/bank-api/routes/authgrp"
 	"github.com/qiushiyan/simplebank/business/auth"
 	db "github.com/qiushiyan/simplebank/business/db/core"
 	db_generated "github.com/qiushiyan/simplebank/business/db/generated"

@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/go-json-experiment/json"
-	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/transfergrp"
+	"github.com/qiushiyan/simplebank/app/services/bank-api/routes/transfergrp"
 	db "github.com/qiushiyan/simplebank/business/db/core"
 	mockdb "github.com/qiushiyan/simplebank/business/db/mock"
 	"github.com/stretchr/testify/require"

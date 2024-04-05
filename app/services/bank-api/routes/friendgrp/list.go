@@ -2,7 +2,6 @@ package friendgrp
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -17,6 +16,7 @@ type ListFriendshipResponse struct {
 }
 
 // ListFriendship godoc
+//
 //	@Summary		List friendships
 //	@Description	List friendship requests
 //	@Tags			Friendship
@@ -39,21 +39,24 @@ func (h *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Reque
 	var pending *bool
 	var accepted *bool
 	var err error
-	if val := r.URL.Query().Get("from_account_id"); val != "" {
+
+	values := r.URL.Query()
+
+	if val := values.Get("from_account_id"); val != "" {
 		fromAccountId, err = strconv.Atoi(val)
 		if err != nil {
 			return web.NewError(err, http.StatusBadRequest)
 		}
 	}
 
-	if val := r.URL.Query().Get("to_account_id"); val != "" {
+	if val := values.Get("to_account_id"); val != "" {
 		toAccountId, err = strconv.Atoi(val)
 		if err != nil {
 			return web.NewError(err, http.StatusBadRequest)
 		}
 	}
 
-	if val := r.URL.Query().Get("pending"); val != "" {
+	if val := values.Get("pending"); val != "" {
 		val, err := strconv.ParseBool(val)
 		if err != nil {
 			return web.NewError(err, http.StatusBadRequest)
@@ -61,14 +64,13 @@ func (h *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Reque
 		pending = &val
 	}
 
-	if val := r.URL.Query().Get("accepted"); val != "" {
+	if val := values.Get("accepted"); val != "" {
 		val, err := strconv.ParseBool(val)
 		if err != nil {
 			return web.NewError(err, http.StatusBadRequest)
 		}
 		accepted = &val
 	}
-	fmt.Println(r.URL.Query().Get("pending"), r.URL.Query().Get("accepted"))
 
 	filter := friend.NewQueryFilter()
 	if fromAccountId != 0 {

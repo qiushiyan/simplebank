@@ -33,7 +33,8 @@ type SearchAccountsResponse struct {
 //	@Failure		409
 //	@Router			/accounts/search [get]
 func (h *Handler) Search(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	if r.URL.Query().Get("owner") == "" {
+	values := r.URL.Query()
+	if values.Get("owner") == "" {
 		return web.NewError(
 			errors.New("`owner` is a required query parameter"),
 			http.StatusBadRequest,

@@ -13,7 +13,7 @@ import (
 
 	"github.com/ardanlabs/conf/v3"
 	"github.com/joho/godotenv"
-	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers"
+	"github.com/qiushiyan/simplebank/app/services/bank-api/routes"
 	db "github.com/qiushiyan/simplebank/business/db/core"
 	"github.com/qiushiyan/simplebank/business/web/debug"
 	"github.com/qiushiyan/simplebank/foundation/logger"
@@ -60,7 +60,6 @@ func main() {
 }
 
 func run(ctx context.Context, log *zap.SugaredLogger) error {
-	log.Infow("startup", "GOMAXPROCS", runtime.GOMAXPROCS(0), "BUILD-", build)
 
 	cfg := struct {
 		conf.Version
@@ -99,7 +98,7 @@ func run(ctx context.Context, log *zap.SugaredLogger) error {
 	if err != nil {
 		return fmt.Errorf("generating config string: %w", err)
 	}
-
+	log.Infow("startup", "GOMAXPROCS", runtime.GOMAXPROCS(0), "BUILD-", build)
 	log.Infow("startup", "with config", out)
 
 	// -------------------------------------------------------------------------
@@ -132,21 +131,22 @@ func run(ctx context.Context, log *zap.SugaredLogger) error {
 		cfg.DB.URL,
 		cfg.DB.MaxConns,
 	)
-	DB, err := db.Open(ctx, dbConfigString)
+	pool, err := db.NewPgxPool(ctx, dbConfigString)
+	defer pool.Close()
+
 	if err != nil {
 		log.Fatal("cannot connect to db:", err)
 	}
-	store := db.NewPostgresStore(DB)
+	store := db.NewPostgresStore(pool)
 
 	serverErrors := make(chan error, 1)
-	apiMux := handlers.NewMux(
-		handlers.MuxConfig{
-			Shutdown: shutdown,
-			Log:      log,
-			Store:    store,
-			Build:    build,
-		},
-	)
+	muxConfig := routes.MuxConfig{
+		Shutdown: shutdown,
+		Log:      log,
+		Store:    store,
+		Build:    build,
+	}
+	apiMux := routes.NewMux(muxConfig)
 
 	apiServer := http.Server{
 		Addr:         cfg.Web.APIHost,

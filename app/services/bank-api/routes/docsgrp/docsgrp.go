@@ -18,13 +18,17 @@ func New() *Handler {
 }
 
 func (handler *Handler) Register(app *web.App) {
-	h := httpSwagger.Handler(
+	swaggerHandler := httpSwagger.Handler(
 		httpSwagger.URL("/swagger/doc.json"),
 	)
+
+	// serve swagger docs at /swagger/index.html
 	app.GET("/swagger/*", func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-		h.ServeHTTP(w, r)
+		swaggerHandler.ServeHTTP(w, r)
 		return nil
 	})
+
+	// serve welcome message at index route
 	app.GET("/", func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 		return web.RespondJsonPlain(ctx, w, struct {
 			Message string `json:"message"`

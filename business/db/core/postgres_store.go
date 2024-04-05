@@ -54,7 +54,7 @@ func (s *PostgresStore) Check(ctx context.Context) error {
 	return s.pool.QueryRow(ctx, q).Scan(&tmp)
 }
 
-func Open(ctx context.Context, config string) (*pgxpool.Pool, error) {
+func NewPgxPool(ctx context.Context, config string) (*pgxpool.Pool, error) {
 	conf, err := pgxpool.ParseConfig(config)
 	if err != nil {
 		return nil, err

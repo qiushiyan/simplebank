@@ -11,7 +11,7 @@ import (
 	"github.com/go-json-experiment/json"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/qiushiyan/simplebank/app/services/bank-api/handlers/accountgrp"
+	"github.com/qiushiyan/simplebank/app/services/bank-api/routes/accountgrp"
 	"github.com/qiushiyan/simplebank/business/core/account"
 	db "github.com/qiushiyan/simplebank/business/db/core"
 	db_generated "github.com/qiushiyan/simplebank/business/db/generated"
