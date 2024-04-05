@@ -8,9 +8,6 @@ COPY . /simplebank/
 WORKDIR /simplebank
 RUN go mod download
 
-# copy the source into the container
-COPY . /simplebank
-
 # build the migrate binary
 WORKDIR /simplebank/app/tooling/migrate
 RUN go build
@@ -26,9 +23,14 @@ ARG BUILD_REF
 RUN addgroup -g 1000 -S bank && \
     adduser -u 1000 -h /simplebank -G bank -S bank
 
+# copy api binary
 COPY --from=build_bank-api --chown=bank:bank /simplebank/app/services/bank-api/bank-api /simplebank/bank-api
-COPY --from=build_bank-api --chown=bank:bank /simplebank/business/db/migration /simplebank/business/db/migration
+# copy migrate binary
 COPY --from=build_bank-api --chown=bank:bank /simplebank/app/tooling/migrate/migrate /simplebank/migrate
+# copy migration files
+COPY --from=build_bank-api --chown=bank:bank /simplebank/business/db/migration /simplebank/business/db/migration
+
+EXPOSE 3000
 
 WORKDIR /simplebank
 USER bank

@@ -4,6 +4,7 @@ package friendgrp
 import (
 	"net/http"
 
+	"github.com/qiushiyan/simplebank/business/core/account"
 	"github.com/qiushiyan/simplebank/business/core/friend"
 	db "github.com/qiushiyan/simplebank/business/db/core"
 	"github.com/qiushiyan/simplebank/business/web/middleware"
@@ -11,12 +12,14 @@ import (
 )
 
 type Handler struct {
-	core friend.Core
+	friend  friend.Core
+	account account.Core
 }
 
 func New(store db.Store) *Handler {
 	return &Handler{
-		core: friend.NewCore(store),
+		friend:  friend.NewCore(store),
+		account: account.NewCore(store),
 	}
 }
 

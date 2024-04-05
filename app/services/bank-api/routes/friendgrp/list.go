@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/qiushiyan/simplebank/business/auth"
 	"github.com/qiushiyan/simplebank/business/core/friend"
 	"github.com/qiushiyan/simplebank/business/data/limit"
 	db_generated "github.com/qiushiyan/simplebank/business/db/generated"
@@ -90,12 +91,33 @@ func (h *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Reque
 		return web.NewError(err, http.StatusBadRequest)
 	}
 
+	username := auth.GetUsername(ctx)
+	if fromAccountId != 0 {
+		account, err := h.account.QueryById(ctx, int64(fromAccountId))
+		if err != nil {
+			return err
+		}
+		if account.Owner != username {
+			return auth.NewForbiddenError(username)
+		}
+	}
+
+	if toAccountId != 0 {
+		account, err := h.account.QueryById(ctx, int64(toAccountId))
+		if err != nil {
+			return err
+		}
+		if account.Owner != username {
+			return auth.NewForbiddenError(username)
+		}
+	}
+
 	limiter, err := limit.Parse(r, 1, 50)
 	if err != nil {
 		return err
 	}
 
-	data, err := h.core.ListRequests(ctx, filter, limiter)
+	data, err := h.friend.ListRequests(ctx, filter, limiter)
 	if err != nil {
 		return err
 	}

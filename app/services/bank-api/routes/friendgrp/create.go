@@ -39,7 +39,7 @@ func (h *Handler) Create(ctx context.Context, w http.ResponseWriter, r *http.Req
 		return err
 	}
 
-	friendship, err := h.core.NewRequest(ctx, friend.NewFriend(req))
+	friendship, err := h.friend.NewRequest(ctx, friend.NewFriend(req))
 	if err != nil {
 		return err
 	}

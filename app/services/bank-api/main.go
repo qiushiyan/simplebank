@@ -72,7 +72,8 @@ func run(ctx context.Context, log *zap.SugaredLogger) error {
 			DebugHost       string        `conf:"default:0.0.0.0:4000"`
 		}
 		DB struct {
-			URL      string `conf:"default:postgres://postgres:postgres@localhost:5432/bank?sslmode=disable,mask"`
+			URL      string `conf:"default:postgres://postgres:postgres@localhost:5432/bank,mask"`
+			SslMode  string `conf:"default:disable"`
 			MaxConns int    `conf:"default:4"`
 		}
 		Args conf.Args
@@ -127,8 +128,9 @@ func run(ctx context.Context, log *zap.SugaredLogger) error {
 	// postgres://jack:secret@pg.example.com:5432/mydb?sslmode=verify-ca&pool_max_conns=10
 
 	dbConfigString := fmt.Sprintf(
-		"%s?pool_max_conns=%d",
+		"%s?sslmode=%s&pool_max_conns=%d",
 		cfg.DB.URL,
+		cfg.DB.SslMode,
 		cfg.DB.MaxConns,
 	)
 	pool, err := db.NewPgxPool(ctx, dbConfigString)

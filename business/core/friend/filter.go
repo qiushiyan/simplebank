@@ -33,7 +33,11 @@ func (q *QueryFilter) WithAccepted(val *bool) {
 
 func (q *QueryFilter) Valid() error {
 	if q.FromAccountId == nil && q.ToAccountId == nil {
-		return errors.New("must have at least one of from_account_id or to_account_id")
+		return errors.New("must have from_account_id or to_account_id")
+	}
+
+	if q.FromAccountId != nil && q.ToAccountId != nil {
+		return errors.New("cannot have both from_account_id and to_account_id")
 	}
 
 	return nil
