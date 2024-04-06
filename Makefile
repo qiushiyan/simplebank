@@ -11,6 +11,7 @@ SERVICE_IMAGE   := $(BASE_IMAGE_NAME)/$(SERVICE_NAME):$(VERSION)
 CONTAINER_NAME  := bank-api-postgres
 POSTGRES        := postgres:latest
 DATABASE_URL 	:= postgres://postgres:postgres@localhost:5432/bank?sslmode=disable
+DATABASE_URL_TEST := postgres://postgres:postgres@localhost:5432/bank_test?sslmode=disable
 
 compose:
 	docker-compose up -d
@@ -32,8 +33,6 @@ dev-brew:
 	brew list kind || brew install kind
 	brew list kubectl || brew install kubectl
 	brew list kustomize || brew install kustomize
-	brew list pgcli || brew install pgcli
-
 
 dev-docker:
 	docker pull $(POSTGRES)
@@ -62,11 +61,25 @@ migrate-down:
 	migrate -path business/db/migration -database $(DATABASE_URL) --verbose down
 
 migrate-up-test:
-	migrate -path business/db/migration -database "postgresql://postgres:postgres@localhost:5432/bank_test?sslmode=disable" --verbose up
+	migrate -path business/db/migration -database $(DATABASE_URL_TEST) --verbose up
 
-generate:
+migrate-down-test:
+	migrate -path business/db/migration -database $(DATABASE_URL_TEST) --verbose down
+
+# ==============================================================================
+# Code generation
+generate: generate-db generate-mock generate-swagger
+
+generate-db:
 	sqlc generate -f zarf/sqlc/sqlc.yaml
+
+generate-mock:
 	mockgen -destination=./business/db/mock/mockstore.go -package=mockdb github.com/qiushiyan/simplebank/business/db/core Store
+
+generate-swagger:
+	swag init --dir app/services/bank-api -o app/services/bank-api/docs --parseDependency --parseInternal --parseDepth 1
+	swag fmt
+
 
 # ==============================================================================
 # Running locally

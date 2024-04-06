@@ -24,6 +24,7 @@ func New(store db.Store) *Handler {
 }
 
 func (h Handler) Register(a *web.App) {
-	a.Handle(http.MethodGet, "/friend/create", h.Create, middleware.Authenticate())
+	a.Handle(http.MethodPost, "/friend/create", h.Create, middleware.Authenticate())
 	a.Handle(http.MethodGet, "/friend/list", h.List, middleware.Authenticate())
+	a.Handle(http.MethodPatch, "/friend/:id", h.Update, middleware.Authenticate())
 }

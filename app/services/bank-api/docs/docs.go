@@ -502,6 +502,58 @@ const docTemplate = `{
                 }
             }
         },
+        "/friend/{id}": {
+            "patch": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Update friendship status to be one of \"pending\", \"accepted\" or \"rejected\"",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Friendship"
+                ],
+                "summary": "Update friendship status",
+                "parameters": [
+                    {
+                        "description": "request body",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/friendgrp.UpdateRequest"
+                        }
+                    },
+                    {
+                        "type": "integer",
+                        "description": "friendship id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/friendgrp.UpdateFriendshipResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "409": {
+                        "description": "Conflict"
+                    }
+                }
+            }
+        },
         "/liveness": {
             "get": {
                 "description": "Liveness returns simple status info if the service is alive. If the app is deployed to a Kubernetes cluster, it will also return pod, node, and namespace details via the Downward API. The Kubernetes environment variables need to be set within your Pod/Deployment manifest.",
@@ -827,9 +879,6 @@ const docTemplate = `{
         "db_generated.Friendship": {
             "type": "object",
             "properties": {
-                "accepted": {
-                    "type": "boolean"
-                },
                 "created_at": {
                     "type": "string"
                 },
@@ -839,8 +888,8 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
-                "pending": {
-                    "type": "boolean"
+                "status": {
+                    "type": "string"
                 },
                 "to_account_id": {
                     "type": "integer"
@@ -874,6 +923,25 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/db_generated.Friendship"
                     }
+                }
+            }
+        },
+        "friendgrp.UpdateFriendshipResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/db_generated.Friendship"
+                }
+            }
+        },
+        "friendgrp.UpdateRequest": {
+            "type": "object",
+            "required": [
+                "status"
+            ],
+            "properties": {
+                "status": {
+                    "type": "string"
                 }
             }
         }

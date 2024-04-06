@@ -37,8 +37,7 @@ type ListFriendshipResponse struct {
 func (h *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	var fromAccountId int
 	var toAccountId int
-	var pending *bool
-	var accepted *bool
+	var status *friend.Status
 	var err error
 
 	values := r.URL.Query()
@@ -57,20 +56,15 @@ func (h *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Reque
 		}
 	}
 
-	if val := values.Get("pending"); val != "" {
-		val, err := strconv.ParseBool(val)
+	if val := values.Get("status"); val != "" {
+		s, err := friend.ParseStatus(val)
 		if err != nil {
-			return web.NewError(err, http.StatusBadRequest)
+			return web.NewError(
+				friend.InvalidStatusError,
+				http.StatusBadRequest,
+			)
 		}
-		pending = &val
-	}
-
-	if val := values.Get("accepted"); val != "" {
-		val, err := strconv.ParseBool(val)
-		if err != nil {
-			return web.NewError(err, http.StatusBadRequest)
-		}
-		accepted = &val
+		status = &s
 	}
 
 	filter := friend.NewQueryFilter()
@@ -80,11 +74,8 @@ func (h *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Reque
 	if toAccountId != 0 {
 		filter.WithToAccountID(int64(toAccountId))
 	}
-	if pending != nil {
-		filter.WithPending(pending)
-	}
-	if accepted != nil {
-		filter.WithAccepted(accepted)
+	if status != nil {
+		filter.WithStatus(*status)
 	}
 
 	if err = filter.Valid(); err != nil {
@@ -92,6 +83,7 @@ func (h *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Reque
 	}
 
 	username := auth.GetUsername(ctx)
+	// check from/to account id is owned by the user
 	if fromAccountId != 0 {
 		account, err := h.account.QueryById(ctx, int64(fromAccountId))
 		if err != nil {

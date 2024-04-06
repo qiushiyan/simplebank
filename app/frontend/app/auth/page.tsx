@@ -3,10 +3,12 @@ import { AuthTabs } from "@/components/auth/auth-tabs";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { Button } from "@/components/ui/button";
 import { getCurrentUser } from "@/lib/auth";
+import { ping } from "@/lib/fetcher";
 import { routes } from "@/lib/navigataion";
 import { ChevronLeftIcon, CommandIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { config } from "../../lib/config";
 
 type Props = {
@@ -15,6 +17,9 @@ type Props = {
 
 export default async function ({ searchParams }: Props) {
 	const user = await getCurrentUser();
+	if (!(await ping())) {
+		return notFound();
+	}
 	const { tab } = routes.auth.$parseSearchParams(searchParams);
 
 	return (

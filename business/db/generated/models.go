@@ -29,8 +29,7 @@ type Friendship struct {
 	ID            int64     `json:"id"`
 	FromAccountID int64     `json:"from_account_id"`
 	ToAccountID   int64     `json:"to_account_id"`
-	Pending       bool      `json:"pending"`
-	Accepted      bool      `json:"accepted"`
+	Status        string    `json:"status"`
 	CreatedAt     time.Time `json:"created_at"`
 }
 

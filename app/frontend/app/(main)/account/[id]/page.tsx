@@ -1,5 +1,6 @@
 import { AccountSearch } from "@/components/account/account-search";
 import { BreadCrumb } from "@/components/account/breadcrumb";
+import { Friendship } from "@/components/friendship/friendship";
 import { EditableText } from "@/components/ui/editable-text";
 import { getAccount } from "@/lib/account";
 import { updateAccountName } from "@/lib/actions/account";
@@ -7,6 +8,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { routes } from "@/lib/navigataion";
 import { revalidatePath } from "next/cache";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
 type Props = {
 	params: { id: string };
@@ -46,6 +48,9 @@ export default async function ({ params, searchParams }: Props) {
 					revalidatePath(".");
 				}}
 			/>
+			<Suspense fallback={<Friendship.Skeleton />}>
+				<Friendship accountId={account.id} user={user} />
+			</Suspense>
 		</div>
 	);
 }

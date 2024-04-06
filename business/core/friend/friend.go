@@ -20,7 +20,6 @@ func (c *Core) NewRequest(
 	ctx context.Context,
 	nf NewFriend,
 ) (db_generated.Friendship, error) {
-
 	friend, err := c.store.CreateFriend(ctx, db_generated.CreateFriendParams{
 		FromAccountID: nf.FromAccountId,
 		ToAccountID:   nf.ToAccountId,
@@ -36,11 +35,14 @@ func (c *Core) ListRequests(
 	filter QueryFilter,
 	limiter limit.Limiter,
 ) ([]db_generated.Friendship, error) {
+	var s *string
+	if filter.Status != nil {
+		s = &filter.Status.name
+	}
 	friends, err := c.store.ListFriends(ctx, db_generated.ListFriendsParams{
 		FromAccountID: db.NewInt8(filter.FromAccountId),
 		ToAccountID:   db.NewInt8(filter.ToAccountId),
-		Pending:       db.NewBool(filter.Pending),
-		Accepted:      db.NewBool(filter.Accepted),
+		Status:        db.NewText(s),
 		Limit:         limiter.Limit,
 		Offset:        limiter.Offset,
 	})
@@ -51,8 +53,11 @@ func (c *Core) ListRequests(
 	return friends, nil
 }
 
-func (c *Core) AcceptRequest(ctx context.Context, id int64) (db_generated.Friendship, error) {
-	friend, err := c.store.AcceptFriend(ctx, id)
+func (c *Core) GetFriendRequest(
+	ctx context.Context,
+	id int64,
+) (db_generated.Friendship, error) {
+	friend, err := c.store.GetFriend(ctx, id)
 	if err != nil {
 		return db_generated.Friendship{}, db.NewError(err)
 	}
@@ -60,8 +65,15 @@ func (c *Core) AcceptRequest(ctx context.Context, id int64) (db_generated.Friend
 	return friend, nil
 }
 
-func (c *Core) DeclineRequest(ctx context.Context, id int64) (db_generated.Friendship, error) {
-	friend, err := c.store.DeclineFriend(ctx, id)
+func (c *Core) UpdateFriendRequest(
+	ctx context.Context,
+	id int64,
+	status Status,
+) (db_generated.Friendship, error) {
+	friend, err := c.store.UpdateFriend(ctx, db_generated.UpdateFriendParams{
+		ID:     id,
+		Status: status.name,
+	})
 	if err != nil {
 		return db_generated.Friendship{}, db.NewError(err)
 	}

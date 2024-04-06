@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCreateFriend(t *testing.T) {
+func TestCreateGetFriend(t *testing.T) {
 	ctx := context.Background()
 	account1 := createRandomAccount()
 	account2 := createRandomAccount()
@@ -23,8 +23,14 @@ func TestCreateFriend(t *testing.T) {
 
 	require.Equal(t, data.FromAccountID, account1.ID)
 	require.Equal(t, data.ToAccountID, account2.ID)
-	require.True(t, data.Pending)
-	require.False(t, data.Accepted)
+	require.Equal(t, data.Status, "pending")
+
+	record, err := testQueries.GetFriend(ctx, data.ID)
+	require.NoError(t, err)
+	require.Equal(t, record.ID, data.ID)
+	require.Equal(t, record.FromAccountID, account1.ID)
+	require.Equal(t, record.ToAccountID, account2.ID)
+	require.Equal(t, record.Status, "pending")
 }
 
 func TestProcessFriend(t *testing.T) {
@@ -36,14 +42,21 @@ func TestProcessFriend(t *testing.T) {
 		ToAccountID:   account2.ID,
 	})
 
-	res, err := testQueries.AcceptFriend(ctx, data.ID)
+	// accept
+	res, err := testQueries.UpdateFriend(ctx, db_generated.UpdateFriendParams{
+		ID:     data.ID,
+		Status: "accepted",
+	})
 	require.NoError(t, err)
-	require.False(t, res.Pending)
-	require.True(t, res.Accepted)
+	require.Equal(t, res.Status, "accepted")
 
-	res, err = testQueries.DeclineFriend(ctx, data.ID)
+	// reject
+	res, err = testQueries.UpdateFriend(ctx, db_generated.UpdateFriendParams{
+		ID:     data.ID,
+		Status: "rejected",
+	})
 	require.NoError(t, err)
-	require.False(t, res.Accepted)
+	require.Equal(t, res.Status, "rejected")
 }
 
 func TestListFriends(t *testing.T) {
@@ -58,16 +71,18 @@ func TestListFriends(t *testing.T) {
 		})
 
 		if i < 5 {
-			testQueries.AcceptFriend(ctx, data.ID)
+			testQueries.UpdateFriend(ctx, db_generated.UpdateFriendParams{
+				ID:     data.ID,
+				Status: "accepted",
+			})
 		}
 	}
 
 	// accepted requests
-	accepted := true
+	status := "accepted"
 	records, err := testQueries.ListFriends(ctx, db_generated.ListFriendsParams{
 		FromAccountID: db.NewInt8(&fromAccount.ID),
-		Pending:       db.NewBool(nil),
-		Accepted:      db.NewBool(&accepted),
+		Status:        db.NewText(&status),
 		Offset:        0,
 		Limit:         5,
 	})
@@ -75,8 +90,6 @@ func TestListFriends(t *testing.T) {
 
 	for i := range records {
 		record := records[i]
-		require.True(t, record.Accepted)
-		require.False(t, record.Pending)
+		require.Equal(t, record.Status, "accepted")
 	}
-
 }

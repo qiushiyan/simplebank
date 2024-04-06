@@ -9,6 +9,7 @@ export const { routes, useSafeParams, useSafeSearchParams } =
 					tab: z
 						.union([z.literal("signin"), z.literal("signup")])
 						.default("signin"),
+					error: z.string().optional(),
 				})
 				.default({ tab: "signin" }),
 		}),

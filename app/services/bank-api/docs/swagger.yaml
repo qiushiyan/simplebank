@@ -128,16 +128,14 @@ definitions:
     type: object
   db_generated.Friendship:
     properties:
-      accepted:
-        type: boolean
       created_at:
         type: string
       from_account_id:
         type: integer
       id:
         type: integer
-      pending:
-        type: boolean
+      status:
+        type: string
       to_account_id:
         type: integer
     type: object
@@ -159,6 +157,18 @@ definitions:
         items:
           $ref: '#/definitions/db_generated.Friendship'
         type: array
+    type: object
+  friendgrp.UpdateFriendshipResponse:
+    properties:
+      data:
+        $ref: '#/definitions/db_generated.Friendship'
+    type: object
+  friendgrp.UpdateRequest:
+    properties:
+      status:
+        type: string
+    required:
+    - status
     type: object
 host: localhost:3000
 info:
@@ -402,6 +412,40 @@ paths:
       summary: List entries for an account
       tags:
       - Entries
+  /friend/{id}:
+    patch:
+      consumes:
+      - application/json
+      description: Update friendship status to be one of "pending", "accepted" or
+        "rejected"
+      parameters:
+      - description: request body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/friendgrp.UpdateRequest'
+      - description: friendship id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/friendgrp.UpdateFriendshipResponse'
+        "400":
+          description: Bad Request
+        "409":
+          description: Conflict
+      security:
+      - Bearer: []
+      summary: Update friendship status
+      tags:
+      - Friendship
   /friend/create:
     post:
       consumes:

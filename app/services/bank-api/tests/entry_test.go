@@ -12,7 +12,7 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func TestGetEntries(t *testing.T) {
+func TestListEntries(t *testing.T) {
 	url := "/entries"
 
 	cases := []struct {

@@ -8,7 +8,7 @@ export const updateAccountName = async (accountId: number, name: string) => {
 	if (!user) {
 		return null;
 	}
-	const data = await fetcher(`accounts/${accountId}`, "POST", user, { name });
+	const data = await fetcher(`accounts/${accountId}`, "PATCH", user, { name });
 	if (!data) {
 		return null;
 	}

@@ -7,8 +7,7 @@ import (
 type QueryFilter struct {
 	FromAccountId *int64
 	ToAccountId   *int64
-	Pending       *bool
-	Accepted      *bool
+	Status        *Status
 }
 
 func NewQueryFilter() QueryFilter {
@@ -23,12 +22,8 @@ func (q *QueryFilter) WithToAccountID(val int64) {
 	q.ToAccountId = &val
 }
 
-func (q *QueryFilter) WithPending(val *bool) {
-	q.Pending = val
-}
-
-func (q *QueryFilter) WithAccepted(val *bool) {
-	q.Accepted = val
+func (q *QueryFilter) WithStatus(val Status) {
+	q.Status = &val
 }
 
 func (q *QueryFilter) Valid() error {

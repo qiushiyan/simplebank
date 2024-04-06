@@ -9,17 +9,16 @@ import (
 )
 
 type Querier interface {
-	AcceptFriend(ctx context.Context, id int64) (Friendship, error)
 	CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error)
 	CreateEntry(ctx context.Context, arg CreateEntryParams) (Entry, error)
 	CreateFriend(ctx context.Context, arg CreateFriendParams) (Friendship, error)
 	CreateTransfer(ctx context.Context, arg CreateTransferParams) (Transfer, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
-	DeclineFriend(ctx context.Context, id int64) (Friendship, error)
 	DeleteAccount(ctx context.Context, id int64) error
 	GetAccount(ctx context.Context, id int64) (Account, error)
 	GetAccountForUpdate(ctx context.Context, id int64) (Account, error)
 	GetEntry(ctx context.Context, id int64) (Entry, error)
+	GetFriend(ctx context.Context, id int64) (Friendship, error)
 	GetTransfer(ctx context.Context, id int64) (Transfer, error)
 	GetUser(ctx context.Context, username string) (User, error)
 	ListAccounts(ctx context.Context, arg ListAccountsParams) ([]Account, error)
@@ -28,6 +27,7 @@ type Querier interface {
 	ListTransfers(ctx context.Context, arg ListTransfersParams) ([]Transfer, error)
 	UpdateAccountBalance(ctx context.Context, arg UpdateAccountBalanceParams) (Account, error)
 	UpdateAccountName(ctx context.Context, arg UpdateAccountNameParams) (Account, error)
+	UpdateFriend(ctx context.Context, arg UpdateFriendParams) (Friendship, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
 }
 

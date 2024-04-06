@@ -11,32 +11,10 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const acceptFriend = `-- name: AcceptFriend :one
-UPDATE friendships
-SET pending = FALSE,
-    accepted = TRUE
-WHERE id = $1
-RETURNING id, from_account_id, to_account_id, pending, accepted, created_at
-`
-
-func (q *Queries) AcceptFriend(ctx context.Context, id int64) (Friendship, error) {
-	row := q.db.QueryRow(ctx, acceptFriend, id)
-	var i Friendship
-	err := row.Scan(
-		&i.ID,
-		&i.FromAccountID,
-		&i.ToAccountID,
-		&i.Pending,
-		&i.Accepted,
-		&i.CreatedAt,
-	)
-	return i, err
-}
-
 const createFriend = `-- name: CreateFriend :one
 INSERT INTO friendships (from_account_id, to_account_id)
 VALUES ($1, $2)
-RETURNING id, from_account_id, to_account_id, pending, accepted, created_at
+RETURNING id, from_account_id, to_account_id, status, created_at
 `
 
 type CreateFriendParams struct {
@@ -51,51 +29,45 @@ func (q *Queries) CreateFriend(ctx context.Context, arg CreateFriendParams) (Fri
 		&i.ID,
 		&i.FromAccountID,
 		&i.ToAccountID,
-		&i.Pending,
-		&i.Accepted,
+		&i.Status,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
-const declineFriend = `-- name: DeclineFriend :one
-UPDATE friendships
-SET pending = FALSE,
-    accepted = FALSE
+const getFriend = `-- name: GetFriend :one
+SELECT id, from_account_id, to_account_id, status, created_at
+FROM friendships
 WHERE id = $1
-RETURNING id, from_account_id, to_account_id, pending, accepted, created_at
 `
 
-func (q *Queries) DeclineFriend(ctx context.Context, id int64) (Friendship, error) {
-	row := q.db.QueryRow(ctx, declineFriend, id)
+func (q *Queries) GetFriend(ctx context.Context, id int64) (Friendship, error) {
+	row := q.db.QueryRow(ctx, getFriend, id)
 	var i Friendship
 	err := row.Scan(
 		&i.ID,
 		&i.FromAccountID,
 		&i.ToAccountID,
-		&i.Pending,
-		&i.Accepted,
+		&i.Status,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const listFriends = `-- name: ListFriends :many
-SELECT id, from_account_id, to_account_id, pending, accepted, created_at
+SELECT id, from_account_id, to_account_id, status, created_at
 FROM friendships
-WHERE $3::BIGINT IS NULL
-    OR from_account_id = $3::BIGINT
+WHERE (
+        $3::BIGINT IS NULL
+        OR from_account_id = $3::BIGINT
+    )
     AND (
         $4::BIGINT IS NULL
         OR to_account_id = $4::BIGINT
     )
     AND (
-        $5::BOOLEAN IS NULL
-        OR pending = $5::BOOLEAN
-    )
-    AND (
-        $6::BOOLEAN IS NULL
-        OR accepted = $6::BOOLEAN
+        $5::VARCHAR IS NULL
+        OR status = $5::VARCHAR
     )
 ORDER BY id
 LIMIT $1 OFFSET $2
@@ -106,8 +78,7 @@ type ListFriendsParams struct {
 	Offset        int32       `json:"offset"`
 	FromAccountID pgtype.Int8 `json:"from_account_id"`
 	ToAccountID   pgtype.Int8 `json:"to_account_id"`
-	Pending       pgtype.Bool `json:"pending"`
-	Accepted      pgtype.Bool `json:"accepted"`
+	Status        pgtype.Text `json:"status"`
 }
 
 func (q *Queries) ListFriends(ctx context.Context, arg ListFriendsParams) ([]Friendship, error) {
@@ -116,8 +87,7 @@ func (q *Queries) ListFriends(ctx context.Context, arg ListFriendsParams) ([]Fri
 		arg.Offset,
 		arg.FromAccountID,
 		arg.ToAccountID,
-		arg.Pending,
-		arg.Accepted,
+		arg.Status,
 	)
 	if err != nil {
 		return nil, err
@@ -130,8 +100,7 @@ func (q *Queries) ListFriends(ctx context.Context, arg ListFriendsParams) ([]Fri
 			&i.ID,
 			&i.FromAccountID,
 			&i.ToAccountID,
-			&i.Pending,
-			&i.Accepted,
+			&i.Status,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -142,4 +111,29 @@ func (q *Queries) ListFriends(ctx context.Context, arg ListFriendsParams) ([]Fri
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateFriend = `-- name: UpdateFriend :one
+UPDATE friendships
+SET status = $2
+WHERE id = $1
+RETURNING id, from_account_id, to_account_id, status, created_at
+`
+
+type UpdateFriendParams struct {
+	ID     int64  `json:"id"`
+	Status string `json:"status"`
+}
+
+func (q *Queries) UpdateFriend(ctx context.Context, arg UpdateFriendParams) (Friendship, error) {
+	row := q.db.QueryRow(ctx, updateFriend, arg.ID, arg.Status)
+	var i Friendship
+	err := row.Scan(
+		&i.ID,
+		&i.FromAccountID,
+		&i.ToAccountID,
+		&i.Status,
+		&i.CreatedAt,
+	)
+	return i, err
 }

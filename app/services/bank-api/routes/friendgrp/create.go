@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/qiushiyan/simplebank/business/auth"
 	"github.com/qiushiyan/simplebank/business/core/friend"
 	db_generated "github.com/qiushiyan/simplebank/business/db/generated"
 	"github.com/qiushiyan/simplebank/foundation/web"
@@ -37,6 +38,16 @@ func (h *Handler) Create(ctx context.Context, w http.ResponseWriter, r *http.Req
 	var req CreateFriendRequest
 	if err := web.Decode(r, &req); err != nil {
 		return err
+	}
+
+	// check from account is owned by the user
+	username := auth.GetUsername(ctx)
+	account, err := h.account.QueryById(ctx, req.FromAccountId)
+	if err != nil {
+		return err
+	}
+	if account.Owner != username {
+		return auth.NewForbiddenError(username)
 	}
 
 	friendship, err := h.friend.NewRequest(ctx, friend.NewFriend(req))

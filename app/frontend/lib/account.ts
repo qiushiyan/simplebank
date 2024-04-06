@@ -1,8 +1,6 @@
 import { Session } from "next-auth";
 import { z } from "zod";
-import { env } from "./env.mjs";
 import { fetcher } from "./fetcher";
-import { delay } from "./utils";
 
 export const AccountSchema = z.object({
 	id: z.number(),

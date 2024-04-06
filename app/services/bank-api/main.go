@@ -72,7 +72,7 @@ func run(ctx context.Context, log *zap.SugaredLogger) error {
 			DebugHost       string        `conf:"default:0.0.0.0:4000"`
 		}
 		DB struct {
-			URL      string `conf:"default:postgres://postgres:postgres@localhost:5432/bank,mask"`
+			URL      string `conf:"default:postgres://postgres:postgres@localhost:5432/bankp,mask"`
 			SslMode  string `conf:"default:disable"`
 			MaxConns int    `conf:"default:4"`
 		}
