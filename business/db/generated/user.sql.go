@@ -18,9 +18,9 @@ RETURNING username, email, hashed_password, password_changed_at, created_at
 `
 
 type CreateUserParams struct {
-	Username       string `json:"username"`
-	HashedPassword string `json:"hashed_password"`
-	Email          string `json:"email"`
+	Username       string      `json:"username"`
+	HashedPassword string      `json:"hashed_password"`
+	Email          pgtype.Text `json:"email"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {

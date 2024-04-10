@@ -41,12 +41,12 @@ func (h *Handler) Signin(ctx context.Context, w http.ResponseWriter, r *http.Req
 		return err
 	}
 
-	u, err := h.core.QueryByUsername(ctx, req.Username)
+	u, err := h.user.QueryByUsername(ctx, req.Username)
 	if err != nil {
 		return err
 	}
 
-	token, err := h.core.CreateToken(ctx, u, user.NewToken(req))
+	token, err := h.user.CreateToken(ctx, u, user.NewToken(req))
 
 	if err != nil {
 		return err

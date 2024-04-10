@@ -7,15 +7,17 @@ import (
 	"time"
 
 	"github.com/qiushiyan/simplebank/business/auth"
+	db "github.com/qiushiyan/simplebank/business/db/core"
 	. "github.com/qiushiyan/simplebank/business/db/generated"
 	"github.com/qiushiyan/simplebank/business/random"
 	"github.com/stretchr/testify/require"
 )
 
 func TestCreateUser(t *testing.T) {
+	email := random.RandomEmail()
 	params := CreateUserParams{
 		Username:       random.RandomOwner(),
-		Email:          random.RandomEmail(),
+		Email:          db.NewText(&email),
 		HashedPassword: "secret",
 	}
 
@@ -60,10 +62,12 @@ func createRandomUser() (User, string) {
 		log.Fatal(err)
 	}
 
+	email := random.RandomEmail()
+
 	params := CreateUserParams{
 		Username:       random.RandomOwner(),
 		HashedPassword: hashedPassword,
-		Email:          random.RandomEmail(),
+		Email:          db.NewText(&email),
 	}
 
 	user, err := testQueries.CreateUser(context.Background(), params)

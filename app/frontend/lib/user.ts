@@ -1,13 +1,11 @@
 export const testUsers = [
 	{
-		name: "Admin",
+		name: "admin",
 		explanation:
 			"Admin account with full access. Can view and manage all accounts, transfers, etc.",
 	},
 	{
-		name: "User",
+		name: "user",
 		explanation: "Regular user account. Can only manage personal data",
 	},
 ] as const;
-
-export type TestUsername = (typeof testUsers)[number]["name"];

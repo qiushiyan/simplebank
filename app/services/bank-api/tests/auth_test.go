@@ -34,7 +34,7 @@ func TestSignupAPi(t *testing.T) {
 			name: "ok",
 			args: authgrp.SignupRequest{
 				Username: user.Username,
-				Email:    user.Email,
+				Email:    user.Email.String,
 				Password: password,
 			},
 			buildStubs: func(store *mockdb.MockStore) {
@@ -57,7 +57,7 @@ func TestSignupAPi(t *testing.T) {
 			name: "DuplicatedEmail",
 			args: authgrp.SignupRequest{
 				Username: user.Username,
-				Email:    user.Email,
+				Email:    user.Email.String,
 				Password: password,
 			},
 			buildStubs: func(store *mockdb.MockStore) {
@@ -95,7 +95,7 @@ func TestSignupAPi(t *testing.T) {
 			name: "InvalidPassword",
 			args: authgrp.SignupRequest{
 				Username: user.Username,
-				Email:    user.Email,
+				Email:    user.Email.String,
 				Password: "123",
 			},
 			buildStubs: func(store *mockdb.MockStore) {
@@ -111,7 +111,7 @@ func TestSignupAPi(t *testing.T) {
 			name: "InvalidUsername",
 			args: authgrp.SignupRequest{
 				Username: "aa",
-				Email:    user.Email,
+				Email:    user.Email.String,
 				Password: password,
 			},
 			buildStubs: func(store *mockdb.MockStore) {
@@ -174,20 +174,20 @@ func EqCreateUserParams(arg db_generated.CreateUserParams, password string) gomo
 	return eqCreateUserParamsMatcher{arg, password}
 }
 
-func randomUser() (user db_generated.User, password string) {
-	password = random.RandomPassword()
+func randomUser() (db_generated.User, string) {
+	password := random.RandomPassword()
 	email := random.RandomEmail()
 	hashedPassword, err := auth.HashPassword(password)
 	if err != nil {
 		log.Fatal("failed to hash password")
 	}
 
-	user = db_generated.User{
+	user := db_generated.User{
 		Username:       random.RandomOwner(),
 		HashedPassword: hashedPassword,
-		Email:          email,
+		Email:          db.NewText(&email),
 	}
-	return
+	return user, password
 }
 
 func requireBodyMatchUser(t *testing.T, body *bytes.Buffer, user db_generated.User) {
@@ -197,5 +197,5 @@ func requireBodyMatchUser(t *testing.T, body *bytes.Buffer, user db_generated.Us
 	)
 
 	require.Equal(t, user.Username, got.User.Username)
-	require.Equal(t, user.Email, got.User.Email)
+	require.Equal(t, user.Email.String, got.User.Email)
 }

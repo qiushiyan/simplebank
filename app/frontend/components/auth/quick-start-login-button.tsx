@@ -1,14 +1,11 @@
 "use client";
 
-import { TestUsername, testUsers } from "@/lib/user";
 import { signIn } from "next-auth/react";
-import { useState, useTransition } from "react";
-import { Button } from "../ui/button";
+import { useTransition } from "react";
 import { LoadingButton } from "../ui/loading-button";
-import { Spinner } from "../ui/spinner";
 
 type Props = {
-	name: TestUsername;
+	name: string;
 };
 
 export const QuickStartLoginButton = ({ name }: Props) => {
@@ -25,6 +22,7 @@ export const QuickStartLoginButton = ({ name }: Props) => {
 						},
 						{
 							username: name,
+							endpoint: "signin",
 						},
 					);
 				});

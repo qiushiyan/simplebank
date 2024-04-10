@@ -1,13 +1,16 @@
 import { AuthOptions } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { z } from "zod";
-import { getUser } from "./auth";
-import { TestUsername } from "./user";
+import { authenticate } from "./auth";
 
 const QuerySchema = z.object({
 	username: z.string(),
 	password: z.string().optional(),
+	email: z.string().optional(),
+	endpoint: z.union([z.literal("signup"), z.literal("signin")]),
 });
+
+export type AuthInput = z.infer<typeof QuerySchema>;
 
 export const authOptions: AuthOptions = {
 	providers: [
@@ -20,15 +23,26 @@ export const authOptions: AuthOptions = {
 					return null;
 				}
 
-				const { username, password } = query.data;
-				let response: Awaited<ReturnType<typeof getUser>>;
-				if (!password) {
-					response = await getUser({ username: username as TestUsername });
-				} else {
-					response = await getUser({ username, password });
-				}
+				const response = await authenticate(query.data);
 				if (!response) {
 					return null;
+				}
+
+				if ("error" in response) {
+					if (response.fields) {
+						throw new Error(
+							JSON.stringify({
+								message: response.error,
+								details: response.fields,
+							}),
+						);
+					}
+
+					throw new Error(
+						JSON.stringify({
+							message: response.error,
+						}),
+					);
 				}
 
 				return {

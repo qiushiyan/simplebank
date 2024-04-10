@@ -7,11 +7,13 @@ import (
 	"github.com/qiushiyan/simplebank/business/core/user"
 	db "github.com/qiushiyan/simplebank/business/db/core"
 	db_generated "github.com/qiushiyan/simplebank/business/db/generated"
+	"github.com/qiushiyan/simplebank/business/task"
 	"github.com/qiushiyan/simplebank/foundation/web"
 )
 
 type Handler struct {
-	core user.Core
+	user user.Core
+	task task.Manager
 }
 
 type userResponse struct {
@@ -21,16 +23,17 @@ type userResponse struct {
 	PasswordChangedAt time.Time `json:"password_changed_at"`
 }
 
-func New(store db.Store) *Handler {
+func New(store db.Store, taskManager task.Manager) *Handler {
 	return &Handler{
-		core: user.NewCore(store),
+		user: user.NewCore(store),
+		task: taskManager,
 	}
 }
 
 func NewUserResponse(user db_generated.User) userResponse {
 	return userResponse{
 		Username:          user.Username,
-		Email:             user.Email,
+		Email:             user.Email.String,
 		CreatedAt:         user.CreatedAt,
 		PasswordChangedAt: user.PasswordChangedAt,
 	}

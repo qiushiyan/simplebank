@@ -1,7 +1,3 @@
-import { Button } from "../ui/button";
-
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { SignIn } from "./signin";
 import { SignUp } from "./signup";

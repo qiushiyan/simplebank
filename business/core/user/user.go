@@ -40,7 +40,7 @@ func (u *Core) Create(ctx context.Context, nu NewUser) (User, error) {
 	user, err := u.store.CreateUser(ctx, CreateUserParams{
 		Username:       nu.Username,
 		HashedPassword: hash,
-		Email:          nu.Email,
+		Email:          db.NewText(&nu.Email),
 	})
 
 	if err != nil {

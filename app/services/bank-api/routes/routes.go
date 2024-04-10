@@ -11,6 +11,7 @@ import (
 	"github.com/qiushiyan/simplebank/app/services/bank-api/routes/friendgrp"
 	"github.com/qiushiyan/simplebank/app/services/bank-api/routes/transfergrp"
 	db "github.com/qiushiyan/simplebank/business/db/core"
+	"github.com/qiushiyan/simplebank/business/task"
 	"github.com/qiushiyan/simplebank/business/web/middleware"
 	"github.com/qiushiyan/simplebank/foundation/web"
 	"go.uber.org/zap"
@@ -21,6 +22,7 @@ type MuxConfig struct {
 	Shutdown chan os.Signal
 	Log      *zap.SugaredLogger
 	Store    db.Store
+	Task     task.Manager
 	Build    string
 }
 
@@ -36,7 +38,7 @@ func NewMux(cfg MuxConfig) *web.App {
 
 	app.AddGroup(
 		accountgrp.New(cfg.Store),
-		authgrp.New(cfg.Store),
+		authgrp.New(cfg.Store, cfg.Task),
 		transfergrp.New(cfg.Store),
 		entrygrp.New(cfg.Store),
 		friendgrp.New(cfg.Store),

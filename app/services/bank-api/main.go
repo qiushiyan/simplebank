@@ -15,6 +15,9 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/qiushiyan/simplebank/app/services/bank-api/routes"
 	db "github.com/qiushiyan/simplebank/business/db/core"
+	"github.com/qiushiyan/simplebank/business/task"
+	asynqamanger "github.com/qiushiyan/simplebank/business/task/asynq"
+	simplemanager "github.com/qiushiyan/simplebank/business/task/simple"
 	"github.com/qiushiyan/simplebank/business/web/debug"
 	"github.com/qiushiyan/simplebank/foundation/logger"
 	"go.uber.org/zap"
@@ -60,7 +63,6 @@ func main() {
 }
 
 func run(ctx context.Context, log *zap.SugaredLogger) error {
-
 	cfg := struct {
 		conf.Version
 		Web struct {
@@ -72,9 +74,13 @@ func run(ctx context.Context, log *zap.SugaredLogger) error {
 			DebugHost       string        `conf:"default:0.0.0.0:4000"`
 		}
 		DB struct {
-			URL      string `conf:"default:postgres://postgres:postgres@localhost:5432/bankp,mask"`
+			URL      string `conf:"default:postgres://postgres:postgres@localhost:5432/bank,mask"`
 			SslMode  string `conf:"default:disable"`
 			MaxConns int    `conf:"default:4"`
+		}
+		Task struct {
+			Manager  string `conf:"default:simple,help:\"simple\" for using native goroutines or \"asynq\" for using the [asynq](https://github.com/hibiken/asynq) library. If using asynq must also set redis url"`
+			RedisUrl string `conf:"default:localhost:6379,mask"`
 		}
 		Args conf.Args
 	}{
@@ -124,9 +130,7 @@ func run(ctx context.Context, log *zap.SugaredLogger) error {
 	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
 
 	// -------------------------------------------------------------------------
-	// Start API service
-	// postgres://jack:secret@pg.example.com:5432/mydb?sslmode=verify-ca&pool_max_conns=10
-
+	// Connect database
 	dbConfigString := fmt.Sprintf(
 		"%s?sslmode=%s&pool_max_conns=%d",
 		cfg.DB.URL,
@@ -134,18 +138,44 @@ func run(ctx context.Context, log *zap.SugaredLogger) error {
 		cfg.DB.MaxConns,
 	)
 	pool, err := db.NewPgxPool(ctx, dbConfigString)
-	defer pool.Close()
-
 	if err != nil {
 		log.Fatal("cannot connect to db:", err)
 	}
 	store := db.NewPostgresStore(pool)
+	defer pool.Close()
 
-	serverErrors := make(chan error, 1)
+	// -------------------------------------------------------------------------
+	// Start Task Service
+	taskErrors := make(chan error, 1)
+	var taskManager task.Manager
+
+	taskOption, err := task.ParseOption(cfg.Task.Manager)
+	if err != nil {
+		return err
+	}
+
+	if taskOption == task.OptionAsynq {
+		taskManager = asynqamanger.New(log, cfg.Task.RedisUrl)
+	} else if taskOption == task.OptionSimple {
+		taskManager = simplemanager.New(log)
+	}
+
+	go func() {
+		log.Infow("startup", "status", "task server started", "manager", cfg.Task.Manager)
+		taskErrors <- taskManager.Start()
+	}()
+	defer taskManager.Close()
+
+	// -------------------------------------------------------------------------
+	// Start API service
+	// postgres://jack:secret@pg.example.com:5432/mydb?sslmode=verify-ca&pool_max_conns=10
+
+	apiErrors := make(chan error, 1)
 	muxConfig := routes.MuxConfig{
 		Shutdown: shutdown,
 		Log:      log,
 		Store:    store,
+		Task:     taskManager,
 		Build:    build,
 	}
 	apiMux := routes.NewMux(muxConfig)
@@ -160,15 +190,17 @@ func run(ctx context.Context, log *zap.SugaredLogger) error {
 
 	go func() {
 		log.Infow("startup", "host", apiServer.Addr)
-		serverErrors <- apiServer.ListenAndServe()
+		apiErrors <- apiServer.ListenAndServe()
 	}()
 
 	// -------------------------------------------------------------------------
 	// Shutdown
 
 	select {
-	case err := <-serverErrors:
-		return fmt.Errorf("server error: %w", err)
+	case err := <-apiErrors:
+		return fmt.Errorf("api server error: %w", err)
+	case err := <-taskErrors:
+		return fmt.Errorf("task manager error: %w", err)
 	case sig := <-shutdown:
 		log.Info(ctx, "shutdown", "status", "shutdown started", "signal", sig)
 		defer log.Info(ctx, "shutdown", "status", "shutdown complete", "signal", sig)

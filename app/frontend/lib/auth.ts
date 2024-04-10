@@ -1,10 +1,7 @@
-import { TestUsername } from "@/lib/user";
 import { getServerSession } from "next-auth";
 import { z } from "zod";
 import { env } from "./env.mjs";
-import { authOptions } from "./nextauth";
-
-const TestUsernameSchema = z.custom<TestUsername>();
+import { AuthInput, authOptions } from "./nextauth";
 
 const UserResponseSchema = z.object({
 	username: z.string(),
@@ -13,57 +10,45 @@ const UserResponseSchema = z.object({
 	password_changed_at: z.string(),
 });
 
-const GetUserResponseSchema = z.object({
-	data: z.object({
-		user: UserResponseSchema,
-		access_token: z.string(),
+const UserSignupResponseSchema = z.union([
+	z.object({
+		data: z.object({
+			user: UserResponseSchema,
+			access_token: z.string(),
+		}),
 	}),
-});
+	z.object({
+		error: z.string(),
+		fields: z.record(z.string()).optional(),
+	}),
+]);
 
-type GetUserInput =
-	| {
-			username: TestUsername;
-	  }
-	| {
-			username: string;
-			password: string;
-	  };
-
-export const getUser = async (input: GetUserInput) => {
-	const req = {
-		username: "",
-		password: "",
-	};
-	if (!("password" in input)) {
-		const usernameParsed = TestUsernameSchema.safeParse(input.username);
-		if (usernameParsed.success) {
-			if (usernameParsed.data === "Admin") {
-				req.username = env.ADMIN_USERNAME;
-				req.password = env.ADMIN_PASSWORD;
-			} else if (usernameParsed.data === "User") {
-				req.username = env.USER_USERNAME;
-				req.password = env.USER_PASSWORD;
-			}
-		}
-	} else {
-		req.username = input.username;
-		req.password = input.password;
+export const authenticate = async (input: AuthInput) => {
+	if (input.username === env.ADMIN_USERNAME) {
+		input.password = env.ADMIN_PASSWORD;
+	} else if (input.username === env.USER_USERNAME) {
+		input.password = env.USER_PASSWORD;
 	}
 
-	const response = await fetch(`${env.API_URL}/signin`, {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json",
+	const response = await fetch(
+		input.endpoint === "signin"
+			? `${env.API_URL}/signin`
+			: `${env.API_URL}/signup`,
+		{
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				username: input.username,
+				password: input.password,
+				endpoint: input.endpoint,
+			}),
 		},
-		body: JSON.stringify(req),
-	});
-
-	if (!response.ok) {
-		return null;
-	}
+	);
 
 	const data = await response.json();
-	const parsed = GetUserResponseSchema.safeParse(data);
+	const parsed = UserSignupResponseSchema.safeParse(data);
 	return parsed.success ? parsed.data : null;
 };
 

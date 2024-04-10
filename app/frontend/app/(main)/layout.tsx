@@ -7,7 +7,6 @@ import {
 } from "@/components/ui/collapsible";
 import { getAccounts } from "@/lib/account";
 import { getCurrentUser } from "@/lib/auth";
-import { env } from "@/lib/env.mjs";
 import { ping } from "@/lib/fetcher";
 import { ChevronsUpDown } from "lucide-react";
 import Link from "next/link";

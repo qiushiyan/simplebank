@@ -10,12 +10,13 @@ import (
 
 type SignupRequest struct {
 	Username string `json:"username" validate:"required,alphanum,username"`
-	Email    string `json:"email"    validate:"required,email"`
+	Email    string `json:"email"    validate:""`
 	Password string `json:"password" validate:"required,password"`
 }
 
 type SignupResponse struct {
-	User userResponse `json:"user"`
+	User        userResponse `json:"user"`
+	AccessToken string       `json:"access_token"`
 }
 
 // Signup godoc
@@ -37,7 +38,7 @@ func (h *Handler) Signup(ctx context.Context, w http.ResponseWriter, r *http.Req
 		return err
 	}
 
-	user, err := h.core.Create(ctx, user.NewUser{
+	u, err := h.user.Create(ctx, user.NewUser{
 		Username: req.Username,
 		Email:    req.Email,
 		Password: req.Password,
@@ -47,8 +48,17 @@ func (h *Handler) Signup(ctx context.Context, w http.ResponseWriter, r *http.Req
 		return err
 	}
 
+	token, err := h.user.CreateToken(ctx, u, user.NewToken{
+		Username: req.Username,
+		Password: req.Password,
+	})
+	if err != nil {
+		return err
+	}
+
 	response := SignupResponse{
-		User: NewUserResponse(user),
+		User:        NewUserResponse(u),
+		AccessToken: token.Value,
 	}
 
 	return web.RespondJson(ctx, w, response, http.StatusCreated)

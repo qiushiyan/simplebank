@@ -20,7 +20,7 @@ export default async function ({ searchParams }: Props) {
 	if (!(await ping())) {
 		return notFound();
 	}
-	const { tab } = routes.auth.$parseSearchParams(searchParams);
+	const { tab, error } = routes.auth.$parseSearchParams(searchParams);
 
 	return (
 		<div className="w-screen h-screen grid flex-col items-center justify-center lg:max-w-none lg:grid-cols-2 lg:px-0">
@@ -39,6 +39,7 @@ export default async function ({ searchParams }: Props) {
 						<h1 className="text-2xl font-handwritten tracking-tight">
 							{config.title}
 						</h1>
+						{error && <code className="text-red-500">{error}</code>}
 					</div>
 					{user ? (
 						<section className="font-light space-y-2">
