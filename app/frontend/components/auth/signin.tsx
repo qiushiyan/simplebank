@@ -59,18 +59,12 @@ export const SignIn = () => {
 					}}
 				>
 					<div className="space-y-1 relative">
-						<FloatingInput
-							id="username"
-							defaultValue=""
-							name="username"
-							required
-						/>
+						<FloatingInput id="username" name="username" required />
 						<FloatingLabel htmlFor="username">Username</FloatingLabel>
 					</div>
 					<div className="space-y-1 relative">
 						<FloatingInput
 							id="password"
-							defaultValue=""
 							name="password"
 							type="password"
 							required

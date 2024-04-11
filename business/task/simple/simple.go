@@ -39,7 +39,7 @@ func (m *SimpleManager) Close() error {
 	return nil
 }
 
-func (m *SimpleManager) CreateTask(taskType string, payload []byte) (string, error) {
+func (m *SimpleManager) CreateTask(taskType string, payload any) (string, error) {
 	return "", nil
 }
 

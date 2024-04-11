@@ -17,7 +17,7 @@ export const authOptions: AuthOptions = {
 		Credentials({
 			name: "Credentials",
 			credentials: {},
-			authorize: async (credentials, req) => {
+			authorize: async (_, req) => {
 				const query = QuerySchema.safeParse(req.query);
 				if (!query.success) {
 					return null;

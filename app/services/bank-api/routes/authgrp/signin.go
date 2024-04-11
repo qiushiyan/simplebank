@@ -47,7 +47,6 @@ func (h *Handler) Signin(ctx context.Context, w http.ResponseWriter, r *http.Req
 	}
 
 	token, err := h.user.CreateToken(ctx, u, user.NewToken(req))
-
 	if err != nil {
 		return err
 	}

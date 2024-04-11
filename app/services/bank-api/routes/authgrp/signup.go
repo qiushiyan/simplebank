@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/qiushiyan/simplebank/business/core/user"
+	taskcommon "github.com/qiushiyan/simplebank/business/task/common"
 	"github.com/qiushiyan/simplebank/foundation/web"
 )
 
@@ -54,6 +55,17 @@ func (h *Handler) Signup(ctx context.Context, w http.ResponseWriter, r *http.Req
 	})
 	if err != nil {
 		return err
+	}
+	if req.Email != "" {
+		emailPayload := taskcommon.NewEmailDeliveryPayload(
+			u.Username,
+			"Welcome to SimpleBank",
+			"signup-welcome",
+		)
+		if err != nil {
+			return web.NewError(err, http.StatusInternalServerError)
+		}
+		h.task.CreateTask(taskcommon.TypeEmailDelivery, emailPayload)
 	}
 
 	response := SignupResponse{

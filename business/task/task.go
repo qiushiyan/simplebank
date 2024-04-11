@@ -10,7 +10,7 @@ import (
 type Manager interface {
 	Start() error
 	Close() error
-	CreateTask(taskType string, payload []byte) (string, error)
+	CreateTask(taskType string, payload any) (string, error)
 	CancelTask(id string) error
 	GetTaskStatus(id string) (string, error)
 }

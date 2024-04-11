@@ -1,4 +1,5 @@
 import { getServerSession } from "next-auth";
+import { signIn } from "next-auth/react";
 import { z } from "zod";
 import { env } from "./env.mjs";
 import { AuthInput, authOptions } from "./nextauth";
@@ -23,6 +24,7 @@ const UserSignupResponseSchema = z.union([
 	}),
 ]);
 
+// invoked by the Credentials provider to get back jwt token
 export const authenticate = async (input: AuthInput) => {
 	if (input.username === env.ADMIN_USERNAME) {
 		input.password = env.ADMIN_PASSWORD;
@@ -42,6 +44,7 @@ export const authenticate = async (input: AuthInput) => {
 			body: JSON.stringify({
 				username: input.username,
 				password: input.password,
+				email: input.email,
 				endpoint: input.endpoint,
 			}),
 		},

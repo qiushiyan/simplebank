@@ -168,7 +168,6 @@ func run(ctx context.Context, log *zap.SugaredLogger) error {
 
 	// -------------------------------------------------------------------------
 	// Start API service
-	// postgres://jack:secret@pg.example.com:5432/mydb?sslmode=verify-ca&pool_max_conns=10
 
 	apiErrors := make(chan error, 1)
 	muxConfig := routes.MuxConfig{
