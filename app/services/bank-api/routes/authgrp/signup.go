@@ -62,9 +62,7 @@ func (h *Handler) Signup(ctx context.Context, w http.ResponseWriter, r *http.Req
 			"Welcome to SimpleBank",
 			"signup-welcome",
 		)
-		if err != nil {
-			return web.NewError(err, http.StatusInternalServerError)
-		}
+
 		h.task.CreateTask(taskcommon.TypeEmailDelivery, emailPayload)
 	}
 

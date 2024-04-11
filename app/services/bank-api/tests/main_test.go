@@ -13,6 +13,7 @@ import (
 	"github.com/qiushiyan/simplebank/app/services/bank-api/routes"
 	"github.com/qiushiyan/simplebank/business/auth/token"
 	mockdb "github.com/qiushiyan/simplebank/business/db/mock"
+	simplemanager "github.com/qiushiyan/simplebank/business/task/simple"
 	loggerlib "github.com/qiushiyan/simplebank/foundation/logger"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
@@ -30,6 +31,7 @@ type DataResponse[T any] struct {
 }
 
 func TestMain(m *testing.M) {
+
 	rolesAdmin := []token.Role{token.RoleAdmin}
 	rolesUser := []token.Role{token.RoleUser}
 
@@ -62,6 +64,7 @@ func serveRequest(
 		Shutdown: make(chan os.Signal, 1),
 		Log:      logger,
 		Store:    store,
+		Task:     simplemanager.New(logger),
 		Build:    "develop",
 	}
 

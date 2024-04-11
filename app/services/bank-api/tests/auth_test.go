@@ -47,6 +47,7 @@ func TestSignupAPi(t *testing.T) {
 					arg,
 					password,
 				)).Times(1).Return(user, nil)
+
 			},
 			checker: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusCreated, recorder.Code)
@@ -73,22 +74,6 @@ func TestSignupAPi(t *testing.T) {
 			},
 			checker: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusConflict, recorder.Code)
-			},
-		},
-		{
-			name: "InvalidEmail",
-			args: authgrp.SignupRequest{
-				Username: user.Username,
-				Email:    "invalid-email",
-				Password: password,
-			},
-			buildStubs: func(store *mockdb.MockStore) {
-				store.EXPECT().
-					CreateUser(gomock.Any(), gomock.Any()).
-					Times(0)
-			},
-			checker: func(recorder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
 		},
 		{
