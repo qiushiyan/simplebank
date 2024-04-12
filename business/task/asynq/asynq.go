@@ -1,6 +1,7 @@
 package asynqamanger
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/hibiken/asynq"
@@ -47,7 +48,11 @@ func (m *AsynqManager) Close() error {
 	return m.client.Close()
 }
 
-func (m *AsynqManager) CreateTask(taskType string, payload any) (string, error) {
+func (m *AsynqManager) CreateTask(
+	ctx context.Context,
+	taskType string,
+	payload any,
+) (string, error) {
 	// task := asynq.NewTask(taskType, payload)
 	// info, err := m.client.Enqueue(task)
 
@@ -61,12 +66,12 @@ func (m *AsynqManager) CreateTask(taskType string, payload any) (string, error) 
 		if !ok {
 			return "", fmt.Errorf("invalid payload type for email delivery task: %T", payload)
 		}
-		task, err = m.NewEmailDeliveryTask(payload.To, payload.Subject, payload.Template)
+		task, err = m.NewEmailDeliveryTask(payload.To, payload.Subject)
 		if err != nil {
 			return "", err
 		}
 	}
-	info, err = m.client.Enqueue(task)
+	info, err = m.client.EnqueueContext(ctx, task)
 
 	if err != nil {
 		m.log.Warnw("task created error", "error", err)

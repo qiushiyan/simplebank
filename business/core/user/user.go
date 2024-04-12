@@ -50,6 +50,32 @@ func (u *Core) Create(ctx context.Context, nu NewUser) (User, error) {
 	return user, nil
 }
 
+func (u *Core) CreateTx(
+	ctx context.Context,
+	nu NewUser,
+	afterCreate db.AfterCreateUserFunc,
+) (db.CreateUserTxResult, error) {
+	hash, err := auth.HashPassword(nu.Password)
+	if err != nil {
+		return db.CreateUserTxResult{}, err
+	}
+
+	result, err := u.store.CreateUserTx(ctx, db.CreateUserTxParams{
+		CreateUserParams: CreateUserParams{
+			Username:       nu.Username,
+			HashedPassword: hash,
+			Email:          db.NewText(&nu.Email),
+		},
+		AfterCreate: afterCreate,
+	})
+
+	if err != nil {
+		return db.CreateUserTxResult{}, db.NewError(err)
+	}
+
+	return result, nil
+}
+
 func (u *Core) CreateToken(
 	ctx context.Context,
 	user User,

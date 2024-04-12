@@ -72,12 +72,16 @@ definitions:
       username:
         type: string
     required:
-    - email
     - password
     - username
     type: object
   authgrp.SignupResponse:
     properties:
+      access_token:
+        type: string
+      task_id:
+        description: task id for sending welcome email
+        type: string
       user:
         $ref: '#/definitions/authgrp.userResponse'
     type: object
@@ -587,7 +591,8 @@ paths:
     post:
       consumes:
       - application/json
-      description: Signup with username, email and password
+      description: Signup with username, email and password. If email is provided,
+        a welcome email will be sent. The task id for the email delivery task is returned.
       parameters:
       - description: request body
         in: body

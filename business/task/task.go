@@ -2,6 +2,8 @@
 package task
 
 import (
+	"context"
+
 	asynqamanger "github.com/qiushiyan/simplebank/business/task/asynq"
 	simplemanager "github.com/qiushiyan/simplebank/business/task/simple"
 )
@@ -10,7 +12,7 @@ import (
 type Manager interface {
 	Start() error
 	Close() error
-	CreateTask(taskType string, payload any) (string, error)
+	CreateTask(ctx context.Context, taskType string, payload any) (string, error)
 	CancelTask(id string) error
 	GetTaskStatus(id string) (string, error)
 }

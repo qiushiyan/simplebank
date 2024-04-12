@@ -21,11 +21,10 @@ func (p *EmailProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 	return nil
 }
 
-func (m *AsynqManager) NewEmailDeliveryTask(to, subject, template string) (*asynq.Task, error) {
+func (m *AsynqManager) NewEmailDeliveryTask(to, subject string) (*asynq.Task, error) {
 	payload := taskcommon.EmailDeliveryPayload{
-		To:       to,
-		Subject:  subject,
-		Template: template,
+		To:      to,
+		Subject: subject,
 	}
 	b, err := json.Marshal(payload)
 	if err != nil {

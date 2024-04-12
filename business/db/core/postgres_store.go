@@ -63,6 +63,41 @@ func NewPgxPool(ctx context.Context, config string) (*pgxpool.Pool, error) {
 	return db, err
 }
 
+type AfterCreateUserFunc func(user User) (any, error)
+
+// CreateUserTxParams is the input parameters for the create user function
+type CreateUserTxParams struct {
+	CreateUserParams
+	AfterCreate AfterCreateUserFunc
+}
+
+// CreateUserTxResult is the result of the create user function
+type CreateUserTxResult struct {
+	User              User `json:"user"`
+	AfterCreateResult any  `json:"result"`
+}
+
+func (s *PostgresStore) CreateUserTx(
+	ctx context.Context,
+	arg CreateUserTxParams,
+) (CreateUserTxResult, error) {
+	var result CreateUserTxResult
+
+	err := s.ExecuteInTransaction(ctx, func(q *Queries) error {
+		var err error
+
+		result.User, err = q.CreateUser(ctx, arg.CreateUserParams)
+		if err != nil {
+			return err
+		}
+
+		result.AfterCreateResult, err = arg.AfterCreate(result.User)
+		return err
+	})
+
+	return result, err
+}
+
 // TransferTxParams is the input parameters for the transfer transaction
 type TransferTxParams struct {
 	FromAccountId int64 `json:"from_account_id"`

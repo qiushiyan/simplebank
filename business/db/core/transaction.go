@@ -8,6 +8,8 @@ import (
 	db_generated "github.com/qiushiyan/simplebank/business/db/generated"
 )
 
+type QueryFunc = func(*db_generated.Queries) error
+
 func (s *PostgresStore) ExecuteInTransaction(ctx context.Context, fn QueryFunc) error {
 	tx, err := s.pool.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {

@@ -1,6 +1,7 @@
 package simplemanager
 
 import (
+	"context"
 	"time"
 
 	"go.uber.org/zap"
@@ -39,7 +40,11 @@ func (m *SimpleManager) Close() error {
 	return nil
 }
 
-func (m *SimpleManager) CreateTask(taskType string, payload any) (string, error) {
+func (m *SimpleManager) CreateTask(
+	ctx context.Context,
+	taskType string,
+	payload any,
+) (string, error) {
 	return "", nil
 }
 

@@ -8,6 +8,7 @@ import (
 	db "github.com/qiushiyan/simplebank/business/db/core"
 	db_generated "github.com/qiushiyan/simplebank/business/db/generated"
 	"github.com/qiushiyan/simplebank/business/task"
+	"github.com/qiushiyan/simplebank/business/web/middleware"
 	"github.com/qiushiyan/simplebank/foundation/web"
 )
 
@@ -42,6 +43,7 @@ func NewUserResponse(user db_generated.User) userResponse {
 func (h *Handler) Register(app *web.App) {
 	app.POST("/signup", h.Signup)
 	app.POST("/signin", h.Signin)
+	app.POST("/send-email", h.SendEmail, middleware.Authenticate())
 }
 
 var _ web.RouteGroup = (*Handler)(nil)

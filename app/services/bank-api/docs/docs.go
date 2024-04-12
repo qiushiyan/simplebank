@@ -642,7 +642,7 @@ const docTemplate = `{
         },
         "/signup": {
             "post": {
-                "description": "Signup with username, email and password",
+                "description": "Signup with username, email and password. If email is provided, a welcome email will be sent. The task id for the email delivery task is returned.",
                 "consumes": [
                     "application/json"
                 ],
@@ -783,7 +783,6 @@ const docTemplate = `{
         "authgrp.SignupRequest": {
             "type": "object",
             "required": [
-                "email",
                 "password",
                 "username"
             ],
@@ -802,6 +801,13 @@ const docTemplate = `{
         "authgrp.SignupResponse": {
             "type": "object",
             "properties": {
+                "access_token": {
+                    "type": "string"
+                },
+                "task_id": {
+                    "description": "task id for sending welcome email",
+                    "type": "string"
+                },
                 "user": {
                     "$ref": "#/definitions/authgrp.userResponse"
                 }

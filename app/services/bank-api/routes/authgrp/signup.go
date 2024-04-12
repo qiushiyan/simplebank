@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/qiushiyan/simplebank/business/core/user"
+	db_generated "github.com/qiushiyan/simplebank/business/db/generated"
 	taskcommon "github.com/qiushiyan/simplebank/business/task/common"
 	"github.com/qiushiyan/simplebank/foundation/web"
 )
@@ -16,14 +17,18 @@ type SignupRequest struct {
 }
 
 type SignupResponse struct {
-	User        userResponse `json:"user"`
-	AccessToken string       `json:"access_token"`
+	// The created user model
+	User userResponse `json:"user"`
+	// Access token for the user
+	AccessToken string `json:"access_token"`
+	// Task id for the email delivery task, if email is provided in the request
+	TaskId string `json:"task_id,omitempty"`
 }
 
 // Signup godoc
 //
 //	@Summary		Signup
-//	@Description	Signup with username, email and password
+//	@Description	Signup with username, email and password. If email is provided, a welcome email will be sent. The task id for the email delivery task is returned.
 //	@Tags			Authentication
 //	@Accept			json
 //	@Produce		json
@@ -34,42 +39,47 @@ type SignupResponse struct {
 //	@Router			/signup [post]
 func (h *Handler) Signup(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 	var req SignupRequest
+	var res SignupResponse
 	err := web.Decode(r, &req)
 	if err != nil {
 		return err
 	}
 
-	u, err := h.user.Create(ctx, user.NewUser{
+	result, err := h.user.CreateTx(ctx, user.NewUser{
 		Username: req.Username,
 		Email:    req.Email,
 		Password: req.Password,
-	})
+	}, func(user db_generated.User) (any, error) {
+		if req.Email == "" {
+			return "", nil
+		}
 
+		emailPayload := taskcommon.NewEmailDeliveryPayload(
+			user.Username,
+			"welcome",
+		)
+
+		taskId, err := h.task.CreateTask(ctx, taskcommon.TypeEmailDelivery, emailPayload)
+		if err != nil {
+			return "", err
+		}
+
+		return taskId, nil
+	})
 	if err != nil {
 		return err
 	}
 
-	token, err := h.user.CreateToken(ctx, u, user.NewToken{
+	token, err := h.user.CreateToken(ctx, result.User, user.NewToken{
 		Username: req.Username,
 		Password: req.Password,
 	})
 	if err != nil {
 		return err
 	}
-	if req.Email != "" {
-		emailPayload := taskcommon.NewEmailDeliveryPayload(
-			u.Username,
-			"Welcome to SimpleBank",
-			"signup-welcome",
-		)
 
-		h.task.CreateTask(taskcommon.TypeEmailDelivery, emailPayload)
-	}
-
-	response := SignupResponse{
-		User:        NewUserResponse(u),
-		AccessToken: token.Value,
-	}
-
-	return web.RespondJson(ctx, w, response, http.StatusCreated)
+	res.User = NewUserResponse(result.User)
+	res.AccessToken = token.Value
+	res.TaskId = result.AfterCreateResult.(string)
+	return web.RespondJson(ctx, w, res, http.StatusCreated)
 }
