@@ -2,7 +2,6 @@ package friendgrp
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -13,6 +12,7 @@ import (
 )
 
 type UpdateRequest struct {
+	// one of "pending", "accepted" or "rejected"
 	Status string `json:"status" validate:"required"`
 }
 
@@ -59,7 +59,6 @@ func (h *Handler) Update(ctx context.Context, w http.ResponseWriter, r *http.Req
 	if err != nil {
 		return err
 	}
-	fmt.Println(record)
 	account, err := h.account.QueryById(ctx, record.ToAccountID)
 	if err != nil {
 		return err

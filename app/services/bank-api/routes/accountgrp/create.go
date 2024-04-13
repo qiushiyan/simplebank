@@ -11,7 +11,9 @@ import (
 )
 
 type CreateAccountRequest struct {
-	Name     string `json:"name"     validate:"required,accountname"`
+	// less than 30 characters
+	Name string `json:"name"     validate:"required,accountname"`
+	// one of: USD, EUR, CAD
 	Currency string `json:"currency" validate:"required,currency"`
 }
 

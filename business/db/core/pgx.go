@@ -6,6 +6,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+// Functions below are used to convert go types to a nullable sql field
 // NewText converts a string pointer to a pgtype.Text
 func NewText(s *string) pgtype.Text {
 	var text pgtype.Text

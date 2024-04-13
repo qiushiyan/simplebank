@@ -15,9 +15,12 @@ import (
 )
 
 type ListEntriesQuery struct {
+	// The sender account ID
 	FromAccountId int64
-	EndDate       *time.Time
-	StartDate     *time.Time
+	// Maximum date for the entry
+	EndDate *time.Time
+	// Minimum date for the entry
+	StartDate *time.Time
 }
 
 // ListEntries godoc

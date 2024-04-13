@@ -3,8 +3,10 @@ definitions:
   accountgrp.CreateAccountRequest:
     properties:
       currency:
+        description: 'one of: USD, EUR, CAD'
         type: string
       name:
+        description: 3 - 20 characters long
         type: string
     required:
     - currency
@@ -78,12 +80,16 @@ definitions:
   authgrp.SignupResponse:
     properties:
       access_token:
+        description: Access token for the user
         type: string
       task_id:
-        description: task id for sending welcome email
+        description: Task id for the email delivery task, if email is provided in
+          the request
         type: string
       user:
-        $ref: '#/definitions/authgrp.userResponse'
+        allOf:
+        - $ref: '#/definitions/authgrp.userResponse'
+        description: The created user model
     type: object
   authgrp.userResponse:
     properties:
@@ -146,8 +152,10 @@ definitions:
   friendgrp.CreateFriendRequest:
     properties:
       fromAccountId:
+        description: The sender account ID
         type: integer
       toAccountId:
+        description: The receiver account ID
         type: integer
     type: object
   friendgrp.CreateFriendResponse:
@@ -170,6 +178,7 @@ definitions:
   friendgrp.UpdateRequest:
     properties:
       status:
+        description: one of "pending", "accepted" or "rejected"
         type: string
     required:
     - status
@@ -592,7 +601,8 @@ paths:
       consumes:
       - application/json
       description: Signup with username, email and password. If email is provided,
-        a welcome email will be sent. The task id for the email delivery task is returned.
+        a welcome email will be scheduled as an asynchronous task and the task id
+        will be returned.
       parameters:
       - description: request body
         in: body

@@ -642,7 +642,7 @@ const docTemplate = `{
         },
         "/signup": {
             "post": {
-                "description": "Signup with username, email and password. If email is provided, a welcome email will be sent. The task id for the email delivery task is returned.",
+                "description": "Signup with username, email and password. If email is provided, a welcome email will be scheduled as an asynchronous task and the task id will be returned.",
                 "consumes": [
                     "application/json"
                 ],
@@ -690,9 +690,11 @@ const docTemplate = `{
             ],
             "properties": {
                 "currency": {
+                    "description": "one of: USD, EUR, CAD",
                     "type": "string"
                 },
                 "name": {
+                    "description": "3 - 20 characters long",
                     "type": "string"
                 }
             }
@@ -802,14 +804,20 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "access_token": {
+                    "description": "Access token for the user",
                     "type": "string"
                 },
                 "task_id": {
-                    "description": "task id for sending welcome email",
+                    "description": "Task id for the email delivery task, if email is provided in the request",
                     "type": "string"
                 },
                 "user": {
-                    "$ref": "#/definitions/authgrp.userResponse"
+                    "description": "The created user model",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/authgrp.userResponse"
+                        }
+                    ]
                 }
             }
         },
@@ -906,9 +914,11 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "fromAccountId": {
+                    "description": "The sender account ID",
                     "type": "integer"
                 },
                 "toAccountId": {
+                    "description": "The receiver account ID",
                     "type": "integer"
                 }
             }
@@ -947,6 +957,7 @@ const docTemplate = `{
             ],
             "properties": {
                 "status": {
+                    "description": "one of \"pending\", \"accepted\" or \"rejected\"",
                     "type": "string"
                 }
             }

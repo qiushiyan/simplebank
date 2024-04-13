@@ -11,8 +11,10 @@ import (
 )
 
 type CreateFriendRequest struct {
+	// The sender account ID
 	FromAccountId int64
-	ToAccountId   int64
+	// The receiver account ID
+	ToAccountId int64
 }
 
 type CreateFriendResponse struct {

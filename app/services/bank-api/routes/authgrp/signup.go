@@ -11,8 +11,11 @@ import (
 )
 
 type SignupRequest struct {
+	// 3 to 20 characters, only letters and numbers
 	Username string `json:"username" validate:"required,alphanum,username"`
-	Email    string `json:"email"    validate:""`
+	// Email address (Optional)
+	Email string `json:"email"    validate:""`
+	// 6 to 20 characters
 	Password string `json:"password" validate:"required,password"`
 }
 
@@ -28,7 +31,7 @@ type SignupResponse struct {
 // Signup godoc
 //
 //	@Summary		Signup
-//	@Description	Signup with username, email and password. If email is provided, a welcome email will be sent. The task id for the email delivery task is returned.
+//	@Description	Signup with username, email and password. If email is provided, a welcome email will be scheduled as an asynchronous task and the task id will be returned.
 //	@Tags			Authentication
 //	@Accept			json
 //	@Produce		json

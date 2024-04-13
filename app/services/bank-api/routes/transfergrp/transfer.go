@@ -11,9 +11,12 @@ import (
 )
 
 type TransferRequest struct {
+	// The sender account ID
 	FromAccountId int64 `json:"from_account_id" validate:"required"`
-	ToAccountId   int64 `json:"to_account_id"   validate:"required"`
-	Amount        int64 `json:"amount"          validate:"required,gt=0"`
+	// The receiver account ID
+	ToAccountId int64 `json:"to_account_id"   validate:"required"`
+	// The amount to transfer
+	Amount int64 `json:"amount"          validate:"required,gt=0"`
 }
 
 func (h *Handler) Transfer(ctx context.Context, w http.ResponseWriter, r *http.Request) error {

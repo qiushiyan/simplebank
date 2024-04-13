@@ -8,11 +8,8 @@ import (
 	"github.com/qiushiyan/simplebank/foundation/web"
 )
 
-const (
-	adminUsername = "admin"
-)
-
 type SigninRequest struct {
+	//
 	Username string `json:"username" validate:"required,alphanum,username"`
 	Password string `json:"password" validate:"required,password"`
 }
