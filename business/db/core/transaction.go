@@ -10,7 +10,7 @@ import (
 
 type QueryFunc = func(*db_generated.Queries) error
 
-func (s *PostgresStore) ExecuteInTransaction(ctx context.Context, fn QueryFunc) error {
+func (s *PostgresStore) executeInTransaction(ctx context.Context, fn QueryFunc) error {
 	tx, err := s.pool.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
 		return err

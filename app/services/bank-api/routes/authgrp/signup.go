@@ -58,8 +58,9 @@ func (h *Handler) Signup(ctx context.Context, w http.ResponseWriter, r *http.Req
 		}
 
 		emailPayload := taskcommon.NewEmailDeliveryPayload(
+			req.Email,
 			user.Username,
-			"welcome",
+			taskcommon.SubjectWelcome,
 		)
 
 		taskId, err := h.task.CreateTask(ctx, taskcommon.TypeEmailDelivery, emailPayload)

@@ -79,8 +79,10 @@ func run(ctx context.Context, log *zap.SugaredLogger) error {
 			MaxConns int    `conf:"default:4"`
 		}
 		Task struct {
-			Manager  string `conf:"default:simple,help:\"simple\" for using native goroutines or \"asynq\" for using the [asynq](https://github.com/hibiken/asynq) library. If using asynq must also set redis url"`
-			RedisUrl string `conf:"default:localhost:6379,mask"`
+			Manager             string `conf:"default:simple,help:\"simple\" for using native goroutines or \"asynq\" for using the [asynq](https://github.com/hibiken/asynq) library. If using asynq must also set redis url"`
+			RedisUrl            string `conf:"default:localhost:6379,mask"`
+			EmailSenderAddress  string `conf:"help:gmail account to send email"`
+			EMAILSenderPassword string `conf:"help:app password for the gmail account"`
 		}
 		Args conf.Args
 	}{
@@ -155,7 +157,12 @@ func run(ctx context.Context, log *zap.SugaredLogger) error {
 	}
 
 	if taskOption == task.OptionAsynq {
-		taskManager = asynqamanger.New(log, cfg.Task.RedisUrl)
+		taskManager = asynqamanger.New(
+			log,
+			cfg.Task.RedisUrl,
+			cfg.Task.EmailSenderAddress,
+			cfg.Task.EMAILSenderPassword,
+		)
 	} else if taskOption == task.OptionSimple {
 		taskManager = simplemanager.New(log)
 	}

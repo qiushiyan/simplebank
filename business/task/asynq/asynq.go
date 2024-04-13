@@ -10,13 +10,20 @@ import (
 )
 
 type AsynqManager struct {
-	log       *zap.SugaredLogger
-	client    *asynq.Client
-	server    *asynq.Server
-	inspector *asynq.Inspector
+	log            *zap.SugaredLogger
+	client         *asynq.Client
+	server         *asynq.Server
+	inspector      *asynq.Inspector
+	senderAddr     string
+	senderPassword string
 }
 
-func New(log *zap.SugaredLogger, redisAddr string) *AsynqManager {
+func New(
+	log *zap.SugaredLogger,
+	redisAddr string,
+	senderAddr string,
+	senderPassword string,
+) *AsynqManager {
 	redisOpt := asynq.RedisClientOpt{Addr: redisAddr}
 
 	client := asynq.NewClient(redisOpt)
@@ -25,21 +32,39 @@ func New(log *zap.SugaredLogger, redisAddr string) *AsynqManager {
 		asynq.Config{
 			Concurrency: 5,
 			Logger:      &Logger{log: log},
+			ErrorHandler: asynq.ErrorHandlerFunc(
+				func(ctx context.Context, task *asynq.Task, err error) {
+					log.Errorw(
+						"task processing error",
+						"type",
+						task.Type,
+						"payload",
+						string(task.Payload()),
+						"error",
+						err,
+					)
+				},
+			),
 		},
 	)
 	inspector := asynq.NewInspector(redisOpt)
 
 	return &AsynqManager{
-		log:       log,
-		server:    server,
-		client:    client,
-		inspector: inspector,
+		log:            log,
+		server:         server,
+		client:         client,
+		inspector:      inspector,
+		senderAddr:     senderAddr,
+		senderPassword: senderPassword,
 	}
 }
 
 func (m *AsynqManager) Start() error {
 	mux := asynq.NewServeMux()
-	mux.Handle(taskcommon.TypeEmailDelivery, &EmailProcessor{log: m.log})
+	mux.Handle(
+		taskcommon.TypeEmailDelivery,
+		NewEmailProcessor(m.log, m.senderAddr, m.senderPassword),
+	)
 
 	return m.server.Run(mux)
 }
@@ -66,7 +91,7 @@ func (m *AsynqManager) CreateTask(
 		if !ok {
 			return "", fmt.Errorf("invalid payload type for email delivery task: %T", payload)
 		}
-		task, err = m.NewEmailDeliveryTask(payload.To, payload.Subject)
+		task, err = m.NewEmailDeliveryTask(payload.To, payload.Username, payload.Subject)
 		if err != nil {
 			return "", err
 		}

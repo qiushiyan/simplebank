@@ -1,0 +1,61 @@
+<!-- welcomeEmailTemplate.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Welcome Email</title>
+    <style type="text/css">
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 20px auto;
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .email-header {
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .email-footer {
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="email-container">
+        <div class="email-header">
+            <h2>Welcome to Our Service!</h2>
+        </div>
+
+        <p>Hello {{.Username}}</p>
+
+        <p>This email is sent for testing purposes.</p>
+
+        <p>For development notes, see <a
+                href="https://github.com/qiushiyan/simplebank">https://github.com/qiushiyan/simplebank</a>.</p>
+
+        <div class="email-footer">
+            <p>Best</p>
+        </div>
+    </div>
+</body>
+
+</html>

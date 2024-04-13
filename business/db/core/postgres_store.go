@@ -83,7 +83,7 @@ func (s *PostgresStore) CreateUserTx(
 ) (CreateUserTxResult, error) {
 	var result CreateUserTxResult
 
-	err := s.ExecuteInTransaction(ctx, func(q *Queries) error {
+	err := s.executeInTransaction(ctx, func(q *Queries) error {
 		var err error
 
 		result.User, err = q.CreateUser(ctx, arg.CreateUserParams)
@@ -122,7 +122,7 @@ func (s *PostgresStore) TransferTx(
 ) (TransferTxResult, error) {
 	var result TransferTxResult
 
-	err := s.ExecuteInTransaction(ctx, func(q *Queries) error {
+	err := s.executeInTransaction(ctx, func(q *Queries) error {
 		var err error
 
 		result.Transfer, err = q.CreateTransfer(ctx, CreateTransferParams{

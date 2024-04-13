@@ -2,6 +2,7 @@ package authgrp
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/qiushiyan/simplebank/business/auth"
@@ -25,10 +26,20 @@ func (h *Handler) SendEmail(ctx context.Context, w http.ResponseWriter, r *http.
 
 	username := auth.GetUsername(ctx)
 
+	user, err := h.user.QueryByUsername(ctx, username)
+	if err != nil {
+		return err
+	}
+
+	if !user.Email.Valid {
+		return web.NewError(errors.New("user does not have a valid email"), http.StatusConflict)
+	}
+
 	taskId, err := h.task.CreateTask(
 		ctx,
 		taskcommon.TypeEmailDelivery,
 		taskcommon.NewEmailDeliveryPayload(
+			user.Email.String,
 			username,
 			req.Subject,
 		),
