@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/go-json-experiment/json"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/qiushiyan/simplebank/app/services/bank-api/routes/authgrp"
 	"github.com/qiushiyan/simplebank/business/auth"
 	db "github.com/qiushiyan/simplebank/business/db/core"
@@ -23,6 +24,10 @@ import (
 func TestSignupAPi(t *testing.T) {
 	user, password := randomUser()
 	url := "/signup"
+	response := db.CreateUserTxResult{
+		User:              user,
+		AfterCreateResult: "",
+	}
 
 	cases := []struct {
 		name       string
@@ -38,15 +43,15 @@ func TestSignupAPi(t *testing.T) {
 				Password: password,
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db_generated.CreateUserParams{
-					Username:       user.Username,
-					Email:          user.Email,
-					HashedPassword: user.HashedPassword,
-				}
-				store.EXPECT().CreateUser(gomock.Any(), EqCreateUserParams(
-					arg,
+				params := makeCreateUserTxParams(
+					user.Username,
+					user.Email,
+					user.HashedPassword,
+				)
+				store.EXPECT().CreateUserTx(gomock.Any(), EqCreateUserTxParams(
+					params,
 					password,
-				)).Times(1).Return(user, nil)
+				)).Times(1).Return(response, nil)
 
 			},
 			checker: func(recorder *httptest.ResponseRecorder) {
@@ -62,15 +67,15 @@ func TestSignupAPi(t *testing.T) {
 				Password: password,
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-				arg := db_generated.CreateUserParams{
-					Username:       user.Username,
-					Email:          user.Email,
-					HashedPassword: user.HashedPassword,
-				}
-				store.EXPECT().CreateUser(gomock.Any(), EqCreateUserParams(
-					arg,
+				params := makeCreateUserTxParams(
+					user.Username,
+					user.Email,
+					user.HashedPassword,
+				)
+				store.EXPECT().CreateUserTx(gomock.Any(), EqCreateUserTxParams(
+					params,
 					password,
-				)).Times(1).Return(db_generated.User{}, &db.ErrUniqueViolation)
+				)).Times(1).Return(db.CreateUserTxResult{}, &db.ErrUniqueViolation)
 			},
 			checker: func(recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusConflict, recorder.Code)
@@ -85,7 +90,7 @@ func TestSignupAPi(t *testing.T) {
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
-					CreateUser(gomock.Any(), gomock.Any()).
+					CreateUserTx(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
 			checker: func(recorder *httptest.ResponseRecorder) {
@@ -101,7 +106,7 @@ func TestSignupAPi(t *testing.T) {
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 				store.EXPECT().
-					CreateUser(gomock.Any(), gomock.Any()).
+					CreateUserTx(gomock.Any(), gomock.Any()).
 					Times(0)
 			},
 			checker: func(recorder *httptest.ResponseRecorder) {
@@ -130,33 +135,33 @@ func TestSignupAPi(t *testing.T) {
 
 }
 
-type eqCreateUserParamsMatcher struct {
-	arg      db_generated.CreateUserParams
+// EqCreateUserTxParams verifies that the hashedPassword field of the CreateUserParams is the hashed version of the password field in the request body
+func EqCreateUserTxParams(params db.CreateUserTxParams, password string) gomock.Matcher {
+	return eqCreateUserTxParamsMatcher{params, password}
+}
+
+type eqCreateUserTxParamsMatcher struct {
+	params   db.CreateUserTxParams
 	password string
 }
 
-func (e eqCreateUserParamsMatcher) Matches(x interface{}) bool {
-	arg, ok := x.(db_generated.CreateUserParams)
+func (e eqCreateUserTxParamsMatcher) Matches(x interface{}) bool {
+	input, ok := x.(db.CreateUserTxParams)
 	if !ok {
 		return false
 	}
 
-	ok = auth.VerifyPassword(arg.HashedPassword, e.password)
+	ok = auth.VerifyPassword(input.HashedPassword, e.password)
 	if !ok {
 		return false
 	}
 
-	e.arg.HashedPassword = arg.HashedPassword
-	return reflect.DeepEqual(e.arg, arg)
+	e.params.HashedPassword = input.HashedPassword
+	return reflect.DeepEqual(e.params.CreateUserParams, input.CreateUserParams)
 }
 
-func (e eqCreateUserParamsMatcher) String() string {
-	return fmt.Sprintf("matches arg %v and password %v", e.arg, e.password)
-}
-
-// EqCreateUserParams verifies that the hashedPassword field of the CreateUserParams is the hashed version of the password field in the request body
-func EqCreateUserParams(arg db_generated.CreateUserParams, password string) gomock.Matcher {
-	return eqCreateUserParamsMatcher{arg, password}
+func (e eqCreateUserTxParamsMatcher) String() string {
+	return fmt.Sprintf("matches arg %v and password %v", e.params, e.password)
 }
 
 func randomUser() (db_generated.User, string) {
@@ -173,6 +178,23 @@ func randomUser() (db_generated.User, string) {
 		Email:          db.NewText(&email),
 	}
 	return user, password
+}
+
+func makeCreateUserTxParams(
+	username string,
+	email pgtype.Text,
+	hashedPassword string,
+) db.CreateUserTxParams {
+	return db.CreateUserTxParams{
+		CreateUserParams: db_generated.CreateUserParams{
+			Username:       username,
+			Email:          email,
+			HashedPassword: hashedPassword,
+		},
+		AfterCreate: func(user db_generated.User) (any, error) {
+			return "", nil
+		},
+	}
 }
 
 func requireBodyMatchUser(t *testing.T, body *bytes.Buffer, user db_generated.User) {
