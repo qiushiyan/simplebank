@@ -82,7 +82,7 @@ func run(ctx context.Context, log *zap.SugaredLogger) error {
 			Manager             string `conf:"default:simple,help:\"simple\" for using native goroutines or \"asynq\" for using the [asynq](https://github.com/hibiken/asynq) library. If using asynq must also set redis url"`
 			RedisUrl            string `conf:"default:localhost:6379,mask"`
 			EmailSenderAddress  string `conf:"help:gmail account to send email"`
-			EMAILSenderPassword string `conf:"help:app password for the gmail account"`
+			EMAILSenderPassword string `conf:"help:app password for the gmail account,mask"`
 		}
 		Args conf.Args
 	}{
@@ -112,7 +112,7 @@ func run(ctx context.Context, log *zap.SugaredLogger) error {
 
 	// -------------------------------------------------------------------------
 	// Start Debug Service
-	log.Infow("startup", "status", "debug v1 router started", "host", cfg.Web.DebugHost)
+	log.Infow("startup", "status", "debug router started", "host", cfg.Web.DebugHost)
 
 	go func() {
 		if err := http.ListenAndServe(cfg.Web.DebugHost, debug.StandardLibraryMux()); err != nil {
@@ -177,7 +177,7 @@ func run(ctx context.Context, log *zap.SugaredLogger) error {
 	// Start API service
 
 	apiErrors := make(chan error, 1)
-	muxConfig := routes.MuxConfig{
+	muxConfig := routes.Config{
 		Shutdown: shutdown,
 		Log:      log,
 		Store:    store,
@@ -195,7 +195,13 @@ func run(ctx context.Context, log *zap.SugaredLogger) error {
 	}
 
 	go func() {
-		log.Infow("startup", "host", apiServer.Addr)
+		log.Infow(
+			"startup",
+			"host",
+			apiServer.Addr,
+			"swagger",
+			apiServer.Addr+"/swagger/index.html",
+		)
 		apiErrors <- apiServer.ListenAndServe()
 	}()
 

@@ -5,6 +5,7 @@ import (
 	"context"
 
 	asynqamanger "github.com/qiushiyan/simplebank/business/task/asynq"
+	taskcommon "github.com/qiushiyan/simplebank/business/task/common"
 	simplemanager "github.com/qiushiyan/simplebank/business/task/simple"
 )
 
@@ -14,7 +15,7 @@ type Manager interface {
 	Close() error
 	CreateTask(ctx context.Context, taskType string, payload any) (string, error)
 	CancelTask(id string) error
-	GetTaskStatus(id string) (string, error)
+	GetTaskState(id string) (*taskcommon.State, error)
 }
 
 var _ Manager = (*asynqamanger.AsynqManager)(nil)

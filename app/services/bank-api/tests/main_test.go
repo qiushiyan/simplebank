@@ -60,7 +60,7 @@ func serveRequest(
 
 	buildStubs(store)
 
-	cfg := routes.MuxConfig{
+	cfg := routes.Config{
 		Shutdown: make(chan os.Signal, 1),
 		Log:      logger,
 		Store:    store,

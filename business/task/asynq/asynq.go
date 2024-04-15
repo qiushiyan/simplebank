@@ -70,6 +70,7 @@ func (m *AsynqManager) Start() error {
 }
 
 func (m *AsynqManager) Close() error {
+	m.inspector.Close()
 	return m.client.Close()
 }
 
@@ -118,15 +119,45 @@ func (m *AsynqManager) CreateTask(
 	return info.ID, nil
 }
 
-func (m *AsynqManager) GetTaskStatus(id string) (string, error) {
-	task, err := m.inspector.GetTaskInfo("default", id)
+func (m *AsynqManager) GetTaskState(id string) (*taskcommon.State, error) {
+	info, err := m.inspector.GetTaskInfo("default", id)
 	if err != nil {
-		return "", err
+		return &taskcommon.State{}, err
 	}
 
-	return task.State.String(), nil
+	if info != nil {
+		return &taskcommon.State{}, fmt.Errorf("task %s not found", id)
+	}
+
+	state := adaptState(info)
+
+	return state, nil
 }
 
 func (m *AsynqManager) CancelTask(id string) error {
 	return m.inspector.CancelProcessing(id)
+}
+
+func adaptState(info *asynq.TaskInfo) *taskcommon.State {
+	var state taskcommon.State
+
+	state.Id = info.ID
+	state.Type = info.Type
+
+	if info.LastErr != "" {
+		state.Error = info.LastErr
+		state.Status = taskcommon.StatusFailed
+	} else {
+		switch info.State {
+		case asynq.TaskStateActive, asynq.TaskStatePending:
+			state.Status = taskcommon.StatusInProgress
+		case asynq.TaskStateCompleted:
+			state.Status = taskcommon.StatusCompleted
+		default:
+			state.Status = taskcommon.StatusOther
+		}
+	}
+
+	return &state
+
 }

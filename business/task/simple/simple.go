@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	taskcommon "github.com/qiushiyan/simplebank/business/task/common"
 	"go.uber.org/zap"
 )
 
@@ -52,8 +53,8 @@ func (m *SimpleManager) CancelTask(id string) error {
 	return nil
 }
 
-func (m *SimpleManager) GetTaskStatus(id string) (string, error) {
-	return "", nil
+func (m *SimpleManager) GetTaskState(id string) (*taskcommon.State, error) {
+	return &taskcommon.State{}, nil
 }
 
 func (m *SimpleManager) waitForSignal() {

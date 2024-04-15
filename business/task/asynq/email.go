@@ -53,5 +53,5 @@ func (m *AsynqManager) NewEmailDeliveryTask(to, username, subject string) (*asyn
 	if err != nil {
 		return nil, err
 	}
-	return asynq.NewTask(taskcommon.TypeEmailDelivery, b, asynq.ProcessIn(10*time.Second)), nil
+	return asynq.NewTask(taskcommon.TypeEmailDelivery, b, asynq.ProcessIn(60*time.Second)), nil
 }

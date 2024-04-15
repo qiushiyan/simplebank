@@ -679,6 +679,49 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/task/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Inspect task state by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Task"
+                ],
+                "summary": "Inspect task state by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Task ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/taskgrp.GetTaskResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -694,7 +737,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
-                    "description": "3 - 20 characters long",
+                    "description": "less than 30 characters",
                     "type": "string"
                 }
             }
@@ -790,12 +833,15 @@ const docTemplate = `{
             ],
             "properties": {
                 "email": {
+                    "description": "Email address (Optional)",
                     "type": "string"
                 },
                 "password": {
+                    "description": "6 to 20 characters",
                     "type": "string"
                 },
                 "username": {
+                    "description": "3 to 20 characters, only letters and numbers",
                     "type": "string"
                 }
             }
@@ -959,6 +1005,42 @@ const docTemplate = `{
                 "status": {
                     "description": "one of \"pending\", \"accepted\" or \"rejected\"",
                     "type": "string"
+                }
+            }
+        },
+        "taskcommon.State": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "description": "The Error message if the task failed, otherwise omitted",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "Task ID",
+                    "type": "string"
+                },
+                "status": {
+                    "description": "One of \"in_progress\", \"completed\", \"failed\", or \"other\"",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/taskcommon.Status"
+                        }
+                    ]
+                },
+                "type": {
+                    "description": "Task Type",
+                    "type": "string"
+                }
+            }
+        },
+        "taskcommon.Status": {
+            "type": "object"
+        },
+        "taskgrp.GetTaskResponse": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/taskcommon.State"
                 }
             }
         }

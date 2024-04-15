@@ -9,6 +9,7 @@ import (
 	"github.com/qiushiyan/simplebank/app/services/bank-api/routes/docsgrp"
 	"github.com/qiushiyan/simplebank/app/services/bank-api/routes/entrygrp"
 	"github.com/qiushiyan/simplebank/app/services/bank-api/routes/friendgrp"
+	"github.com/qiushiyan/simplebank/app/services/bank-api/routes/taskgrp"
 	"github.com/qiushiyan/simplebank/app/services/bank-api/routes/transfergrp"
 	db "github.com/qiushiyan/simplebank/business/db/core"
 	"github.com/qiushiyan/simplebank/business/task"
@@ -18,7 +19,7 @@ import (
 )
 
 // APIMuxConfig contains all the mandatory systems required by handlers.
-type MuxConfig struct {
+type Config struct {
 	Shutdown chan os.Signal
 	Log      *zap.SugaredLogger
 	Store    db.Store
@@ -26,7 +27,7 @@ type MuxConfig struct {
 	Build    string
 }
 
-func NewMux(cfg MuxConfig) *web.App {
+func NewMux(cfg Config) *web.App {
 	globalMiddlewares := []web.Middleware{
 		middleware.Logger(cfg.Log),
 		middleware.Errors(cfg.Log),
@@ -43,6 +44,7 @@ func NewMux(cfg MuxConfig) *web.App {
 		entrygrp.New(cfg.Store),
 		friendgrp.New(cfg.Store),
 		checkgrp.New(cfg.Store, cfg.Build),
+		taskgrp.New(cfg.Task),
 		docsgrp.New(),
 	)
 
