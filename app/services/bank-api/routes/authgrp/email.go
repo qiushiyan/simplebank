@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/qiushiyan/simplebank/business/auth"
+	"github.com/qiushiyan/simplebank/business/email"
 	taskcommon "github.com/qiushiyan/simplebank/business/task/common"
 	"github.com/qiushiyan/simplebank/foundation/web"
 )
@@ -38,11 +39,11 @@ func (h *Handler) SendEmail(ctx context.Context, w http.ResponseWriter, r *http.
 	taskId, err := h.task.CreateTask(
 		ctx,
 		taskcommon.TypeEmailDelivery,
-		taskcommon.NewEmailDeliveryPayload(
-			user.Email.String,
-			username,
-			req.Subject,
-		),
+		email.SenderPayload{
+			To:       user.Email.String,
+			Username: username,
+			Subject:  req.Subject,
+		},
 	)
 	if err != nil {
 		return err

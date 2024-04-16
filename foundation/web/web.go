@@ -2,7 +2,6 @@ package web
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -12,6 +11,7 @@ import (
 	"time"
 
 	"github.com/dimfeld/httptreemux"
+	"github.com/go-json-experiment/json"
 	"github.com/google/uuid"
 	"github.com/qiushiyan/simplebank/foundation/validate"
 )
@@ -100,16 +100,18 @@ func Param(r *http.Request, name string) string {
 
 // Decode decodes the body of an HTTP request and stores the result in dst.
 func Decode(r *http.Request, val any) error {
-	decoder := json.NewDecoder(r.Body)
-
-	if err := decoder.Decode(val); err != nil {
-		if err == io.EOF {
+	bytes, err := io.ReadAll(r.Body)
+	if err != nil {
+		if err == io.EOF || err == io.ErrUnexpectedEOF {
 			return NewError(
 				errors.New("request body cannot be empty"),
 				http.StatusBadRequest,
 			)
 		}
+		return NewError(fmt.Errorf("unable to read request body: %w", err), http.StatusBadRequest)
+	}
 
+	if err := json.Unmarshal(bytes, val); err != nil {
 		return NewError(
 			fmt.Errorf("unable to parse request body: %w", err),
 			http.StatusBadRequest,

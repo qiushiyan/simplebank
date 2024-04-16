@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/hibiken/asynq"
+	"github.com/qiushiyan/simplebank/business/email"
 	taskcommon "github.com/qiushiyan/simplebank/business/task/common"
 	"go.uber.org/zap"
 )
@@ -88,7 +89,7 @@ func (m *AsynqManager) CreateTask(
 
 	switch taskType {
 	case taskcommon.TypeEmailDelivery:
-		payload, ok := payload.(taskcommon.EmailDeliveryPayload)
+		payload, ok := payload.(email.SenderPayload)
 		if !ok {
 			return "", fmt.Errorf("invalid payload type for email delivery task: %T", payload)
 		}

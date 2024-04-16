@@ -2,7 +2,6 @@ package tests
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -10,6 +9,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/go-json-experiment/json"
 	"github.com/qiushiyan/simplebank/app/services/bank-api/routes"
 	"github.com/qiushiyan/simplebank/business/auth/token"
 	mockdb "github.com/qiushiyan/simplebank/business/db/mock"
@@ -81,8 +81,7 @@ func getResponseData[T any](t *testing.T, body *bytes.Buffer) T {
 	require.NoError(t, err)
 
 	var got DataResponse[T]
-
-	json.NewDecoder(bytes.NewReader(data)).Decode(&got)
-
+	err = json.Unmarshal(data, &got)
+	require.NoError(t, err)
 	return got.Data
 }

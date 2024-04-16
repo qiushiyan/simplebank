@@ -7,13 +7,14 @@ import (
 
 	"github.com/go-json-experiment/json"
 	"github.com/hibiken/asynq"
+	"github.com/qiushiyan/simplebank/business/email"
 	taskcommon "github.com/qiushiyan/simplebank/business/task/common"
 	"go.uber.org/zap"
 )
 
 type EmailProcessor struct {
 	log    *zap.SugaredLogger
-	sender *taskcommon.EmailSender
+	sender *email.GmailSender
 }
 
 func NewEmailProcessor(
@@ -22,12 +23,12 @@ func NewEmailProcessor(
 ) *EmailProcessor {
 	return &EmailProcessor{
 		log:    log,
-		sender: taskcommon.NewEmailSender(senderAddress, senderPassword),
+		sender: email.NewGmailSender(senderAddress, senderPassword),
 	}
 }
 
 func (p *EmailProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
-	var payload taskcommon.EmailDeliveryPayload
+	var payload email.SenderPayload
 	if err := json.Unmarshal(t.Payload(), &payload); err != nil {
 		return fmt.Errorf("could not unmarshal payload: %w", err)
 	}
@@ -43,7 +44,7 @@ func (p *EmailProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 }
 
 func (m *AsynqManager) NewEmailDeliveryTask(to, username, subject string) (*asynq.Task, error) {
-	payload := taskcommon.EmailDeliveryPayload{
+	payload := email.SenderPayload{
 		To:       to,
 		Username: username,
 		Subject:  subject,

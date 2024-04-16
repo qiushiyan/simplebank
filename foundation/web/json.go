@@ -2,8 +2,9 @@ package web
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
+
+	"github.com/go-json-experiment/json"
 )
 
 type responseData struct {
@@ -26,9 +27,19 @@ func RespondJson(ctx context.Context, w http.ResponseWriter, data any, statusCod
 	if data != nil {
 		switch statusCode {
 		case http.StatusOK, http.StatusCreated:
-			return json.NewEncoder(w).Encode(responseData{Data: data})
+			bytes, err := json.Marshal(responseData{Data: data})
+			if err != nil {
+				return err
+			}
+			w.Write(bytes)
+			return nil
 		default:
-			return json.NewEncoder(w).Encode(data)
+			bytes, err := json.Marshal(data)
+			if err != nil {
+				return err
+			}
+			w.Write(bytes)
+			return nil
 		}
 
 	}
@@ -39,5 +50,11 @@ func RespondJson(ctx context.Context, w http.ResponseWriter, data any, statusCod
 // RespondJsonPlain sends json to the response writer without wrapping the data.
 func RespondJsonPlain(ctx context.Context, w http.ResponseWriter, data any, statusCode int) error {
 	w.WriteHeader(statusCode)
-	return json.NewEncoder(w).Encode(data)
+	bytes, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	w.Write(bytes)
+	return nil
 }

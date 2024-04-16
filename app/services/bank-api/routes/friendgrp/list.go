@@ -3,13 +3,13 @@ package friendgrp
 import (
 	"context"
 	"net/http"
-	"strconv"
 
 	"github.com/qiushiyan/simplebank/business/auth"
 	"github.com/qiushiyan/simplebank/business/core/friend"
 	"github.com/qiushiyan/simplebank/business/data/limit"
 	db_generated "github.com/qiushiyan/simplebank/business/db/generated"
 	"github.com/qiushiyan/simplebank/foundation/web"
+	"github.com/spf13/cast"
 )
 
 type ListFriendshipResponse struct {
@@ -35,22 +35,22 @@ type ListFriendshipResponse struct {
 //	@Failure		409
 //	@Router			/friend/list [get]
 func (h *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	var fromAccountId int
-	var toAccountId int
+	var fromAccountId int64
+	var toAccountId int64
 	var status *friend.Status
 	var err error
 
 	values := r.URL.Query()
 
 	if val := values.Get("from_account_id"); val != "" {
-		fromAccountId, err = strconv.Atoi(val)
+		fromAccountId, err = cast.ToInt64E(val)
 		if err != nil {
 			return web.NewError(err, http.StatusBadRequest)
 		}
 	}
 
 	if val := values.Get("to_account_id"); val != "" {
-		toAccountId, err = strconv.Atoi(val)
+		toAccountId, err = cast.ToInt64E(val)
 		if err != nil {
 			return web.NewError(err, http.StatusBadRequest)
 		}

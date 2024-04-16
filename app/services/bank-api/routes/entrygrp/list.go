@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/qiushiyan/simplebank/business/auth"
@@ -12,6 +11,7 @@ import (
 	"github.com/qiushiyan/simplebank/business/data/limit"
 	"github.com/qiushiyan/simplebank/foundation/validate"
 	"github.com/qiushiyan/simplebank/foundation/web"
+	"github.com/spf13/cast"
 )
 
 type ListEntriesQuery struct {
@@ -44,13 +44,15 @@ type ListEntriesQuery struct {
 //	@Failure		500
 //	@Router			/entries [get]
 func (h *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	values := r.URL.Query()
+
 	var fromAccountId int64
-	if aid := r.URL.Query().Get("from_account_id"); aid != "" {
-		aid, err := strconv.Atoi(aid)
+	var err error
+	if aid := values.Get("from_account_id"); aid != "" {
+		fromAccountId, err = cast.ToInt64E(aid)
 		if err != nil {
 			return web.NewError(err, http.StatusBadRequest)
 		}
-		fromAccountId = int64(aid)
 	} else {
 		return web.NewError(errors.New("from_account_id is a required query parameter"), http.StatusBadRequest)
 	}
@@ -68,16 +70,16 @@ func (h *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Reque
 
 	var q ListEntriesQuery
 
-	if r.FormValue("start_date") != "" {
-		val, err := time.Parse(time.DateOnly, r.FormValue("start_date"))
+	if date := values.Get("start_date"); date != "" {
+		val, err := time.Parse(time.DateOnly, date)
 		q.StartDate = &val
 		if err != nil {
 			return web.NewError(err, http.StatusBadRequest)
 		}
 	}
 
-	if r.FormValue("end_date") != "" {
-		val, err := time.Parse(time.DateOnly, r.FormValue("end_date"))
+	if date := r.FormValue("end_date"); date != "" {
+		val, err := time.Parse(time.DateOnly, date)
 		q.EndDate = &val
 		if err != nil {
 			return web.NewError(err, http.StatusBadRequest)

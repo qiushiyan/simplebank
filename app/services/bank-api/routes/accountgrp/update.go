@@ -3,11 +3,11 @@ package accountgrp
 import (
 	"context"
 	"net/http"
-	"strconv"
 
 	"github.com/qiushiyan/simplebank/business/auth"
 	db_generated "github.com/qiushiyan/simplebank/business/db/generated"
 	"github.com/qiushiyan/simplebank/foundation/web"
+	"github.com/spf13/cast"
 )
 
 type UpdateRequest struct {
@@ -36,8 +36,7 @@ type UpdateResponse struct {
 //
 //	@Router			/accounts/{id} [patch]
 func (h *Handler) Update(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
-	id := web.Param(r, "id")
-	aid, err := strconv.Atoi(id)
+	id, err := cast.ToInt64E(web.Param(r, "id"))
 	if err != nil {
 		return web.NewError(err, http.StatusBadRequest)
 	}
@@ -48,7 +47,7 @@ func (h *Handler) Update(ctx context.Context, w http.ResponseWriter, r *http.Req
 		return err
 	}
 
-	account, err := h.core.QueryById(ctx, int64(aid))
+	account, err := h.core.QueryById(ctx, id)
 	if err != nil {
 		return err
 	}

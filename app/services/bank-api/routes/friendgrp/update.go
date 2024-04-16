@@ -3,12 +3,12 @@ package friendgrp
 import (
 	"context"
 	"net/http"
-	"strconv"
 
 	"github.com/qiushiyan/simplebank/business/auth"
 	"github.com/qiushiyan/simplebank/business/core/friend"
 	db_generated "github.com/qiushiyan/simplebank/business/db/generated"
 	"github.com/qiushiyan/simplebank/foundation/web"
+	"github.com/spf13/cast"
 )
 
 type UpdateRequest struct {
@@ -42,8 +42,7 @@ func (h *Handler) Update(ctx context.Context, w http.ResponseWriter, r *http.Req
 		return err
 	}
 
-	id := web.Param(r, "id")
-	fid, err := strconv.Atoi(id)
+	fid, err := cast.ToInt64E(web.Param(r, "id"))
 	if err != nil {
 		return web.NewError(err, http.StatusBadRequest)
 	}
@@ -55,7 +54,7 @@ func (h *Handler) Update(ctx context.Context, w http.ResponseWriter, r *http.Req
 
 	username := auth.GetUsername(ctx)
 	// check that the to account id is owned by the user
-	record, err := h.friend.GetFriendRequest(ctx, int64(fid))
+	record, err := h.friend.GetFriendRequest(ctx, fid)
 	if err != nil {
 		return err
 	}
@@ -68,7 +67,7 @@ func (h *Handler) Update(ctx context.Context, w http.ResponseWriter, r *http.Req
 		return auth.NewForbiddenError(username)
 	}
 
-	friend, err := h.friend.UpdateFriendRequest(ctx, int64(fid), status)
+	friend, err := h.friend.UpdateFriendRequest(ctx, fid, status)
 	if err != nil {
 		return err
 	}

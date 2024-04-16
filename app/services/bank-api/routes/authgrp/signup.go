@@ -6,6 +6,7 @@ import (
 
 	"github.com/qiushiyan/simplebank/business/core/user"
 	db_generated "github.com/qiushiyan/simplebank/business/db/generated"
+	"github.com/qiushiyan/simplebank/business/email"
 	taskcommon "github.com/qiushiyan/simplebank/business/task/common"
 	"github.com/qiushiyan/simplebank/foundation/web"
 )
@@ -57,11 +58,11 @@ func (h *Handler) Signup(ctx context.Context, w http.ResponseWriter, r *http.Req
 			return "", nil
 		}
 
-		emailPayload := taskcommon.NewEmailDeliveryPayload(
-			req.Email,
-			user.Username,
-			taskcommon.SubjectWelcome,
-		)
+		emailPayload := email.SenderPayload{
+			To:       req.Email,
+			Username: req.Username,
+			Subject:  email.SubjectWelcome,
+		}
 
 		taskId, err := h.task.CreateTask(ctx, taskcommon.TypeEmailDelivery, emailPayload)
 		if err != nil {

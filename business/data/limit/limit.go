@@ -2,9 +2,9 @@ package limit
 
 import (
 	"net/http"
-	"strconv"
 
 	"github.com/qiushiyan/simplebank/foundation/validate"
+	"github.com/spf13/cast"
 )
 
 // Limiter represents the limit and offset for a database query
@@ -28,27 +28,28 @@ func WithPaging(pageId int32, pageSize int32) Limiter {
 }
 
 func Parse(r *http.Request, defaultPageId int32, defaultPageSize int32) (Limiter, error) {
-	id := int(defaultPageId)
-	size := int(defaultPageSize)
-	var err error
+	id := defaultPageId
+	size := defaultPageSize
 
 	values := r.URL.Query()
 
 	if pageId := values.Get("page_id"); pageId != "" {
-		id, err = strconv.Atoi(pageId)
+		pid, err := cast.ToInt32E(pageId)
 		if err != nil {
 			return Limiter{}, err
 		}
+		id = pid
 	}
 
 	if pageSize := values.Get("page_size"); pageSize != "" {
-		size, err = strconv.Atoi(pageSize)
+		ps, err := cast.ToInt32E(pageSize)
 		if err != nil {
 			return Limiter{}, err
 		}
+		size = ps
 	}
 
-	l := WithPaging(int32(id), int32(size))
+	l := WithPaging(id, size)
 
 	if err := validate.Check(l); err != nil {
 		return Limiter{}, err
