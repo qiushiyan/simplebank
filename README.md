@@ -2,6 +2,8 @@
 
 ## About
 
+This is a fullstack project that implements a simple banking system, where users can create accounts, deposit and withdraw money, and transfer money between accounts.
+
 ## Usage
 
 If you have docker-compose installed, simply run
