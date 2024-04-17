@@ -7,8 +7,13 @@ knitr:
 ---
 
 ```{r}
-path_link <- function(path) {
-    paste0("[", path, "]", "(https://github.com/qiushiyan/simplebank/blob/main/", path, ")")
+path_link <- function(path, is_dir = TRUE, branch = "main") {
+    if (is_dir) {
+        type <- "tree"
+    } else {
+        type <- "blob"
+    }
+    paste0("[", path, "]", "(https://github.com/qiushiyan/simplebank/", type, "/", branch, "/", path, ")")
 }
 ```
 
@@ -52,9 +57,11 @@ make docs
 
 ## Folder structure
 
-The project is organized into the following folders, each representing a different layer of the application:
+Each folder represents a different layer of concerns
 
-- `r path_link("app")`: application-level code. Consists of the the next.js frontend app and the backend RESTful API
+- `r path_link("app")`: application-level code. Consists of the the Next.js frontend app and the backend RESTful API.
+
+- `r path_link("zarf")` configuration files and static assets
 
 ## Routing
 
