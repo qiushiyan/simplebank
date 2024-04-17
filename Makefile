@@ -177,9 +177,14 @@ bank-api:
 conf-help:
 	go run app/services/bank-api/main.go -h
 
-docs:
+docs: docs-swagger docs-readme
+
+docs-swagger:
 	swag init --dir app/services/bank-api -o app/services/bank-api/docs --parseDependency --parseInternal --parseDepth 1
 	swag fmt
+
+docs-readme:
+	quarto render zarf/report/README.qmd -o README.md
 
 tidy:
 	go mod tidy
