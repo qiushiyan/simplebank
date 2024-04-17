@@ -45,11 +45,11 @@ make docs
 
 Each folder represents a different layer of concerns
 
-- [app](https://github.com/qiushiyan/simplebank/tree/main/app):
+- [`app`](https://github.com/qiushiyan/simplebank/tree/main/app)
   application-level code. Consists of the the Next.js frontend app and
   the backend RESTful API.
 
-- [zarf](https://github.com/qiushiyan/simplebank/tree/main/zarf)
+- [`zarf`](https://github.com/qiushiyan/simplebank/tree/main/zarf)
   configuration files and static assets
 
 ## Routing

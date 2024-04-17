@@ -13,7 +13,7 @@ path_link <- function(path, is_dir = TRUE, branch = "main") {
     } else {
         type <- "blob"
     }
-    paste0("[", path, "]", "(https://github.com/qiushiyan/simplebank/", type, "/", branch, "/", path, ")")
+    paste0("[`", path, "`]", "(https://github.com/qiushiyan/simplebank/", type, "/", branch, "/", path, ")")
 }
 ```
 
@@ -59,7 +59,7 @@ make docs
 
 Each folder represents a different layer of concerns
 
-- `r path_link("app")`: application-level code. Consists of the the Next.js frontend app and the backend RESTful API.
+- `r path_link("app")` application-level code. Consists of the the Next.js frontend app and the backend RESTful API.
 
 - `r path_link("zarf")` configuration files and static assets
 
