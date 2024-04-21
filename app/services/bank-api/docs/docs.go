@@ -685,6 +685,9 @@ const docTemplate = `{
                 "security": [
                     {
                         "Bearer": []
+                    },
+                    {
+                        "Bearer": []
                     }
                 ],
                 "description": "Inspect task state by ID",

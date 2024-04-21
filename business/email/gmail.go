@@ -30,6 +30,8 @@ func (s GmailSender) Send(payload SenderPayload) error {
 	switch payload.Subject {
 	case SubjectWelcome:
 		subject = "Welcome to SimpleBank!"
+	case SubjectVerify:
+		subject = "Verify your email"
 	default:
 		return ErrInvalidSubject
 	}

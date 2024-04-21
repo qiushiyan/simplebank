@@ -3,7 +3,6 @@ package email
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"html/template"
 	"os"
@@ -11,25 +10,15 @@ import (
 	"testing"
 )
 
-const (
-	SubjectWelcome = "welcome"
-)
-
-// templates map the email subject to the template file.
-var templates = map[string]string{
-	SubjectWelcome: "welcome.html",
-}
-var ErrInvalidSubject = errors.New("invalid email subject")
-
 // Sender represents an email sender.
 type Sender interface {
 	Send(payload SenderPayload) error
 }
 
 type SenderPayload struct {
-	To       string `json:"to"`
-	Username string `json:"username"`
-	Subject  string `json:"subject"`
+	To      string
+	Subject string
+	Data    any
 }
 
 // returns the interpolated HTML content given the payload
@@ -57,8 +46,8 @@ func getEmailHTML(payload SenderPayload) ([]byte, error) {
 	}
 
 	// Create an instance of WelcomeEmailData with the username.
-	data := struct{ Username string }{
-		Username: payload.Username,
+	data := struct{ Data any }{
+		Data: payload.Data,
 	}
 
 	// Use a bytes.Buffer to capture the output of the template execution.

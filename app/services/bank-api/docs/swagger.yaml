@@ -674,6 +674,7 @@ paths:
           description: Not Found
       security:
       - Bearer: []
+      - Bearer: []
       summary: Inspect task state by ID
       tags:
       - Task

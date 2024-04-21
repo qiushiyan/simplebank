@@ -29,7 +29,13 @@ If you have docker-compose installed, simply run
 docker compose up
 ```
 
-To run it without docker
+To run it without docker, first install the go dependencies
+
+```bash
+go mod tidy
+```
+
+Start the backend with
 
 ```bash
 make run-local
@@ -73,6 +79,6 @@ Each folder represents a different layer of concerns
 
 ## Logging
 
-`foundation/logger` exports a customized `SugaredLogger` using the [`zap`](https://github.com/uber-go/zap) package.
+`r path_link("foundation/logger")` exports a customized `SugaredLogger` using the [`zap`](https://github.com/uber-go/zap) package.
 
-`app/tooling/logfmt` is a simple program that converts the JSON logs output by `foundation/logger` to human-readable logs.
+`r path_link("app/tooling/logfmt")` is a simple program that converts the JSON logs output by `foundation/logger` to human-readable logs.

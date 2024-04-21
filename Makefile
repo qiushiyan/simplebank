@@ -52,7 +52,7 @@ dropdb:
 	docker exec -it $(CONTAINER_NAME) dropdb bank --username=postgres
 
 migrate-create:
-	migrate create -ext sql -dir business/db/migration -seq init_schema
+	migrate create -ext sql -dir business/db/migration -seq $(name)
 
 migrate-up:
 	migrate -path business/db/migration -database $(DATABASE_URL) --verbose up

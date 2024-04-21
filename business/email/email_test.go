@@ -17,9 +17,9 @@ func TestSendEmail(t *testing.T) {
 		{
 			name: "ok",
 			payload: SenderPayload{
-				To:       "user@gmail.com",
-				Username: "user",
-				Subject:  SubjectWelcome,
+				To:      "user@gmail.com",
+				Data:    SubjectWelcomeData{Username: "user"},
+				Subject: SubjectWelcome,
 			},
 
 			checker: func(err error) {
@@ -29,9 +29,9 @@ func TestSendEmail(t *testing.T) {
 		{
 			name: "invalid-subject",
 			payload: SenderPayload{
-				To:       "user@gmail.com",
-				Username: "user",
-				Subject:  "unknown-subject",
+				To:      "user@gmail.com",
+				Data:    SubjectWelcomeData{Username: "user"},
+				Subject: "unknown-subject",
 			},
 			checker: func(err error) {
 				require.ErrorIs(t, err, ErrInvalidSubject)

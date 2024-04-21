@@ -12,6 +12,25 @@ import (
 	"go.uber.org/zap"
 )
 
+// Helper for creating a new email delivery task.
+func (m *AsynqManager) NewEmailDeliveryTask(
+	to string,
+	subject string,
+	data any,
+) (*asynq.Task, error) {
+	payload := email.SenderPayload{
+		To:      to,
+		Data:    data,
+		Subject: subject,
+	}
+
+	b, err := json.Marshal(payload)
+	if err != nil {
+		return nil, err
+	}
+	return asynq.NewTask(taskcommon.TypeEmailDelivery, b, asynq.ProcessIn(60*time.Second)), nil
+}
+
 type EmailProcessor struct {
 	log    *zap.SugaredLogger
 	sender *email.GmailSender
@@ -41,18 +60,4 @@ func (p *EmailProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 
 	p.log.Infow("completed email task", "payload", payload)
 	return nil
-}
-
-func (m *AsynqManager) NewEmailDeliveryTask(to, username, subject string) (*asynq.Task, error) {
-	payload := email.SenderPayload{
-		To:       to,
-		Username: username,
-		Subject:  subject,
-	}
-
-	b, err := json.Marshal(payload)
-	if err != nil {
-		return nil, err
-	}
-	return asynq.NewTask(taskcommon.TypeEmailDelivery, b, asynq.ProcessIn(60*time.Second)), nil
 }

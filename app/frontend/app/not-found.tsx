@@ -4,10 +4,11 @@ export default function NotFound() {
 			<div className="text-center">
 				<p className="text-base font-semibold">404</p>
 				<h1 className="mt-4 text-3xl font-bold tracking-tight text-primary/80 sm:text-5xl">
-					Page not found
+					Page not found or the API is down
 				</h1>
 				<p className="mt-6 text-base leading-7 text-gray-600">
-					Sorry, we couldn't find the page you're looking for.
+					Make sure the API is running and you have set the correct environment
+					variables.
 				</p>
 				<div className="mt-10 flex items-center justify-center gap-x-6">
 					<a href="/" className="text-sm font-semibold ">

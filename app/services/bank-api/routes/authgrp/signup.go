@@ -6,8 +6,6 @@ import (
 
 	"github.com/qiushiyan/simplebank/business/core/user"
 	db_generated "github.com/qiushiyan/simplebank/business/db/generated"
-	"github.com/qiushiyan/simplebank/business/email"
-	taskcommon "github.com/qiushiyan/simplebank/business/task/common"
 	"github.com/qiushiyan/simplebank/foundation/web"
 )
 
@@ -32,7 +30,7 @@ type SignupResponse struct {
 // Signup godoc
 //
 //	@Summary		Signup
-//	@Description	Signup with username, email and password. If email is provided, a welcome email will be scheduled as an asynchronous task and the task id will be returned.
+//	@Description	Signup with username, email (optional) and password.
 //	@Tags			Authentication
 //	@Accept			json
 //	@Produce		json
@@ -54,23 +52,9 @@ func (h *Handler) Signup(ctx context.Context, w http.ResponseWriter, r *http.Req
 		Email:    req.Email,
 		Password: req.Password,
 	}, func(user db_generated.User) (any, error) {
-		if req.Email == "" {
-			return "", nil
-		}
-
-		emailPayload := email.SenderPayload{
-			To:       req.Email,
-			Username: req.Username,
-			Subject:  email.SubjectWelcome,
-		}
-
-		taskId, err := h.task.CreateTask(ctx, taskcommon.TypeEmailDelivery, emailPayload)
-		if err != nil {
-			return "", err
-		}
-
-		return taskId, nil
+		return "", nil
 	})
+
 	if err != nil {
 		return err
 	}

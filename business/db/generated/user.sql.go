@@ -14,7 +14,7 @@ import (
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (username, hashed_password, email)
 VALUES ($1, $2, $3)
-RETURNING username, email, hashed_password, password_changed_at, created_at
+RETURNING username, email, hashed_password, password_changed_at, created_at, is_email_verified
 `
 
 type CreateUserParams struct {
@@ -32,12 +32,13 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 		&i.HashedPassword,
 		&i.PasswordChangedAt,
 		&i.CreatedAt,
+		&i.IsEmailVerified,
 	)
 	return i, err
 }
 
 const getUser = `-- name: GetUser :one
-SELECT username, email, hashed_password, password_changed_at, created_at
+SELECT username, email, hashed_password, password_changed_at, created_at, is_email_verified
 FROM users
 WHERE username = $1
 LIMIT 1
@@ -52,6 +53,7 @@ func (q *Queries) GetUser(ctx context.Context, username string) (User, error) {
 		&i.HashedPassword,
 		&i.PasswordChangedAt,
 		&i.CreatedAt,
+		&i.IsEmailVerified,
 	)
 	return i, err
 }
@@ -63,15 +65,17 @@ SET hashed_password = COALESCE($1, hashed_password),
         $2,
         password_changed_at
     ),
-    email = COALESCE($3, email)
-WHERE username = $4
-RETURNING username, email, hashed_password, password_changed_at, created_at
+    email = COALESCE($3, email),
+    is_email_verified = COALESCE($4, is_email_verified)
+WHERE username = $5
+RETURNING username, email, hashed_password, password_changed_at, created_at, is_email_verified
 `
 
 type UpdateUserParams struct {
 	HashedPassword    pgtype.Text        `json:"hashed_password"`
 	PasswordChangedAt pgtype.Timestamptz `json:"password_changed_at"`
 	Email             pgtype.Text        `json:"email"`
+	IsEmailVerified   pgtype.Bool        `json:"is_email_verified"`
 	Username          string             `json:"username"`
 }
 
@@ -80,6 +84,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		arg.HashedPassword,
 		arg.PasswordChangedAt,
 		arg.Email,
+		arg.IsEmailVerified,
 		arg.Username,
 	)
 	var i User
@@ -89,6 +94,7 @@ func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, e
 		&i.HashedPassword,
 		&i.PasswordChangedAt,
 		&i.CreatedAt,
+		&i.IsEmailVerified,
 	)
 	return i, err
 }

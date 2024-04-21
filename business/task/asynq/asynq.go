@@ -19,23 +19,25 @@ type AsynqManager struct {
 	senderPassword string
 }
 
-func New(
-	log *zap.SugaredLogger,
-	redisAddr string,
-	senderAddr string,
-	senderPassword string,
-) *AsynqManager {
-	redisOpt := asynq.RedisClientOpt{Addr: redisAddr}
+type Config struct {
+	Log            *zap.SugaredLogger
+	RedisAddr      string
+	SenderAddr     string
+	SenderPassword string
+}
+
+func New(cfg Config) *AsynqManager {
+	redisOpt := asynq.RedisClientOpt{Addr: cfg.RedisAddr}
 
 	client := asynq.NewClient(redisOpt)
 	server := asynq.NewServer(
 		redisOpt,
 		asynq.Config{
 			Concurrency: 5,
-			Logger:      &Logger{log: log},
+			Logger:      &Logger{log: cfg.Log},
 			ErrorHandler: asynq.ErrorHandlerFunc(
 				func(ctx context.Context, task *asynq.Task, err error) {
-					log.Errorw(
+					cfg.Log.Errorw(
 						"task processing error",
 						"type",
 						task.Type,
@@ -51,12 +53,11 @@ func New(
 	inspector := asynq.NewInspector(redisOpt)
 
 	return &AsynqManager{
-		log:            log,
 		server:         server,
 		client:         client,
 		inspector:      inspector,
-		senderAddr:     senderAddr,
-		senderPassword: senderPassword,
+		senderAddr:     cfg.SenderAddr,
+		senderPassword: cfg.SenderPassword,
 	}
 }
 
@@ -93,7 +94,7 @@ func (m *AsynqManager) CreateTask(
 		if !ok {
 			return "", fmt.Errorf("invalid payload type for email delivery task: %T", payload)
 		}
-		task, err = m.NewEmailDeliveryTask(payload.To, payload.Username, payload.Subject)
+		task, err = m.NewEmailDeliveryTask(payload.To, payload.Subject, payload.Data)
 		if err != nil {
 			return "", err
 		}

@@ -26,9 +26,5 @@ export const fetcher = async (
 		body: body ? JSON.stringify(body) : undefined,
 	});
 
-	if (!response.ok) {
-		return null;
-	}
-
 	return response.json();
 };

@@ -64,8 +64,10 @@ func serveRequest(
 		Shutdown: make(chan os.Signal, 1),
 		Log:      logger,
 		Store:    store,
-		Task:     simplemanager.New(logger),
-		Build:    "develop",
+		Task: simplemanager.New(simplemanager.Config{
+			Log: logger,
+		}),
+		Build: "develop",
 	}
 
 	app := routes.NewMux(cfg)

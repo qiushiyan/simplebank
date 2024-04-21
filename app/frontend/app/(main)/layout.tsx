@@ -33,6 +33,7 @@ export default async function ({ children }: { children: React.ReactNode }) {
 		return notFound();
 	}
 	const accounts = await getAccounts(user);
+	console.log(accounts);
 
 	return (
 		<section className="max-w-4xl mx-auto">

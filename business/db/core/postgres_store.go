@@ -2,8 +2,10 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	. "github.com/qiushiyan/simplebank/business/db/generated"
 )
@@ -83,12 +85,17 @@ func (s *PostgresStore) CreateUserTx(
 ) (CreateUserTxResult, error) {
 	var result CreateUserTxResult
 
-	err := s.executeInTransaction(ctx, func(q *Queries) error {
+	err := s.ExecuteInTransaction(ctx, func(q *Queries) error {
 		var err error
 
 		result.User, err = q.CreateUser(ctx, arg.CreateUserParams)
 		if err != nil {
 			return err
+		}
+
+		if arg.AfterCreate == nil {
+			result.AfterCreateResult = nil
+			return nil
 		}
 
 		result.AfterCreateResult, err = arg.AfterCreate(result.User)
@@ -122,7 +129,7 @@ func (s *PostgresStore) TransferTx(
 ) (TransferTxResult, error) {
 	var result TransferTxResult
 
-	err := s.executeInTransaction(ctx, func(q *Queries) error {
+	err := s.ExecuteInTransaction(ctx, func(q *Queries) error {
 		var err error
 
 		result.Transfer, err = q.CreateTransfer(ctx, CreateTransferParams{
@@ -190,4 +197,22 @@ func addMoney(
 		Amount: amount2,
 	})
 	return
+}
+
+func (s *PostgresStore) ExecuteInTransaction(ctx context.Context, fn QueryFunc) error {
+	tx, err := s.pool.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return err
+	}
+
+	q := New(tx)
+	err = fn(q)
+	if err != nil {
+		if rbErr := tx.Rollback(ctx); rbErr != nil {
+			return fmt.Errorf("tx error: %v, rb error: %v", err, rbErr)
+		}
+		return err
+	}
+
+	return tx.Commit(ctx)
 }

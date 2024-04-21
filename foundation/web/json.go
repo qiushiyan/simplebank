@@ -8,7 +8,7 @@ import (
 )
 
 type responseData struct {
-	Data interface{} `json:"data,omitempty"`
+	Data interface{} `json:"data"`
 }
 
 // RespondJson wraps data according to the status code and sends json to the response writer.

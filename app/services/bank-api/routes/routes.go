@@ -20,11 +20,12 @@ import (
 
 // APIMuxConfig contains all the mandatory systems required by handlers.
 type Config struct {
-	Shutdown chan os.Signal
-	Log      *zap.SugaredLogger
-	Store    db.Store
-	Task     task.Manager
-	Build    string
+	Shutdown     chan os.Signal
+	Log          *zap.SugaredLogger
+	Store        db.Store
+	Task         task.Manager
+	FrontendHost string
+	Build        string
 }
 
 func NewMux(cfg Config) *web.App {
@@ -39,7 +40,7 @@ func NewMux(cfg Config) *web.App {
 
 	app.AddGroup(
 		accountgrp.New(cfg.Store),
-		authgrp.New(cfg.Store, cfg.Task),
+		authgrp.New(cfg.Store, cfg.Task, cfg.FrontendHost),
 		transfergrp.New(cfg.Store),
 		entrygrp.New(cfg.Store),
 		friendgrp.New(cfg.Store),

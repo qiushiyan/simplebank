@@ -10,6 +10,7 @@ import (
 	"github.com/qiushiyan/simplebank/business/auth/token"
 	db "github.com/qiushiyan/simplebank/business/db/core"
 	. "github.com/qiushiyan/simplebank/business/db/generated"
+	"github.com/qiushiyan/simplebank/foundation/random"
 )
 
 type Core struct {
@@ -55,6 +56,7 @@ func (u *Core) CreateTx(
 	nu NewUser,
 	afterCreate db.AfterCreateUserFunc,
 ) (db.CreateUserTxResult, error) {
+
 	hash, err := auth.HashPassword(nu.Password)
 	if err != nil {
 		return db.CreateUserTxResult{}, err
@@ -100,4 +102,58 @@ func (u *Core) CreateToken(
 	}
 
 	return t, nil
+}
+
+// CreateVerifyEmail creates a new verify email record for the user, returns the record id, secret code and error
+func (u *Core) CreateVerifyEmail(
+	ctx context.Context,
+	user User,
+	ne NewVerifyEmail,
+) (VerifyEmail, error) {
+	code := random.RandomString(6)
+	record, err := u.store.CreateVerifyEmail(ctx, CreateVerifyEmailParams{
+		Username:   user.Username,
+		SecretCode: code,
+		Email:      ne.Email,
+	})
+
+	if err != nil {
+		return VerifyEmail{}, db.NewError(err)
+	}
+
+	return record, nil
+}
+
+func (u *Core) VerifyEmail(
+	ctx context.Context,
+	user User,
+	fe FinishVerifyEmail,
+) (bool, error) {
+	err := u.store.ExecuteInTransaction(ctx, func(q *Queries) error {
+		_, err := u.store.UpdateVerifyEmail(ctx, UpdateVerifyEmailParams{
+			ID:         fe.Id,
+			SecretCode: fe.Code,
+		})
+
+		if err != nil {
+			if db.IsNoRowsError(err) {
+				return errors.New("no verification record exists or it has expired")
+			}
+
+			return err
+		}
+
+		var val = true
+		_, err = u.store.UpdateUser(ctx, UpdateUserParams{
+			Username:        user.Username,
+			IsEmailVerified: db.NewBool(&val),
+		})
+
+		return err
+	})
+	if err != nil {
+		return false, db.NewError(err)
+	}
+
+	return true, nil
 }

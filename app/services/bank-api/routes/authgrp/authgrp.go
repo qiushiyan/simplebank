@@ -13,8 +13,9 @@ import (
 )
 
 type Handler struct {
-	user user.Core
-	task task.Manager
+	user         user.Core
+	task         task.Manager
+	frontendHost string
 }
 
 type userResponse struct {
@@ -24,10 +25,11 @@ type userResponse struct {
 	PasswordChangedAt time.Time `json:"password_changed_at"`
 }
 
-func New(store db.Store, taskManager task.Manager) *Handler {
+func New(store db.Store, task task.Manager, frontendHost string) *Handler {
 	return &Handler{
-		user: user.NewCore(store),
-		task: taskManager,
+		user:         user.NewCore(store),
+		task:         task,
+		frontendHost: frontendHost,
 	}
 }
 
@@ -44,6 +46,7 @@ func (h *Handler) Register(app *web.App) {
 	app.POST("/signup", h.Signup)
 	app.POST("/signin", h.Signin)
 	app.POST("/send-email", h.SendEmail, middleware.Authenticate())
+	app.POST("/verify-email", h.VerifyEmail, middleware.Authenticate())
 }
 
 var _ web.RouteGroup = (*Handler)(nil)

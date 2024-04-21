@@ -8,13 +8,19 @@ import (
 	"go.uber.org/zap"
 )
 
+type Config struct {
+	Log *zap.SugaredLogger
+}
+
 type SimpleManager struct {
 	log  *zap.SugaredLogger
 	quit chan struct{}
 }
 
-func New(log *zap.SugaredLogger) *SimpleManager {
-	return &SimpleManager{}
+func New(cfg Config) *SimpleManager {
+	return &SimpleManager{
+		log: cfg.Log,
+	}
 }
 
 func (m *SimpleManager) Start() error {

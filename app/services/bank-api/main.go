@@ -71,6 +71,7 @@ func run(ctx context.Context, log *zap.SugaredLogger) error {
 			IdleTimeout     time.Duration `conf:"default:120s"`
 			ShutdownTimeout time.Duration `conf:"default:20s,mask"`
 			APIHost         string        `conf:"default:0.0.0.0:3000"`
+			FrontendHost    string        `conf:"default:http://localhost:3001"`
 			DebugHost       string        `conf:"default:0.0.0.0:4000"`
 		}
 		DB struct {
@@ -156,15 +157,16 @@ func run(ctx context.Context, log *zap.SugaredLogger) error {
 		return err
 	}
 
-	if taskOption == task.OptionAsynq {
-		taskManager = asynqamanger.New(
-			log,
-			cfg.Task.RedisUrl,
-			cfg.Task.EmailSenderAddress,
-			cfg.Task.EMAILSenderPassword,
-		)
-	} else if taskOption == task.OptionSimple {
-		taskManager = simplemanager.New(log)
+	switch taskOption {
+	case task.OptionSimple:
+		taskManager = simplemanager.New(simplemanager.Config{Log: log})
+	case task.OptionAsynq:
+		taskManager = asynqamanger.New(asynqamanger.Config{
+			Log:            log,
+			RedisAddr:      cfg.Task.RedisUrl,
+			SenderAddr:     cfg.Task.EmailSenderAddress,
+			SenderPassword: cfg.Task.EMAILSenderPassword,
+		})
 	}
 
 	go func() {
@@ -178,11 +180,12 @@ func run(ctx context.Context, log *zap.SugaredLogger) error {
 
 	apiErrors := make(chan error, 1)
 	muxConfig := routes.Config{
-		Shutdown: shutdown,
-		Log:      log,
-		Store:    store,
-		Task:     taskManager,
-		Build:    build,
+		Shutdown:     shutdown,
+		Log:          log,
+		Store:        store,
+		Task:         taskManager,
+		FrontendHost: cfg.Web.FrontendHost,
+		Build:        build,
 	}
 	apiMux := routes.NewMux(muxConfig)
 

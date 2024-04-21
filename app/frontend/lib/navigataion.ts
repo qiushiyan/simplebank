@@ -21,4 +21,10 @@ export const { routes, useSafeParams, useSafeSearchParams } =
 				search_account_owner: z.string().optional(),
 			}),
 		}),
+		verifyEmail: defineRoute("/verify-email", {
+			search: z.object({
+				id: z.string(),
+				code: z.string(),
+			}),
+		}),
 	}));

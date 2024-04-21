@@ -14,6 +14,7 @@ type Querier interface {
 	CreateFriend(ctx context.Context, arg CreateFriendParams) (Friendship, error)
 	CreateTransfer(ctx context.Context, arg CreateTransferParams) (Transfer, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
+	CreateVerifyEmail(ctx context.Context, arg CreateVerifyEmailParams) (VerifyEmail, error)
 	DeleteAccount(ctx context.Context, id int64) error
 	GetAccount(ctx context.Context, id int64) (Account, error)
 	GetAccountForUpdate(ctx context.Context, id int64) (Account, error)
@@ -29,6 +30,7 @@ type Querier interface {
 	UpdateAccountName(ctx context.Context, arg UpdateAccountNameParams) (Account, error)
 	UpdateFriend(ctx context.Context, arg UpdateFriendParams) (Friendship, error)
 	UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error)
+	UpdateVerifyEmail(ctx context.Context, arg UpdateVerifyEmailParams) (VerifyEmail, error)
 }
 
 var _ Querier = (*Queries)(nil)

@@ -11,5 +11,8 @@ type Store interface {
 	db_generated.Querier
 	CreateUserTx(ctx context.Context, arg CreateUserTxParams) (CreateUserTxResult, error)
 	TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error)
+	ExecuteInTransaction(ctx context.Context, fn QueryFunc) error
 	Check(ctx context.Context) error
 }
+
+type QueryFunc = func(*db_generated.Queries) error

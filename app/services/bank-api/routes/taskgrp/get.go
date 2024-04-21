@@ -19,7 +19,8 @@ type GetTaskResponse struct {
 //	@Tags			Task
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path		string	true	"Task ID"
+//	@Param			id	path	string	true	"Task ID"
+//	@Security		Bearer
 //	@Success		200	{object}	GetTaskResponse
 //	@Router			/task/{id} [get]
 //	@Security		Bearer
