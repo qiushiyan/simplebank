@@ -3,6 +3,7 @@ package email
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"os"
@@ -16,13 +17,42 @@ type Sender interface {
 }
 
 type SenderPayload struct {
-	To      string
-	Subject string
-	Data    any
+	To      string `json:"to"`
+	Subject string `json:"subject"`
+	Data    any    `json:"data"`
+}
+
+func (sp *SenderPayload) UnmarshalJSON(data []byte) error {
+	type Alias SenderPayload
+	aux := &struct {
+		Data json.RawMessage `json:"data"`
+		*Alias
+	}{
+		Alias: (*Alias)(sp),
+	}
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+	sp.To = aux.To
+	sp.Subject = aux.Subject
+
+	switch {
+	case json.Valid(aux.Data):
+		var reportData SubjectReportData
+		if err := json.Unmarshal(aux.Data, &reportData); err == nil {
+			sp.Data = reportData
+		} else {
+			return fmt.Errorf("error unmarshalling data: %v", err)
+		}
+	default:
+		sp.Data = nil
+	}
+
+	return nil
 }
 
 // returns the interpolated HTML content given the payload
-func getEmailHTML(payload SenderPayload) ([]byte, error) {
+func getEmailHTML(payload *SenderPayload) ([]byte, error) {
 	t, ok := templates[payload.Subject]
 	if !ok {
 		return []byte{}, fmt.Errorf("template not found for subject %s", payload.Subject)
@@ -35,9 +65,9 @@ func getEmailHTML(payload SenderPayload) ([]byte, error) {
 
 	var path string
 	if testing.Testing() {
-		path = filepath.Join(cwd, "..", "..", "zarf", "email", t)
+		path = filepath.Join(cwd, "..", "..", "zarf", "email", "templates", t)
 	} else {
-		path = filepath.Join(cwd, "zarf", "email", t)
+		path = filepath.Join(cwd, "zarf", "email", "templates", t)
 	}
 
 	tmpl, err := template.ParseFiles(path)

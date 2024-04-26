@@ -2,7 +2,6 @@ package accountgrp
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/qiushiyan/simplebank/business/auth"
@@ -46,7 +45,6 @@ func (h *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Reque
 		filter,
 		limiter,
 	)
-	fmt.Println("accounts", accounts)
 	if err != nil {
 		return err
 	}

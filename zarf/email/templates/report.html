@@ -1,10 +1,9 @@
-<!-- welcomeEmailTemplate.html -->
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
-    <title>Welcome Email</title>
+    <title>Activity Report</title>
     <style type="text/css">
         body {
             font-family: Arial, sans-serif;
@@ -42,14 +41,12 @@
 <body>
     <div class="email-container">
         <div class="email-header">
-            <h2>Verify your email at SimpleBank</h2>
+            <h2>SimpleBank Activity Report</h2>
         </div>
 
         <p>Hello {{.Data.Username}}.</p>
 
-        <p>Please visit the following link to verify your email.</p>
-
-        <p>{{ .Data.Link }}</p>
+        <p>See attached for your activity report.</p>
 
         <div class="email-footer">
             <p>Best</p>

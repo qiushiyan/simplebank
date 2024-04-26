@@ -1,0 +1,18 @@
+---
+title: SimpleBank Activity Report
+format: pdf
+params:
+    user_name: placeholder
+knitr:
+    opts_chunk:
+        echo: false
+---
+
+User `r params$user_name`
+
+
+# Summary
+
+```{r}
+plot(cars)
+```

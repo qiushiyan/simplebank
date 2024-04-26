@@ -184,7 +184,7 @@ docs-swagger:
 	swag fmt
 
 docs-readme:
-	quarto render zarf/report/README.qmd -o README.md
+	quarto render zarf/quarto/README.qmd -o README.md
 
 tidy:
 	go mod tidy

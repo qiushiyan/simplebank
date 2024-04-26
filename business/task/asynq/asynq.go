@@ -53,6 +53,7 @@ func New(cfg Config) *AsynqManager {
 	inspector := asynq.NewInspector(redisOpt)
 
 	return &AsynqManager{
+		log:            cfg.Log,
 		server:         server,
 		client:         client,
 		inspector:      inspector,
@@ -81,9 +82,6 @@ func (m *AsynqManager) CreateTask(
 	taskType string,
 	payload any,
 ) (string, error) {
-	// task := asynq.NewTask(taskType, payload)
-	// info, err := m.client.Enqueue(task)
-
 	var err error
 	var info *asynq.TaskInfo
 	var task *asynq.Task
@@ -94,13 +92,15 @@ func (m *AsynqManager) CreateTask(
 		if !ok {
 			return "", fmt.Errorf("invalid payload type for email delivery task: %T", payload)
 		}
-		task, err = m.NewEmailDeliveryTask(payload.To, payload.Subject, payload.Data)
+		task, err = m.NewEmailDeliveryTask(payload)
 		if err != nil {
 			return "", err
 		}
+	default:
+		return "", fmt.Errorf("unsupported task type: %s", taskType)
 	}
-	info, err = m.client.EnqueueContext(ctx, task)
 
+	info, err = m.client.EnqueueContext(ctx, task)
 	if err != nil {
 		m.log.Warnw("task created error", "error", err)
 		return "", err

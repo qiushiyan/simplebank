@@ -13,22 +13,16 @@ import (
 )
 
 // Helper for creating a new email delivery task.
-func (m *AsynqManager) NewEmailDeliveryTask(
-	to string,
-	subject string,
-	data any,
-) (*asynq.Task, error) {
-	payload := email.SenderPayload{
-		To:      to,
-		Data:    data,
-		Subject: subject,
-	}
-
+func (m *AsynqManager) NewEmailDeliveryTask(payload email.SenderPayload) (*asynq.Task, error) {
 	b, err := json.Marshal(payload)
 	if err != nil {
 		return nil, err
 	}
-	return asynq.NewTask(taskcommon.TypeEmailDelivery, b, asynq.ProcessIn(60*time.Second)), nil
+	return asynq.NewTask(
+		taskcommon.TypeEmailDelivery,
+		b,
+		asynq.ProcessIn(60*time.Second),
+	), nil
 }
 
 type EmailProcessor struct {
@@ -52,7 +46,7 @@ func (p *EmailProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 		return fmt.Errorf("could not unmarshal payload: %w", err)
 	}
 
-	err := p.sender.Send(payload)
+	err := p.sender.Send(&payload)
 
 	if err != nil {
 		return fmt.Errorf("could not send email: %w", err)

@@ -11,24 +11,23 @@ func TestSendEmail(t *testing.T) {
 
 	cases := []struct {
 		name    string
-		payload SenderPayload
+		payload *SenderPayload
 		checker func(err error)
 	}{
 		{
 			name: "ok",
-			payload: SenderPayload{
+			payload: &SenderPayload{
 				To:      "user@gmail.com",
 				Data:    SubjectWelcomeData{Username: "user"},
 				Subject: SubjectWelcome,
 			},
-
 			checker: func(err error) {
 				require.NoError(t, err)
 			},
 		},
 		{
 			name: "invalid-subject",
-			payload: SenderPayload{
+			payload: &SenderPayload{
 				To:      "user@gmail.com",
 				Data:    SubjectWelcomeData{Username: "user"},
 				Subject: "unknown-subject",

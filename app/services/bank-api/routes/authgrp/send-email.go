@@ -25,7 +25,7 @@ type SendEmailResponse struct {
 
 // SendEmail godoc
 // @Summary Send an email to user with given subject
-// @Description Send an email to user with given subject, currently subject=welcome and subject=verify are implemented. User needs to have a non-null email to be verified, and have a verified email to receive welcome.
+// @Description Send an email to user with given subject, currently subject=welcome, subject=verify and subject=report are implemented. User needs to have a non-null email to be verified, and have a verified email to receive welcome.
 // @Tags Authentication
 // @Accept json
 // @Produce json
@@ -58,11 +58,14 @@ func (h *Handler) SendEmail(ctx context.Context, w http.ResponseWriter, r *http.
 		)
 	}
 
-	if req.Subject == email.SubjectWelcome {
+	switch req.Subject {
+	case email.SubjectReport:
+		taskId, err = h.sendReportEmail(ctx, user)
+	case email.SubjectWelcome:
 		taskId, err = h.sendWelcomeEmail(ctx, user)
-	} else if req.Subject == email.SubjectVerify {
+	case email.SubjectVerify:
 		taskId, err = h.sendVerifyEmail(ctx, user)
-	} else {
+	default:
 		return web.NewError(
 			email.ErrInvalidSubject,
 			http.StatusNotImplemented,
@@ -80,6 +83,21 @@ func (h *Handler) SendEmail(ctx context.Context, w http.ResponseWriter, r *http.
 	return web.RespondJson(ctx, w, res, http.StatusCreated)
 }
 
+func (h *Handler) sendReportEmail(ctx context.Context, user db_generated.User) (string, error) {
+	data := email.SubjectReportData{Username: user.Username}
+	payload := email.SenderPayload{
+		To:      user.Email.String,
+		Subject: email.SubjectReport,
+		Data:    data,
+	}
+
+	return h.task.CreateTask(
+		ctx,
+		taskcommon.TypeEmailDelivery,
+		payload,
+	)
+}
+
 func (h *Handler) sendWelcomeEmail(
 	ctx context.Context,
 	user db_generated.User,
@@ -88,14 +106,17 @@ func (h *Handler) sendWelcomeEmail(
 		return "", web.NewError(errors.New("user's email is not verified"), http.StatusConflict)
 	}
 
+	data := email.SubjectWelcomeData{Username: user.Username}
+	payload := email.SenderPayload{
+		To:      user.Email.String,
+		Subject: email.SubjectWelcome,
+		Data:    data,
+	}
+
 	return h.task.CreateTask(
 		ctx,
 		taskcommon.TypeEmailDelivery,
-		email.SenderPayload{
-			To:      user.Email.String,
-			Subject: email.SubjectWelcome,
-			Data:    email.SubjectWelcomeData{Username: user.Username},
-		},
+		payload,
 	)
 }
 
@@ -117,14 +138,16 @@ func (h *Handler) sendVerifyEmail(
 		"code": []string{record.SecretCode},
 	}.Encode()
 
-	emailPayload := email.SenderPayload{
-		To:      u.Email.String,
-		Subject: email.SubjectVerify,
-		Data: email.SubjectVerifyData{
-			Username: u.Username,
-			Link:     link.String(),
-		},
+	data := email.SubjectVerifyData{
+		Username: u.Username,
+		Link:     link.String(),
 	}
 
-	return h.task.CreateTask(ctx, taskcommon.TypeEmailDelivery, emailPayload)
+	payload := email.SenderPayload{
+		To:      u.Email.String,
+		Subject: email.SubjectVerify,
+		Data:    data,
+	}
+
+	return h.task.CreateTask(ctx, taskcommon.TypeEmailDelivery, payload)
 }

@@ -7,11 +7,11 @@ import (
 	"github.com/go-json-experiment/json"
 )
 
-type responseData struct {
+type dataWrapper struct {
 	Data interface{} `json:"data"`
 }
 
-// RespondJson wraps data according to the status code and sends json to the response writer.
+// RespondJson wraps the return the value as {data: value} according to the status code and sends json to the response writer
 func RespondJson(ctx context.Context, w http.ResponseWriter, data any, statusCode int) error {
 	// Set the status code for the request logger middleware.
 	SetStatusCode(ctx, statusCode)
@@ -27,7 +27,7 @@ func RespondJson(ctx context.Context, w http.ResponseWriter, data any, statusCod
 	if data != nil {
 		switch statusCode {
 		case http.StatusOK, http.StatusCreated:
-			bytes, err := json.Marshal(responseData{Data: data})
+			bytes, err := json.Marshal(dataWrapper{Data: data})
 			if err != nil {
 				return err
 			}
@@ -47,7 +47,7 @@ func RespondJson(ctx context.Context, w http.ResponseWriter, data any, statusCod
 	return nil
 }
 
-// RespondJsonPlain sends json to the response writer without wrapping the data.
+// RespondJsonPlain sends json to the response writer without wrapping
 func RespondJsonPlain(ctx context.Context, w http.ResponseWriter, data any, statusCode int) error {
 	w.WriteHeader(statusCode)
 	bytes, err := json.Marshal(data)
