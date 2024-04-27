@@ -14,14 +14,14 @@ import (
 	db "github.com/qiushiyan/simplebank/business/db/core"
 	"github.com/qiushiyan/simplebank/business/task"
 	"github.com/qiushiyan/simplebank/business/web/middleware"
+	"github.com/qiushiyan/simplebank/foundation/logger"
 	"github.com/qiushiyan/simplebank/foundation/web"
-	"go.uber.org/zap"
 )
 
 // APIMuxConfig contains all the mandatory systems required by handlers.
 type Config struct {
 	Shutdown     chan os.Signal
-	Log          *zap.SugaredLogger
+	Log          *logger.Logger
 	Store        db.Store
 	Task         task.Manager
 	FrontendHost string

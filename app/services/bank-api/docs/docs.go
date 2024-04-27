@@ -600,6 +600,51 @@ const docTemplate = `{
                 }
             }
         },
+        "/send-email": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Send an email to user with given subject, currently subject=welcome, subject=verify and subject=report are implemented. User needs to have a non-null email to be verified, and have a verified email to receive emails of other subjects.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Send an email to user with given subject",
+                "parameters": [
+                    {
+                        "description": "Email subject",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/authgrp.SendEmailRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "409": {
+                        "description": "Conflict"
+                    }
+                }
+            }
+        },
         "/signin": {
             "post": {
                 "description": "Signin with username and password",
@@ -642,7 +687,7 @@ const docTemplate = `{
         },
         "/signup": {
             "post": {
-                "description": "Signup with username, email and password. If email is provided, a welcome email will be scheduled as an asynchronous task and the task id will be returned.",
+                "description": "Signup with username, email (optional) and password.",
                 "consumes": [
                     "application/json"
                 ],
@@ -715,6 +760,51 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/taskgrp.GetTaskResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            }
+        },
+        "/verify-email": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Verify email with the id and code",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Verify email",
+                "parameters": [
+                    {
+                        "description": "request body",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/authgrp.VerifyEmailRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/authgrp.VerifyEmailResponse"
                         }
                     },
                     "400": {
@@ -802,6 +892,17 @@ const docTemplate = `{
                 }
             }
         },
+        "authgrp.SendEmailRequest": {
+            "type": "object",
+            "required": [
+                "subject"
+            ],
+            "properties": {
+                "subject": {
+                    "type": "string"
+                }
+            }
+        },
         "authgrp.SigninRequest": {
             "type": "object",
             "required": [
@@ -867,6 +968,29 @@ const docTemplate = `{
                             "$ref": "#/definitions/authgrp.userResponse"
                         }
                     ]
+                }
+            }
+        },
+        "authgrp.VerifyEmailRequest": {
+            "type": "object",
+            "required": [
+                "code",
+                "id"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "authgrp.VerifyEmailResponse": {
+            "type": "object",
+            "properties": {
+                "ok": {
+                    "type": "boolean"
                 }
             }
         },

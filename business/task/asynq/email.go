@@ -9,7 +9,7 @@ import (
 	"github.com/hibiken/asynq"
 	"github.com/qiushiyan/simplebank/business/email"
 	taskcommon "github.com/qiushiyan/simplebank/business/task/common"
-	"go.uber.org/zap"
+	"github.com/qiushiyan/simplebank/foundation/logger"
 )
 
 // Helper for creating a new email delivery task.
@@ -26,12 +26,12 @@ func (m *AsynqManager) NewEmailDeliveryTask(payload email.SenderPayload) (*asynq
 }
 
 type EmailProcessor struct {
-	log    *zap.SugaredLogger
+	log    *logger.Logger
 	sender *email.GmailSender
 }
 
 func NewEmailProcessor(
-	log *zap.SugaredLogger,
+	log *logger.Logger,
 	senderAddress, senderPassword string,
 ) *EmailProcessor {
 	return &EmailProcessor{
@@ -52,6 +52,6 @@ func (p *EmailProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 		return fmt.Errorf("could not send email: %w", err)
 	}
 
-	p.log.Infow("completed email task", "payload", payload)
+	p.log.Info(ctx, "completed email task", "payload", payload)
 	return nil
 }

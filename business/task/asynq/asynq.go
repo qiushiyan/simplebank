@@ -7,11 +7,11 @@ import (
 	"github.com/hibiken/asynq"
 	"github.com/qiushiyan/simplebank/business/email"
 	taskcommon "github.com/qiushiyan/simplebank/business/task/common"
-	"go.uber.org/zap"
+	"github.com/qiushiyan/simplebank/foundation/logger"
 )
 
 type AsynqManager struct {
-	log            *zap.SugaredLogger
+	log            *logger.Logger
 	client         *asynq.Client
 	server         *asynq.Server
 	inspector      *asynq.Inspector
@@ -20,7 +20,7 @@ type AsynqManager struct {
 }
 
 type Config struct {
-	Log            *zap.SugaredLogger
+	Log            *logger.Logger
 	RedisAddr      string
 	SenderAddr     string
 	SenderPassword string
@@ -37,7 +37,8 @@ func New(cfg Config) *AsynqManager {
 			Logger:      &Logger{log: cfg.Log},
 			ErrorHandler: asynq.ErrorHandlerFunc(
 				func(ctx context.Context, task *asynq.Task, err error) {
-					cfg.Log.Errorw(
+					cfg.Log.Error(
+						ctx,
 						"task processing error",
 						"type",
 						task.Type,
@@ -102,11 +103,12 @@ func (m *AsynqManager) CreateTask(
 
 	info, err = m.client.EnqueueContext(ctx, task)
 	if err != nil {
-		m.log.Warnw("task created error", "error", err)
+		m.log.Warn(ctx, "task created error", "error", err)
 		return "", err
 	}
 
-	m.log.Infow(
+	m.log.Info(
+		ctx,
 		"task created",
 		"task_id",
 		info.ID,

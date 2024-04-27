@@ -2,6 +2,7 @@ package tests
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -14,16 +15,16 @@ import (
 	"github.com/qiushiyan/simplebank/business/auth/token"
 	mockdb "github.com/qiushiyan/simplebank/business/db/mock"
 	simplemanager "github.com/qiushiyan/simplebank/business/task/simple"
-	loggerlib "github.com/qiushiyan/simplebank/foundation/logger"
+	"github.com/qiushiyan/simplebank/foundation/logger"
+	"github.com/qiushiyan/simplebank/foundation/web"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
-	"go.uber.org/zap"
 )
 
 var (
 	adminToken string
 	userToken  string
-	logger     *zap.SugaredLogger
+	log        *logger.Logger
 )
 
 type DataResponse[T any] struct {
@@ -42,9 +43,18 @@ func TestMain(m *testing.M) {
 	userToken = "Bearer " + t.Value
 
 	logPath := fmt.Sprintf("%s/simplebank-log.txt", os.TempDir())
-	logger, _ = loggerlib.New("bank-api", logPath)
+	events := logger.Events{
+		Error: func(ctx context.Context, r logger.Record) {
+			log.Info(ctx, "******* SEND ALERT *******")
+		},
+	}
+
+	traceIDFn := func(ctx context.Context) string {
+		return web.GetTraceID(ctx)
+	}
+
+	log = logger.NewWithEvents(os.Stdout, logger.LevelInfo, "SALES", traceIDFn, events)
 	fmt.Printf("log at %s\n", logPath)
-	defer logger.Sync()
 
 	m.Run()
 }
@@ -62,10 +72,10 @@ func serveRequest(
 
 	cfg := routes.Config{
 		Shutdown: make(chan os.Signal, 1),
-		Log:      logger,
+		Log:      log,
 		Store:    store,
 		Task: simplemanager.New(simplemanager.Config{
-			Log: logger,
+			Log: log,
 		}),
 		Build: "develop",
 	}

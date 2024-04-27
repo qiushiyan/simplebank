@@ -69,8 +69,7 @@ Each folder represents a different layer of concerns
 ## Logging
 
 [`foundation/logger`](https://github.com/qiushiyan/simplebank/tree/main/foundation/logger)
-exports a customized `SugaredLogger` using the
-[`zap`](https://github.com/uber-go/zap) package.
+exports a customized slog-based logger.
 
 [`app/tooling/logfmt`](https://github.com/qiushiyan/simplebank/tree/main/app/tooling/logfmt)
 is a simple program that converts the JSON logs output by

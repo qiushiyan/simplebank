@@ -3,7 +3,6 @@ package tests
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -169,7 +168,7 @@ func randomUser() (db_generated.User, string) {
 	email := random.RandomEmail()
 	hashedPassword, err := auth.HashPassword(password)
 	if err != nil {
-		log.Fatal("failed to hash password")
+		panic("failed to hash password")
 	}
 
 	user := db_generated.User{

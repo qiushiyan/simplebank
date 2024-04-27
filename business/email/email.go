@@ -4,6 +4,7 @@ package email
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
 	"os"
@@ -31,21 +32,36 @@ func (sp *SenderPayload) UnmarshalJSON(data []byte) error {
 		Alias: (*Alias)(sp),
 	}
 	if err := json.Unmarshal(data, &aux); err != nil {
-		return err
+		return fmt.Errorf("error unmarshalling SenderPayload: %v", err)
 	}
 	sp.To = aux.To
 	sp.Subject = aux.Subject
 
-	switch {
-	case json.Valid(aux.Data):
-		var reportData SubjectReportData
-		if err := json.Unmarshal(aux.Data, &reportData); err == nil {
-			sp.Data = reportData
-		} else {
-			return fmt.Errorf("error unmarshalling data: %v", err)
+	if json.Valid(aux.Data) {
+		var err error
+		switch sp.Subject {
+		case SubjectWelcome:
+			var Data SubjectWelcomeData
+			err = json.Unmarshal(aux.Data, &Data)
+			sp.Data = Data
+		case SubjectVerify:
+			var Data SubjectVerifyData
+			err = json.Unmarshal(aux.Data, &Data)
+			sp.Data = Data
+		case SubjectReport:
+			var Data SubjectReportData
+			err = json.Unmarshal(aux.Data, &Data)
+			sp.Data = Data
+		default:
+			return fmt.Errorf("unknown subject type: %s", sp.Subject)
 		}
-	default:
+		if err != nil {
+			sp.Data = nil
+			return fmt.Errorf("error unmarshalling data for %s: %v", sp.Subject, err)
+		}
+	} else {
 		sp.Data = nil
+		return errors.New("can't unmarshal invalid Data property in SenderPayload")
 	}
 
 	return nil

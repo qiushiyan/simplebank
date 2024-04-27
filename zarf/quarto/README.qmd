@@ -79,6 +79,6 @@ Each folder represents a different layer of concerns
 
 ## Logging
 
-`r path_link("foundation/logger")` exports a customized `SugaredLogger` using the [`zap`](https://github.com/uber-go/zap) package.
+`r path_link("foundation/logger")` exports a customized slog-based logger.
 
 `r path_link("app/tooling/logfmt")` is a simple program that converts the JSON logs output by `foundation/logger` to human-readable logs.

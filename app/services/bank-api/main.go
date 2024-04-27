@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"expvar"
 	"fmt"
 	"net/http"
 	"os"
@@ -20,7 +21,7 @@ import (
 	simplemanager "github.com/qiushiyan/simplebank/business/task/simple"
 	"github.com/qiushiyan/simplebank/business/web/debug"
 	"github.com/qiushiyan/simplebank/foundation/logger"
-	"go.uber.org/zap"
+	"github.com/qiushiyan/simplebank/foundation/web"
 )
 
 var build = "develop"
@@ -43,26 +44,36 @@ var build = "develop"
 // @name						Authorization
 // @description				Type "Bearer" followed by a space and JWT token.
 func main() {
-	log, err := logger.New("bank-api")
-	if err != nil {
-		fmt.Sprintln("creating logger: %w", err)
-		os.Exit(1)
-	}
-	defer log.Sync()
+	var log *logger.Logger
 
-	err = godotenv.Load()
-	if err != nil {
-		log.Warn("no .env file found")
+	events := logger.Events{
+		Error: func(ctx context.Context, r logger.Record) {
+			log.Info(ctx, "******* SEND ALERT *******")
+		},
 	}
 
-	if err := run(context.Background(), log); err != nil {
-		log.Errorw("startup", "ERROR", err)
-		log.Sync()
+	traceIDFn := func(ctx context.Context) string {
+		return web.GetTraceID(ctx)
+	}
+
+	ctx := context.Background()
+	log = logger.NewWithEvents(os.Stdout, logger.LevelInfo, "bank-api", traceIDFn, events)
+
+	err := godotenv.Load()
+	if err != nil {
+		log.Warn(ctx, "no .env file found")
+	}
+
+	if err := run(ctx, log); err != nil {
+		log.Error(ctx, "startup", "msg", err)
 		os.Exit(1)
 	}
 }
 
-func run(ctx context.Context, log *zap.SugaredLogger) error {
+func run(ctx context.Context, log *logger.Logger) error {
+	log.Info(ctx, "startup", "GOMAXPROCS", runtime.GOMAXPROCS(0), "version", build)
+	defer log.Info(ctx, "shutdown complete")
+
 	cfg := struct {
 		conf.Version
 		Web struct {
@@ -108,29 +119,28 @@ func run(ctx context.Context, log *zap.SugaredLogger) error {
 	if err != nil {
 		return fmt.Errorf("generating config string: %w", err)
 	}
-	log.Infow("startup", "GOMAXPROCS", runtime.GOMAXPROCS(0), "BUILD-", build)
-	log.Infow("startup", "with config", out)
+
+	log.Info(ctx, "startup", "config", out)
 
 	// -------------------------------------------------------------------------
 	// Start Debug Service
-	log.Infow("startup", "status", "debug router started", "host", cfg.Web.DebugHost)
+	expvar.NewString("build").Set(cfg.Build)
+	log.Info(ctx, "startup", "status", "debug router started", "host", cfg.Web.DebugHost)
 
 	go func() {
 		if err := http.ListenAndServe(cfg.Web.DebugHost, debug.StandardLibraryMux()); err != nil {
-			log.Errorw(
+			log.Error(
+				ctx,
 				"shutdown",
 				"status",
 				"debug router closed",
 				"host",
 				cfg.Web.DebugHost,
-				"ERROR",
+				"msg",
 				err,
 			)
 		}
 	}()
-
-	shutdown := make(chan os.Signal, 1)
-	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
 
 	// -------------------------------------------------------------------------
 	// Connect database
@@ -142,7 +152,7 @@ func run(ctx context.Context, log *zap.SugaredLogger) error {
 	)
 	pool, err := db.NewPgxPool(ctx, dbConfigString)
 	if err != nil {
-		log.Fatal("cannot connect to db:", err)
+		return fmt.Errorf("connecting to db: %w", err)
 	}
 	store := db.NewPostgresStore(pool)
 	defer pool.Close()
@@ -170,15 +180,17 @@ func run(ctx context.Context, log *zap.SugaredLogger) error {
 	}
 
 	go func() {
-		log.Infow("startup", "status", "task server started", "manager", cfg.Task.Manager)
+		log.Info(ctx, "startup", "status", "task server started", "manager", cfg.Task.Manager)
 		taskErrors <- taskManager.Start()
 	}()
 	defer taskManager.Close()
 
 	// -------------------------------------------------------------------------
 	// Start API service
-
+	shutdown := make(chan os.Signal, 1)
+	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
 	apiErrors := make(chan error, 1)
+
 	muxConfig := routes.Config{
 		Shutdown:     shutdown,
 		Log:          log,
@@ -198,7 +210,8 @@ func run(ctx context.Context, log *zap.SugaredLogger) error {
 	}
 
 	go func() {
-		log.Infow(
+		log.Info(
+			ctx,
 			"startup",
 			"host",
 			apiServer.Addr,

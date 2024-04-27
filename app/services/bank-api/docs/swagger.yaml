@@ -48,6 +48,13 @@ definitions:
       data:
         $ref: '#/definitions/db_generated.Account'
     type: object
+  authgrp.SendEmailRequest:
+    properties:
+      subject:
+        type: string
+    required:
+    - subject
+    type: object
   authgrp.SigninRequest:
     properties:
       password:
@@ -93,6 +100,21 @@ definitions:
         allOf:
         - $ref: '#/definitions/authgrp.userResponse'
         description: The created user model
+    type: object
+  authgrp.VerifyEmailRequest:
+    properties:
+      code:
+        type: string
+      id:
+        type: string
+    required:
+    - code
+    - id
+    type: object
+  authgrp.VerifyEmailResponse:
+    properties:
+      ok:
+        type: boolean
     type: object
   authgrp.userResponse:
     properties:
@@ -596,6 +618,37 @@ paths:
       summary: Check the service is ready
       tags:
       - Health
+  /send-email:
+    post:
+      consumes:
+      - application/json
+      description: Send an email to user with given subject, currently subject=welcome,
+        subject=verify and subject=report are implemented. User needs to have a non-null
+        email to be verified, and have a verified email to receive emails of other
+        subjects.
+      parameters:
+      - description: Email subject
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/authgrp.SendEmailRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "409":
+          description: Conflict
+      security:
+      - Bearer: []
+      summary: Send an email to user with given subject
+      tags:
+      - Authentication
   /signin:
     post:
       consumes:
@@ -626,9 +679,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Signup with username, email and password. If email is provided,
-        a welcome email will be scheduled as an asynchronous task and the task id
-        will be returned.
+      description: Signup with username, email (optional) and password.
       parameters:
       - description: request body
         in: body
@@ -678,6 +729,34 @@ paths:
       summary: Inspect task state by ID
       tags:
       - Task
+  /verify-email:
+    post:
+      consumes:
+      - application/json
+      description: Verify email with the id and code
+      parameters:
+      - description: request body
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/authgrp.VerifyEmailRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/authgrp.VerifyEmailResponse'
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+      security:
+      - Bearer: []
+      summary: Verify email
+      tags:
+      - Authentication
 securityDefinitions:
   Bearer:
     description: Type "Bearer" followed by a space and JWT token.

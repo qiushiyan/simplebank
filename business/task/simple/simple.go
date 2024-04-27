@@ -5,15 +5,15 @@ import (
 	"time"
 
 	taskcommon "github.com/qiushiyan/simplebank/business/task/common"
-	"go.uber.org/zap"
+	"github.com/qiushiyan/simplebank/foundation/logger"
 )
 
 type Config struct {
-	Log *zap.SugaredLogger
+	Log *logger.Logger
 }
 
 type SimpleManager struct {
-	log  *zap.SugaredLogger
+	log  *logger.Logger
 	quit chan struct{}
 }
 

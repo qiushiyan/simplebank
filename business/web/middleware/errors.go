@@ -6,17 +6,17 @@ import (
 
 	"github.com/qiushiyan/simplebank/business/auth"
 	db "github.com/qiushiyan/simplebank/business/db/core"
+	"github.com/qiushiyan/simplebank/foundation/logger"
 	"github.com/qiushiyan/simplebank/foundation/validate"
 	"github.com/qiushiyan/simplebank/foundation/web"
-	"go.uber.org/zap"
 )
 
-func Errors(log *zap.SugaredLogger) web.Middleware {
+func Errors(log *logger.Logger) web.Middleware {
 	m := func(handler web.Handler) web.Handler {
 		h := func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
 			if err := handler(ctx, w, r); err != nil {
 
-				log.Errorw("ERROR", "trace_id", web.GetTraceID(ctx), "message", err)
+				log.Error(ctx, "error", "trace_id", web.GetTraceID(ctx), "msg", err)
 
 				var er web.ErrorDocument
 				var status int

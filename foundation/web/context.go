@@ -9,7 +9,7 @@ type ctxKey int
 
 const key ctxKey = 1
 
-const defaultTraceId = "00000000-0000-0000-0000-000000000000"
+const defaultTraceId = "BLANK_ID"
 
 // Values represent state for each request.
 type Values struct {

@@ -42,21 +42,22 @@ func main() {
 			continue
 		}
 
-		// have a traceId in the logs
-		traceID := ""
+		traceID := "BLANK_ID"
 		if v, ok := m["trace_id"]; ok {
 			traceID = fmt.Sprintf("%v", v)
 		}
+
+		// {"time":"2023-06-01T17:21:11.13704718Z","level":"INFO","msg":"startup","service":"SALES-API","GOMAXPROCS":1}
 
 		// Build out the know portions of the log in the order
 		// I want them in.
 		b.Reset()
 		b.WriteString(fmt.Sprintf("%s: %s: %s: %s: %s: %s: ",
 			m["service"],
-			m["ts"],
+			m["time"],
+			m["file"],
 			m["level"],
 			traceID,
-			m["caller"],
 			m["msg"],
 		))
 
@@ -64,7 +65,7 @@ func main() {
 		// added for the log.
 		for k, v := range m {
 			switch k {
-			case "service", "ts", "level", "trace_id", "caller", "msg":
+			case "service", "time", "file", "level", "trace_id", "msg":
 				continue
 			}
 
