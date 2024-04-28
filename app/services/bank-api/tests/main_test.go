@@ -43,6 +43,11 @@ func TestMain(m *testing.M) {
 	userToken = "Bearer " + t.Value
 
 	logPath := fmt.Sprintf("%s/simplebank-log.txt", os.TempDir())
+	logWriter, err := os.Create(logPath)
+	if err != nil {
+		panic(err)
+	}
+	defer logWriter.Close()
 	events := logger.Events{
 		Error: func(ctx context.Context, r logger.Record) {
 			log.Info(ctx, "******* SEND ALERT *******")
@@ -53,8 +58,8 @@ func TestMain(m *testing.M) {
 		return web.GetTraceID(ctx)
 	}
 
-	log = logger.NewWithEvents(os.Stdout, logger.LevelInfo, "SALES", traceIDFn, events)
-	fmt.Printf("log at %s\n", logPath)
+	log = logger.NewWithEvents(logWriter, logger.LevelInfo, "bank-api-test", traceIDFn, events)
+	fmt.Println("log path", logPath)
 
 	m.Run()
 }
