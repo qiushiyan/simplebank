@@ -200,7 +200,6 @@ func run(ctx context.Context, log *logger.Logger) error {
 		Build:        build,
 	}
 	apiMux := routes.NewMux(muxConfig)
-
 	apiServer := http.Server{
 		Addr:         cfg.Web.APIHost,
 		ReadTimeout:  cfg.Web.ReadTimeout,
