@@ -74,30 +74,7 @@ func run(ctx context.Context, log *logger.Logger) error {
 	log.Info(ctx, "startup", "GOMAXPROCS", runtime.GOMAXPROCS(0), "version", build)
 	defer log.Info(ctx, "shutdown complete")
 
-	cfg := struct {
-		conf.Version
-		Web struct {
-			ReadTimeout     time.Duration `conf:"default:5s"`
-			WriteTimeout    time.Duration `conf:"default:10s"`
-			IdleTimeout     time.Duration `conf:"default:120s"`
-			ShutdownTimeout time.Duration `conf:"default:20s,mask"`
-			APIHost         string        `conf:"default:0.0.0.0:3000"`
-			FrontendHost    string        `conf:"default:http://localhost:3001"`
-			DebugHost       string        `conf:"default:0.0.0.0:4000"`
-		}
-		DB struct {
-			URL      string `conf:"default:postgres://postgres:postgres@localhost:5432/bank,mask"`
-			SslMode  string `conf:"default:disable"`
-			MaxConns int    `conf:"default:4"`
-		}
-		Task struct {
-			Manager             string `conf:"default:simple,help:\"simple\" for using native goroutines or \"asynq\" for using the [asynq](https://github.com/hibiken/asynq) library. If using asynq must also set redis url"`
-			RedisUrl            string `conf:"default:localhost:6379,mask"`
-			EmailSenderAddress  string `conf:"help:gmail account to send email"`
-			EMAILSenderPassword string `conf:"help:app password for the gmail account,mask"`
-		}
-		Args conf.Args
-	}{
+	cfg := config{
 		Version: conf.Version{
 			Build: build,
 			Desc:  "A simple bank system, read docs at https://github.com/qiushiyan/simplebank",
@@ -114,21 +91,28 @@ func run(ctx context.Context, log *logger.Logger) error {
 		return fmt.Errorf("parsing config: %w", err)
 	}
 
-	// show the current config
+	// print the current config
 	out, err := conf.String(&cfg)
 	if err != nil {
 		return fmt.Errorf("generating config string: %w", err)
 	}
-
 	log.Info(ctx, "startup", "config", out)
 
 	// -------------------------------------------------------------------------
 	// Start Debug Service
 	expvar.NewString("build").Set(cfg.Build)
-	log.Info(ctx, "startup", "status", "debug router started", "host", cfg.Web.DebugHost)
+	debugServer := http.Server{
+		Addr:    cfg.Web.DebugHost,
+		Handler: debug.StandardLibraryMux(),
+	}
+	defer func() {
+		debugServer.Close()
+		log.Info(ctx, "shutdown", "status", "debug router closed", "host", cfg.Web.DebugHost)
+	}()
 
+	log.Info(ctx, "startup", "status", "debug router started", "host", cfg.Web.DebugHost)
 	go func() {
-		if err := http.ListenAndServe(cfg.Web.DebugHost, debug.StandardLibraryMux()); err != nil {
+		if err := debugServer.ListenAndServe(); err != nil {
 			log.Error(
 				ctx,
 				"shutdown",
@@ -144,46 +128,31 @@ func run(ctx context.Context, log *logger.Logger) error {
 
 	// -------------------------------------------------------------------------
 	// Connect database
-	dbConfigString := fmt.Sprintf(
-		"%s?sslmode=%s&pool_max_conns=%d",
-		cfg.DB.URL,
-		cfg.DB.SslMode,
-		cfg.DB.MaxConns,
-	)
-	pool, err := db.NewPgxPool(ctx, dbConfigString)
+	store, err := createDatabase(ctx, &cfg)
 	if err != nil {
-		return fmt.Errorf("connecting to db: %w", err)
+		return err
 	}
-	store := db.NewPostgresStore(pool)
-	defer pool.Close()
+	defer func() {
+		store.Close()
+		log.Info(ctx, "shutdown", "status", "database connection closed")
+	}()
 
 	// -------------------------------------------------------------------------
 	// Start Task Service
 	taskErrors := make(chan error, 1)
-	var taskManager task.Manager
-
-	taskOption, err := task.ParseOption(cfg.Task.Manager)
+	task, err := createTask(&cfg, log)
 	if err != nil {
 		return err
 	}
-
-	switch taskOption {
-	case task.OptionSimple:
-		taskManager = simplemanager.New(simplemanager.Config{Log: log})
-	case task.OptionAsynq:
-		taskManager = asynqamanger.New(asynqamanger.Config{
-			Log:            log,
-			RedisAddr:      cfg.Task.RedisUrl,
-			SenderAddr:     cfg.Task.EmailSenderAddress,
-			SenderPassword: cfg.Task.EMAILSenderPassword,
-		})
-	}
+	defer func() {
+		task.Close()
+		log.Info(ctx, "shutdown", "status", "task server closed")
+	}()
 
 	go func() {
 		log.Info(ctx, "startup", "status", "task server started", "manager", cfg.Task.Manager)
-		taskErrors <- taskManager.Start()
+		taskErrors <- task.Start()
 	}()
-	defer taskManager.Close()
 
 	// -------------------------------------------------------------------------
 	// Start API service
@@ -195,7 +164,7 @@ func run(ctx context.Context, log *logger.Logger) error {
 		Shutdown:     shutdown,
 		Log:          log,
 		Store:        store,
-		Task:         taskManager,
+		Task:         task,
 		FrontendHost: cfg.Web.FrontendHost,
 		Build:        build,
 	}
@@ -222,7 +191,6 @@ func run(ctx context.Context, log *logger.Logger) error {
 
 	// -------------------------------------------------------------------------
 	// Shutdown
-
 	select {
 	case err := <-apiErrors:
 		return fmt.Errorf("api server error: %w", err)
@@ -242,4 +210,67 @@ func run(ctx context.Context, log *logger.Logger) error {
 	}
 
 	return nil
+}
+
+func createTask(cfg *config, log *logger.Logger) (task.Manager, error) {
+	var t task.Manager
+
+	taskOption, err := task.ParseOption(cfg.Task.Manager)
+	if err != nil {
+		return nil, err
+	}
+
+	switch taskOption {
+	case task.OptionSimple:
+		t = simplemanager.New(simplemanager.Config{Log: log})
+	case task.OptionAsynq:
+		t = asynqamanger.New(asynqamanger.Config{
+			Log:            log,
+			RedisAddr:      cfg.Task.RedisUrl,
+			SenderAddr:     cfg.Task.EmailSenderAddress,
+			SenderPassword: cfg.Task.EMAILSenderPassword,
+		})
+	}
+
+	return t, nil
+}
+
+func createDatabase(ctx context.Context, cfg *config) (*db.PostgresStore, error) {
+	dbConfigString := fmt.Sprintf(
+		"%s?sslmode=%s&pool_max_conns=%d",
+		cfg.DB.URL,
+		cfg.DB.SslMode,
+		cfg.DB.MaxConns,
+	)
+	pool, err := db.NewPgxPool(ctx, dbConfigString)
+	if err != nil {
+		return nil, fmt.Errorf("connecting to db: %w", err)
+	}
+	store := db.NewPostgresStore(pool)
+	return store, nil
+}
+
+type config struct {
+	conf.Version
+	Web struct {
+		ReadTimeout     time.Duration `conf:"default:5s"`
+		WriteTimeout    time.Duration `conf:"default:10s"`
+		IdleTimeout     time.Duration `conf:"default:120s"`
+		ShutdownTimeout time.Duration `conf:"default:20s,mask"`
+		APIHost         string        `conf:"default:0.0.0.0:3000"`
+		FrontendHost    string        `conf:"default:http://localhost:3001"`
+		DebugHost       string        `conf:"default:0.0.0.0:4000"`
+	}
+	DB struct {
+		URL      string `conf:"default:postgres://postgres:postgres@localhost:5432/bank,mask"`
+		SslMode  string `conf:"default:disable"`
+		MaxConns int    `conf:"default:4"`
+	}
+	Task struct {
+		Manager             string `conf:"default:simple,help:\"simple\" for using native goroutines or \"asynq\" for using the [asynq](https://github.com/hibiken/asynq) library. If using asynq must also set redis url"`
+		RedisUrl            string `conf:"default:localhost:6379,mask"`
+		EmailSenderAddress  string `conf:"help:gmail account to send email"`
+		EMAILSenderPassword string `conf:"help:app password for the gmail account,mask"`
+	}
+	Args conf.Args
 }

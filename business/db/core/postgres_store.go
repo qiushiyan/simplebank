@@ -16,11 +16,16 @@ type PostgresStore struct {
 	pool *pgxpool.Pool
 }
 
-func NewPostgresStore(pool *pgxpool.Pool) Store {
+func NewPostgresStore(pool *pgxpool.Pool) *PostgresStore {
 	return &PostgresStore{
 		Queries: New(pool),
 		pool:    pool,
 	}
+}
+
+// Close closes all connections in the pool
+func (s *PostgresStore) Close() {
+	s.pool.Close()
 }
 
 // Check returns nil if it can successfully talk to the database. It

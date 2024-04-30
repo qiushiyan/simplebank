@@ -13,7 +13,7 @@ import (
 // Panics recovers from panics and converts the panic to an error so it is
 // reported in Metrics and handled in Errors.
 func Panics() web.Middleware {
-	m := func(handler web.Handler) web.Handler {
+	return func(handler web.Handler) web.Handler {
 		h := func(ctx context.Context, w http.ResponseWriter, r *http.Request) (err error) {
 
 			// Defer a function to recover from a panic and set the err return
@@ -32,6 +32,4 @@ func Panics() web.Middleware {
 
 		return h
 	}
-
-	return m
 }
