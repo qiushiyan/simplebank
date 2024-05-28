@@ -86,7 +86,7 @@ func (h *Handler) SendEmail(ctx context.Context, w http.ResponseWriter, r *http.
 
 func (h *Handler) sendReportEmail(ctx context.Context, user db_generated.User) (string, error) {
 	if !user.IsEmailVerified {
-		return "", web.NewError(errors.New("user's email is not verified"), http.StatusConflict)
+		return "", web.NewErrorS("user's email is not verified", http.StatusConflict)
 	}
 	data := email.SubjectReportData{Username: user.Username}
 	payload := email.SenderPayload{
@@ -107,7 +107,7 @@ func (h *Handler) sendWelcomeEmail(
 	user db_generated.User,
 ) (string, error) {
 	if !user.IsEmailVerified {
-		return "", web.NewError(errors.New("user's email is not verified"), http.StatusConflict)
+		return "", web.NewErrorS("user's email is not verified", http.StatusConflict)
 	}
 
 	data := email.SubjectWelcomeData{Username: user.Username}
@@ -129,7 +129,7 @@ func (h *Handler) sendVerifyEmail(
 	u db_generated.User,
 ) (string, error) {
 	if u.IsEmailVerified {
-		return "", web.NewError(errors.New("user's email is already verified"), http.StatusConflict)
+		return "", web.NewErrorS("user's email is already verified", http.StatusConflict)
 	}
 	record, err := h.user.CreateVerifyEmail(ctx, u, user.NewVerifyEmail{Email: u.Email.String})
 	if err != nil {

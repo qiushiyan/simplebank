@@ -2,7 +2,6 @@ package entrygrp
 
 import (
 	"context"
-	"errors"
 	"net/http"
 	"time"
 
@@ -54,7 +53,7 @@ func (h *Handler) List(ctx context.Context, w http.ResponseWriter, r *http.Reque
 			return web.NewError(err, http.StatusBadRequest)
 		}
 	} else {
-		return web.NewError(errors.New("from_account_id is a required query parameter"), http.StatusBadRequest)
+		return web.NewErrorS("from_account_id is a required query parameter", http.StatusBadRequest)
 	}
 
 	username := auth.GetUsername(ctx)

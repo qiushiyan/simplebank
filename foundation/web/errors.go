@@ -22,6 +22,11 @@ func NewError(err error, status int) error {
 	return &Error{err, status}
 }
 
+// NewErrorS wraps the message string with errors.New and creates a new Error
+func NewErrorS(msg string, status int) error {
+	return &Error{Err: errors.New(msg), Status: status}
+}
+
 // Error implements the error interface. It uses the default message of the
 // wrapped error. This is what will be shown in the services' logs.
 func (re *Error) Error() string {
